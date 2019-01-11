@@ -1,8 +1,8 @@
 
 
 MYLIBS	 = -lsquid
-MYLIBDIR = -L../squid
-MYINCDIR = -I../squid
+MYLIBDIR = 
+MYINCDIR = -I/usr/include/biosquid
 
 HMMLIB = libhmmer$(PROGSUFFIX).so
 
@@ -45,7 +45,7 @@ HDRS =	config.h\
 all:	 $(PROGS)
 
 ${PROGS}: %: %.o ${OBJS}
-	${CC} ${CFLAGS} ${MYLIBDIR} -o $@ $@.o ${OBJS} ${MYLIBS} ${PTHREAD_LIBS} ${LIBS}
+	${CC} ${CFLAGS} ${MYLIBDIR} -o $@ $@.o ${OBJS} ${MYLIBS} ${PTHREAD_LIBS} ${LIBS} $(LDFLAGS)
 
 
 #################################################################
@@ -54,9 +54,9 @@ ${PROGS}: %: %.o ${OBJS}
 module: $(HMMLIB)
 
 $(HMMLIB): $(OBJS)
-#	$(AR) libhmmer.a $(OBJS)
-#	$(RANLIB) libhmmer.a
-#	chmod 644 libhmmer.a
+	$(AR) libhmmer2.a $(OBJS)
+	$(RANLIB) libhmmer2.a
+	chmod 644 libhmmer2.a
 	gcc -shared $(OBJS) -o $@
 
 

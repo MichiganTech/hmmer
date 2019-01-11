@@ -3,6 +3,7 @@ Version 2.5j (December 2006)
 Copyright (C) 1992-2006 HHMI Janelia Farm
 Copyright (C) 2006-2018 Sean Eddy?
 Copyright (C) 2018-     I am not a lawyer, but GPL lets me use this.
+
 ------------------------------------------------------------------
 
 o About this software...
@@ -50,6 +51,7 @@ o Reporting bugs
 
 o Contributers
    Sean Eddy (original author)
-   Josh Marshall
+   Josh Marshall (Maintainance)
+   Andreas Tille (Debian Packaging)
 
 -------------------------------------------------------------------

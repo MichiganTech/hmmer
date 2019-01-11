@@ -1,6 +1,7 @@
 
 LIBS      =  -lm -pthread
 MYLIBS    = -lhmmer$(PROGSUFFIX) -lsquid
+CFLAGS   += -I/usr/include/biosquid
 
 SHIVA = alignalign_test\
 	evd_test\
@@ -16,12 +17,12 @@ SHIVA = alignalign_test\
 #######
 
 .c.o:
-	$(CC) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -I../squid -I../src -c $<
+	$(CC) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -I../src -c $<
 
 all: 	$(SHIVA)
 
 $(SHIVA): %: %.o
-	$(CC) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -o $@ -I../squid -I../src -L../squid -L../src $@.o $(MYLIBS) $(PTHREAD_LIBS) $(LIBS)
+	$(CC) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -o $@ -I../src -L../src $@.o $(MYLIBS) $(PTHREAD_LIBS) $(LIBS)
 
 #######
 ## `make check` actually runs the tests.
