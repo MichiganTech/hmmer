@@ -15,7 +15,7 @@
  */
 
 #include "config.h"    /* compile-time configuration constants */
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,7 @@
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
-#include "squid.h"    /* general sequence analysis library    */
+//#include "squid.h"    /* general sequence analysis library    */
 
 static char banner[] = "hmmconvert - convert between profile HMM file formats";
 
@@ -47,13 +47,13 @@ static char experts[] = "\
 
 
 static struct opt_s OPTIONS[] = {
-  { "-a",        TRUE,  sqdARG_NONE },
-  { "-b",        TRUE,  sqdARG_NONE },
-  { "-h",        TRUE,  sqdARG_NONE },
-  { "-p",        TRUE,  sqdARG_NONE },
-  { "-A",        TRUE,  sqdARG_NONE },
-  { "-F",        TRUE,  sqdARG_NONE },
-  { "-P",        TRUE,  sqdARG_NONE },
+  { "-a",        true,  sqdARG_NONE },
+  { "-b",        true,  sqdARG_NONE },
+  { "-h",        true,  sqdARG_NONE },
+  { "-p",        true,  sqdARG_NONE },
+  { "-A",        true,  sqdARG_NONE },
+  { "-F",        true,  sqdARG_NONE },
+  { "-P",        true,  sqdARG_NONE },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -71,8 +71,8 @@ main(int argc, char **argv) {
   char *optarg;                 /* argument found by Getopt()               */
   int   optind;                 /* index in argv[]                          */
 
-  int   do_append;    /* TRUE to append to existing outfile       */
-  int   do_force;    /* TRUE to allow overwriting */
+  int   do_append;    /* true to append to existing outfile       */
+  int   do_force;    /* true to allow overwriting */
   enum hmmfmt_e { P7ASCII, P7BINARY, GCGPROFILE, BICPROFILE }
   outfmt;      /* output format */
 
@@ -81,8 +81,8 @@ main(int argc, char **argv) {
    ***********************************************/
 
   outfmt    = P7ASCII;
-  do_append = FALSE;
-  do_force  = FALSE;
+  do_append = false;
+  do_force  = false;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
@@ -93,9 +93,9 @@ main(int argc, char **argv) {
     } else if (strcmp(optname, "-p") == 0) {
       outfmt    = GCGPROFILE;
     } else if (strcmp(optname, "-A") == 0) {
-      do_append = TRUE;
+      do_append = true;
     } else if (strcmp(optname, "-F") == 0) {
-      do_force  = TRUE;
+      do_force  = true;
     } else if (strcmp(optname, "-P") == 0) {
       outfmt    = BICPROFILE;
     } else if (strcmp(optname, "-h") == 0) {
@@ -220,10 +220,10 @@ main(int argc, char **argv) {
       WriteBinHMM(outfp, hmm);
       break;
     case GCGPROFILE:
-      WriteProfile(outfp, hmm, FALSE);
+      WriteProfile(outfp, hmm, false);
       break;
     case BICPROFILE:
-      WriteProfile(outfp, hmm, TRUE);
+      WriteProfile(outfp, hmm, true);
       break;
     default:
       Die("unexpected format");

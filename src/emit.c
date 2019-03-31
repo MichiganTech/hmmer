@@ -14,18 +14,18 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "structs.h"
 #include "funcs.h"
-#include "squid.h"
-
+//#include "squid.h"
+#include "vectorops.h"
 
 
 /* Function: EmitSequence()
- * Date:     SRE, Sun Mar  8 12:28:03 1998 [St. Louis]
  *
  * Purpose:  Given a model, sample a sequence and/or traceback.
  *
@@ -202,7 +202,6 @@ EmitSequence(struct plan7_s *hmm, unsigned char **ret_dsq, int *ret_L, struct p7
 
 
 /* Function: EmitConsensusSequence()
- * Date:     SRE, Wed Nov 11 11:08:59 1998 [St. Louis]
  *
  * Purpose:  Generate a "consensus sequence". For the purposes
  *           of a profile HMM, this is defined as:
@@ -323,7 +322,6 @@ EmitConsensusSequence(struct plan7_s *hmm, char **ret_seq, unsigned char **ret_d
 
 
 /* Function: StateOccupancy()
- * Date:     SRE, Wed Nov 11 09:46:15 1998 [St. Louis]
  *
  * Purpose:  Calculate the expected state occupancy for
  *           a given HMM in generated traces.
@@ -371,7 +369,7 @@ StateOccupancy(struct plan7_s *hmm, float **ret_mp, float **ret_ip, float **ret_
       fip[k] = fmp[k] * hmm->t[k][TMI];
     }
 
-    SQD_DASSERT2((fabs(1.0f - fmp[k] - fdp[k]) < 1e-6f));
+    assert((fabs(1.0f - fmp[k] - fdp[k]) < 1e-6f));
     fmp[k] /= fmp[k]+fdp[k];  /* prevent propagating fp errors */
     fdp[k] /= fmp[k]+fdp[k];
   }

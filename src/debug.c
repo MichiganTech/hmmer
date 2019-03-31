@@ -15,7 +15,7 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,7 @@
 
 #include "structs.h"
 #include "funcs.h"
-#include "squid.h"
+//#include "squid.h"
 
 /* Function: Statetype()
  *
@@ -60,8 +60,6 @@ Statetype(char st) {
 }
 
 /* Function: AlphabetType2String()
- * Date:     SRE, Sun Dec 24 11:33:40 2000 [St. Louis]
- *
  * Purpose:  Returns a string "protein" for hmmAMINO,
  *           "nucleic acid" for hmmNUCLEIC, etc... used
  *           for formatting diagnostics.
@@ -163,8 +161,6 @@ P7PrintTrace(FILE *fp, struct p7trace_s *tr, struct plan7_s *hmm, unsigned char 
 
 
 /* Function: TraceVerify()
- * Date:     SRE, Mon Feb  2 07:48:52 1998 [St. Louis]
- *
  * Purpose:  Check a traceback structure for internal consistency.
  *           Used in Shiva testsuite, for example.
  *
@@ -293,8 +289,6 @@ TraceVerify(struct p7trace_s *tr, int M, int N) {
 //*/
 
 /* Function: TraceCompare()
- * Date:     SRE, Wed Mar  4 17:26:49 1998 [St. Louis]
- *
  * Purpose:  Compare two tracebacks; return 1 if they're
  *           identical, else 0. Written for Shiva testsuite.
  *

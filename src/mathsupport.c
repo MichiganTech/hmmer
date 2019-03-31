@@ -19,14 +19,13 @@
 
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <math.h>
 #include <float.h>
 #include <pthread.h>
 
 #include "squid.h"
-#include "dirichlet.h"    /* Gammln() is in dirichlet module */
 #include "funcs.h"
 #include "structs.h"
 
@@ -67,8 +66,6 @@ Scorify(int sc) {
 
 
 /* Function: PValue()
- * Date:     SRE, Mon Oct 27 12:21:02 1997 [Sanger Centre, UK]
- *
  * Purpose:  Convert an HMM score to a P-value.
  *           We know P(S>x) is bounded by 1 / (1 + exp_2^x) for a bit score of x.
  *           We can also use EVD parameters for a tighter bound if we have

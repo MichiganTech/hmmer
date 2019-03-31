@@ -14,19 +14,20 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "squid.h"
 #include "structs.h"
 #include "funcs.h"
 
+#include "vectorops.h"
+
 
 /* Function: WriteProfile()
- * Date:     SRE, Wed Jan 21 07:58:09 1998 [St. Louis]
- *
  * Purpose:  Given an HMM, write a GCG profile .prf file as
  *           output. Based on examination of Michael Gribskov's Fortran
  *           source in GCG 9.1; on reverse engineering
@@ -80,7 +81,7 @@
  *
  * Args:     fp      - open FILE to write to (or stdout, possibly)
  *           hmm     - the HMM to write
- *           do_xsw  - TRUE to write Compugen's experimental extended profile format
+ *           do_xsw  - true to write Compugen's experimental extended profile format
  *
  * Returns:  (void)
  */
@@ -91,7 +92,7 @@ WriteProfile(FILE *fp, struct plan7_s *hmm, int do_xsw) {
   int sc;      /* a score to print       */
   int gap, len, qgap, qlen;  /* penalties to charge    */
 
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
 
   /* GCG can't deal with long profiles. Their limit is 1000
    * positions. However, Compugen can. Therefore we warn,

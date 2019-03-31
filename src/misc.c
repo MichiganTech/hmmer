@@ -14,7 +14,7 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,10 +25,11 @@
 
 #include "squid.h"
 #include "structs.h"
+#include "getopt.h"
+
 
 
 /* Function: HMMERBanner()
- * Date:     SRE, Sun Jun 20 17:19:41 1999 [Graeme's kitchen]
  *
  * Purpose:  Print a package version and copyright banner.
  *           Used by all the main()'s.
@@ -71,37 +72,38 @@ HMMERBanner(FILE *fp, char *banner) {
  *           type - sqdARG_INT, sqdARG_FLOAT, or sqdARG_STRING from squid.h
  */
 char *
-Getword(FILE *fp, int type) {
+Getword(FILE *fp, enum arg_type type) {
   static char buffer[512];
   static char *sptr = NULL;
 
-  if (sptr != NULL) sptr = strtok(NULL, " \t\n");
 
-  while (sptr == NULL) {
-    if ((sptr = fgets(buffer, 512, fp)) == NULL) return NULL;
-    if ((sptr = strchr(buffer, '#')) != NULL) *sptr = '\0';
-    sptr = strtok(buffer, " \t\n");
-  }
+  if ((sptr = fgets(buffer, 512, fp)) == NULL) return NULL;
+  if ((sptr = strchr(buffer, '#')) != NULL) return NULL;
+
+  char tmpStr[512];
+  float tmpFloat;
+  int tmpInt;
 
   switch (type) {
   case sqdARG_STRING:
-    if (strlen(sptr) == 0) {
+    if (sscanf(sptr, "%s", tmpStr) == 0) {
       Warn("Parse failed: expected string, got nothing");
-      sptr = NULL;
+      return NULL;
     }
     break;
   case sqdARG_INT:
-    if (!IsInt(sptr)) {
+    if (sscanf(sptr, "%d", &tmpInt) == 0) {
       Warn("Parse failed: expected integer, got %s", sptr);
-      sptr = NULL;
+      return NULL;
     }
     break;
   case sqdARG_FLOAT:
-    if (!IsReal(sptr)) {
+    if (sscanf(sptr, "%f", &tmpFloat) == 0) {
       Warn("Parse failed: expected real value, got %s", sptr);
-      sptr = NULL;
+      return NULL;
     }
     break;
+  default: break;
   }
 
   return sptr;
@@ -109,7 +111,6 @@ Getword(FILE *fp, int type) {
 
 
 /* Function: SetAutocuts()
- * Date:     SRE, Thu Jun  8 08:19:46 2000 [TW721 over Ireland]
  *
  * Purpose:  Set score thresholds using the GA, TC, or NC information
  *           in an HMM.

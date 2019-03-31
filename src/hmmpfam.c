@@ -14,7 +14,7 @@
  */
 
 #include "config.h"    /* compile-time configuration constants */
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "squid.h"    /* general sequence analysis library    */
+//#include "squid.h"    /* general sequence analysis library    */
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
@@ -59,24 +59,24 @@ static char experts[] = "\
 
 
 static struct opt_s OPTIONS[] = {
-  { "-h",        TRUE,  sqdARG_NONE },
-  { "-n",        TRUE,  sqdARG_NONE },
-  { "-A",        TRUE,  sqdARG_INT  },
-  { "-E",        TRUE,  sqdARG_FLOAT},
-  { "-T",        TRUE,  sqdARG_FLOAT},
-  { "-Z",        TRUE,  sqdARG_INT  },
-  { "--acc",     FALSE, sqdARG_NONE },
-  { "--compat",  FALSE, sqdARG_NONE },
-  { "--cpu",     FALSE, sqdARG_INT  },
-  { "--cut_ga",  FALSE, sqdARG_NONE },
-  { "--cut_nc",  FALSE, sqdARG_NONE },
-  { "--cut_tc",  FALSE, sqdARG_NONE },
-  { "--domE",    FALSE, sqdARG_FLOAT},
-  { "--domT",    FALSE, sqdARG_FLOAT},
-  { "--forward", FALSE, sqdARG_NONE },
-  { "--informat",FALSE, sqdARG_STRING},
-  { "--null2",   FALSE, sqdARG_NONE },
-  { "--xnu",     FALSE, sqdARG_NONE },
+  { "-h",        true,  sqdARG_NONE },
+  { "-n",        true,  sqdARG_NONE },
+  { "-A",        true,  sqdARG_INT  },
+  { "-E",        true,  sqdARG_FLOAT},
+  { "-T",        true,  sqdARG_FLOAT},
+  { "-Z",        true,  sqdARG_INT  },
+  { "--acc",     false, sqdARG_NONE },
+  { "--compat",  false, sqdARG_NONE },
+  { "--cpu",     false, sqdARG_INT  },
+  { "--cut_ga",  false, sqdARG_NONE },
+  { "--cut_nc",  false, sqdARG_NONE },
+  { "--cut_tc",  false, sqdARG_NONE },
+  { "--domE",    false, sqdARG_FLOAT},
+  { "--domT",    false, sqdARG_FLOAT},
+  { "--forward", false, sqdARG_NONE },
+  { "--informat",false, sqdARG_STRING},
+  { "--null2",   false, sqdARG_NONE },
+  { "--xnu",     false, sqdARG_NONE },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -101,8 +101,8 @@ struct workpool_s {
   unsigned char *dsq;           /* digitized query sequence        */
   char  *seqname;               /* sequence name                   */
   int    L;      /* length of dsq                   */
-  int    do_forward;    /* TRUE to score using Forward     */
-  int    do_null2;    /* TRUE to apply null2 correction  */
+  int    do_forward;    /* true to score using Forward     */
+  int    do_null2;    /* true to apply null2 correction  */
   struct threshold_s *thresh;   /* score/evalue cutoff information */
 
   /* Shared (mutex-protected) input resources:
@@ -167,12 +167,12 @@ main(int argc, char **argv) {
   char *optname;                /* name of option found by Getopt()         */
   char *optarg;                 /* argument found by Getopt()               */
   int   optind;                 /* index in argv[]                          */
-  int   do_forward;    /* TRUE to use Forward() not Viterbi()      */
-  int   do_nucleic;    /* TRUE to do DNA/RNA instead of protein    */
-  int   do_null2;    /* TRUE to adjust scores with null model #2 */
-  int   do_xnu;      /* TRUE to do XNU filtering                 */
-  int   be_backwards;    /* TRUE to be backwards-compatible in output*/
-  int   show_acc;    /* TRUE to sub HMM accessions for names     */
+  int   do_forward;    /* true to use Forward() not Viterbi()      */
+  int   do_nucleic;    /* true to do DNA/RNA instead of protein    */
+  int   do_null2;    /* true to adjust scores with null model #2 */
+  int   do_xnu;      /* true to do XNU filtering                 */
+  int   be_backwards;    /* true to be backwards-compatible in output*/
+  int   show_acc;    /* true to sub HMM accessions for names     */
   int   i;
   int   nreported;
 
@@ -183,12 +183,12 @@ main(int argc, char **argv) {
    ***********************************************/
 
   format      = SQFILE_UNKNOWN;  /* default: autodetect format w/ Babelfish */
-  do_forward  = FALSE;
-  do_nucleic  = FALSE;
-  do_null2    = TRUE;
-  do_xnu      = FALSE;
-  be_backwards= FALSE;
-  show_acc    = FALSE;
+  do_forward  = false;
+  do_nucleic  = false;
+  do_null2    = true;
+  do_xnu      = false;
+  be_backwards= false;
+  show_acc    = false;
 
   num_threads     = sysconf(_SC_NPROCESSORS_ONLN);
 
@@ -202,22 +202,22 @@ main(int argc, char **argv) {
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
-    if      (strcmp(optname, "-n")        == 0) do_nucleic     = TRUE;
+    if      (strcmp(optname, "-n")        == 0) do_nucleic     = true;
     else if (strcmp(optname, "-A")        == 0) Alimit         = atoi(optarg);
     else if (strcmp(optname, "-E")        == 0) thresh.globE   = atof(optarg);
     else if (strcmp(optname, "-T")        == 0) thresh.globT   = atof(optarg);
     else if (strcmp(optname, "-Z")        == 0) thresh.Z       = atoi(optarg);
-    else if (strcmp(optname, "--acc")     == 0) show_acc       = TRUE;
-    else if (strcmp(optname, "--compat")  == 0) be_backwards   = TRUE;
+    else if (strcmp(optname, "--acc")     == 0) show_acc       = true;
+    else if (strcmp(optname, "--compat")  == 0) be_backwards   = true;
     else if (strcmp(optname, "--cpu")     == 0) num_threads    = atoi(optarg);
     else if (strcmp(optname, "--cut_ga")  == 0) thresh.autocut = CUT_GA;
     else if (strcmp(optname, "--cut_nc")  == 0) thresh.autocut = CUT_NC;
     else if (strcmp(optname, "--cut_tc")  == 0) thresh.autocut = CUT_TC;
     else if (strcmp(optname, "--domE")    == 0) thresh.domE    = atof(optarg);
     else if (strcmp(optname, "--domT")    == 0) thresh.domT    = atof(optarg);
-    else if (strcmp(optname, "--forward") == 0) do_forward     = TRUE;
-    else if (strcmp(optname, "--null2")   == 0) do_null2       = FALSE;
-    else if (strcmp(optname, "--xnu")     == 0) do_xnu         = TRUE;
+    else if (strcmp(optname, "--forward") == 0) do_forward     = true;
+    else if (strcmp(optname, "--null2")   == 0) do_null2       = false;
+    else if (strcmp(optname, "--xnu")     == 0) do_xnu         = true;
     else if (strcmp(optname, "--informat") == 0) {
       format = String2SeqfileFormat(optarg);
       if (format == SQFILE_UNKNOWN)
@@ -341,7 +341,7 @@ main(int argc, char **argv) {
       if (desc != NULL && strlen(desc) < 80) {
         safedesc = MallocOrDie(sizeof(char) * 80);
         strcpy(safedesc, desc);
-      } else safedesc = Strdup(desc);
+      } else safedesc = strdup(desc);
 
       /* sneaky trick warning:
        * if we're using dynamic Pfam score cutoffs (GA, TC, NC),
@@ -460,8 +460,6 @@ main(int argc, char **argv) {
 
 
 /* Function: main_loop_serial()
- * Date:     SRE, Fri Aug  7 13:46:48 1998 [St. Louis]
- *
  * Purpose:  Search a sequence against an HMM database;
  *           main loop for the serial version.
  *
@@ -486,9 +484,9 @@ main(int argc, char **argv) {
  *           dsq     - digitized sequence
  *           sqinfo  - ptr to SQINFO optional info for dsq
  *           thresh  - score/evalue threshold information
- *           do_xnu     - TRUE to apply XNU filter to sequence
- *           do_forward - TRUE to use Forward() scores
- *           do_null2   - TRUE to adjust scores w/ ad hoc null2 model
+ *           do_xnu     - true to apply XNU filter to sequence
+ *           do_forward - true to use Forward() scores
+ *           do_null2   - true to adjust scores w/ ad hoc null2 model
  *           num_threads- number of threads, if threaded
  *           ghit    - global hits list
  *           dhit    - domain hits list
@@ -644,8 +642,8 @@ main_loop_serial(char *hmmfile, HMMFILE *hmmfp, char *seq, SQINFO *sqinfo,
                                      do_forward, sc,
                                      do_null2,
                                      thresh,
-                                     TRUE);
-      /* TRUE -> hmmpfam mode */
+                                     true);
+      /* true -> hmmpfam mode */
     }
     if(tr != NULL)
       P7FreeTrace(tr);
@@ -675,8 +673,6 @@ main_loop_serial(char *hmmfile, HMMFILE *hmmfp, char *seq, SQINFO *sqinfo,
  *      worker_thread()    (the actual parallelized worker thread).
  *****************************************************************/
 /* Function: main_loop_threaded()
- * Date:     SRE, Wed Feb 27 11:10:13 2002 [St. Louis]
- *
  * Purpose:  Search a sequence against an HMM database;
  *           main loop for the threaded version.
  *
@@ -701,9 +697,9 @@ main_loop_serial(char *hmmfile, HMMFILE *hmmfp, char *seq, SQINFO *sqinfo,
  *           dsq     - digitized sequence
  *           sqinfo  - ptr to SQINFO optional info for dsq
  *           thresh  - score/evalue threshold information
- *           do_xnu     - TRUE to apply XNU filter to sequence
- *           do_forward - TRUE to use Forward() scores
- *           do_null2   - TRUE to adjust scores w/ ad hoc null2 model
+ *           do_xnu     - true to apply XNU filter to sequence
+ *           do_forward - true to use Forward() scores
+ *           do_null2   - true to adjust scores w/ ad hoc null2 model
  *           num_threads- number of threads, >= 1
  *           ghit    - global hits list
  *           dhit    - domain hits list
@@ -737,8 +733,6 @@ main_loop_threaded(char *hmmfile, HMMFILE *hmmfp, char *seq, SQINFO *sqinfo,
   return;
 }
 /* Function: workpool_start()
- * Date:     SRE, Mon Sep 28 11:10:58 1998 [St. Louis]
- *
  * Purpose:  Initialize a workpool_s structure, and return it.
  *
  * Args:     hmmfile    - name of HMM file
@@ -746,8 +740,8 @@ main_loop_threaded(char *hmmfile, HMMFILE *hmmfp, char *seq, SQINFO *sqinfo,
  *           dsq        - ptr to sequence to search
  *           seqname    - ptr to name of dsq
  *           L          - length of dsq
- *           do_forward - TRUE to score using Forward
- *           do_null2   - TRUE to apply null2 ad hoc correction
+ *           do_forward - true to score using Forward
+ *           do_null2   - true to apply null2 ad hoc correction
  *           threshold  - evalue/score threshold settings
  *           ghit       - per-seq hit list
  *           dhit       - per-domain hit list
@@ -804,8 +798,6 @@ workpool_start(char *hmmfile, HMMFILE *hmmfp, unsigned char *dsq, char *seqname,
 }
 
 /* Function: workpool_stop()
- * Date:     SRE, Thu Jul 16 11:20:16 1998 [St. Louis]
- *
  * Purpose:  Waits for threads in a workpool to finish.
  *
  * Args:     wpool -- ptr to the workpool structure
@@ -823,8 +815,6 @@ workpool_stop(struct workpool_s *wpool) {
 }
 
 /* Function: workpool_free()
- * Date:     SRE, Thu Jul 16 11:26:27 1998 [St. Louis]
- *
  * Purpose:  Free a workpool_s structure, after the threads
  *           have finished.
  *
@@ -841,8 +831,6 @@ workpool_free(struct workpool_s *wpool) {
 
 
 /* Function: worker_thread()
- * Date:     SRE, Mon Sep 28 10:48:29 1998 [St. Louis]
- *
  * Purpose:  The procedure executed by the worker threads.
  *
  * Args:     ptr  - (void *) that is recast to a pointer to
@@ -1000,8 +988,8 @@ worker_thread(void *ptr) {
                                      wpool->do_forward, sc,
                                      wpool->do_null2,
                                      &thresh,
-                                     TRUE);
-      /* TRUE -> hmmpfam mode */
+                                     true);
+      /* true -> hmmpfam mode */
     }
     if ((rtn = pthread_mutex_unlock(&(wpool->output_lock))) != 0)
       Die("pthread_mutex_unlock failure: %s\n", strerror(rtn));

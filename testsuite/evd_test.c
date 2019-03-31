@@ -19,7 +19,7 @@
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
-#include "squid.h"
+//#include "squid.h"
 
 static char banner[] = "\
 evd_test : testing of EVD code in histogram.c";
@@ -48,21 +48,21 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-h",       TRUE,  sqdARG_NONE  },
-  { "-c",       TRUE,  sqdARG_FLOAT },
-  { "-e",       TRUE,  sqdARG_INT },
-  { "-g",       TRUE,  sqdARG_INT },
-  { "-n",       TRUE,  sqdARG_INT },
-  { "-s",       TRUE,  sqdARG_INT   },
-  { "-v",       TRUE,  sqdARG_NONE  },
-  { "--xmgr",   FALSE, sqdARG_STRING},
-  { "--hist",   FALSE, sqdARG_NONE},
-  { "--loglog", FALSE, sqdARG_STRING},
-  { "--regress",FALSE, sqdARG_NONE},
-  { "--mu",     FALSE, sqdARG_FLOAT},
-  { "--lambda", FALSE, sqdARG_FLOAT},
-  { "--mean",   FALSE, sqdARG_FLOAT},
-  { "--sd",     FALSE, sqdARG_FLOAT},
+  { "-h",       true,  sqdARG_NONE  },
+  { "-c",       true,  sqdARG_FLOAT },
+  { "-e",       true,  sqdARG_INT },
+  { "-g",       true,  sqdARG_INT },
+  { "-n",       true,  sqdARG_INT },
+  { "-s",       true,  sqdARG_INT   },
+  { "-v",       true,  sqdARG_NONE  },
+  { "--xmgr",   false, sqdARG_STRING},
+  { "--hist",   false, sqdARG_NONE},
+  { "--loglog", false, sqdARG_STRING},
+  { "--regress",false, sqdARG_NONE},
+  { "--mu",     false, sqdARG_FLOAT},
+  { "--lambda", false, sqdARG_FLOAT},
+  { "--mean",   false, sqdARG_FLOAT},
+  { "--sd",     false, sqdARG_FLOAT},
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -70,7 +70,7 @@ int
 main(int argc, char **argv) {
   struct histogram_s *h;        /* histogram structure          */
   int ntrials;      /* number of different fits     */
-  int be_verbose;               /* option: TRUE to show output  */
+  int be_verbose;               /* option: true to show output  */
   int seed;                     /* option: random number seed   */
   int   nevd;                   /* # of samples from EVD        */
   float mu;     /* EVD mu parameter             */
@@ -88,9 +88,9 @@ main(int argc, char **argv) {
   char *logfile;                /* output file for regression line */
   FILE *xmgrfp;                 /* open output file                */
   FILE *logfp;                  /* open log log file               */
-  int   do_ml;      /* TRUE to do a max likelihood fit */
-  int   fit_hist;   /* TRUE to fit histogram instead of samples */
-  int   censoring;    /* TRUE to left-censor the data    */
+  int   do_ml;      /* true to do a max likelihood fit */
+  int   fit_hist;   /* true to fit histogram instead of samples */
+  int   censoring;    /* true to left-censor the data    */
   float censorlevel;    /* value to censor at              */
 
   char *optname;                /* name of option found by Getopt()         */
@@ -101,7 +101,7 @@ main(int argc, char **argv) {
   /***********************************************
    * Parse command line
    ***********************************************/
-  be_verbose = FALSE;
+  be_verbose = false;
   seed       = (int) time ((time_t *) NULL);
   ntrials    = 1;
   nevd       = 1000;
@@ -114,17 +114,17 @@ main(int argc, char **argv) {
   logfile    = NULL;
   xmgrfp     = NULL;
   logfp      = NULL;
-  do_ml      = TRUE;
-  censoring  = FALSE;
+  do_ml      = true;
+  censoring  = false;
   censorlevel= 0.;
-  fit_hist   = FALSE;
+  fit_hist   = false;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
     if      (strcmp(optname, "-e")       == 0) {
       nevd       = atoi(optarg);
     } else if (strcmp(optname, "-c")       == 0) {
-      censoring  = TRUE;
+      censoring  = true;
       censorlevel= atof(optarg);
     } else if (strcmp(optname, "-g")       == 0) {
       ngauss     = atoi(optarg);
@@ -133,15 +133,15 @@ main(int argc, char **argv) {
     } else if (strcmp(optname, "-s")       == 0) {
       seed       = atoi(optarg);
     } else if (strcmp(optname, "-v")       == 0) {
-      be_verbose = TRUE;
+      be_verbose = true;
     } else if (strcmp(optname, "--xmgr")   == 0) {
       xmgrfile   = optarg;
     } else if (strcmp(optname, "--hist")   == 0) {
-      fit_hist   = TRUE;
+      fit_hist   = true;
     } else if (strcmp(optname, "--loglog") == 0) {
       logfile    = optarg;
     } else if (strcmp(optname, "--regress")== 0) {
-      do_ml      = FALSE;
+      do_ml      = false;
     } else if (strcmp(optname, "--mu")     == 0) {
       mu         = atof(optarg);
     } else if (strcmp(optname, "--lambda") == 0) {
@@ -229,7 +229,7 @@ main(int argc, char **argv) {
                                  censorlevel, h->highscore, 1);
       } else {
         if (fit_hist) {
-          ExtremeValueFitHistogram(h, TRUE, 20.);
+          ExtremeValueFitHistogram(h, true, 20.);
         } else {
           EVDMaxLikelyFit(val, NULL, idx, &mlmu, &mllambda);
           ExtremeValueSetHistogram(h, (float) mlmu, (float) mllambda,

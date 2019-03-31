@@ -71,8 +71,9 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,10 +81,11 @@
 #include <time.h>
 #include <unistd.h> /* to get SEEK_CUR definition on silly Suns */
 
-#include "squid.h"
+//#include "squid.h"
 #include "ssi.h"
 #include "structs.h"
 #include "funcs.h"
+#include "getopt.h"
 
 
 /* Magic numbers identifying binary formats.
@@ -117,9 +119,9 @@ static int  read_asc19hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
 static int  read_bin19hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
 static int  read_asc17hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
 static int  read_bin17hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
-static int  read_asc11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
+//static int  read_asc11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
 static int  read_bin11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
-static int  read_asc10hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
+//static int  read_asc10hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
 static int  read_bin10hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm);
 
 static void  byteswap(char *swap, int nbytes);
@@ -162,9 +164,9 @@ HMMFileOpen(char *hmmfile, char *env) {
   hmmfp = (HMMFILE *) MallocOrDie (sizeof(HMMFILE));
   hmmfp->f          = NULL;
   hmmfp->parser     = NULL;
-  hmmfp->is_binary  = FALSE;
-  hmmfp->byteswap   = FALSE;
-  hmmfp->is_seekable= TRUE;  /* always; right now, an HMM must always be in a file. */
+  hmmfp->is_binary  = false;
+  hmmfp->byteswap   = false;
+  hmmfp->is_seekable= true;  /* always; right now, an HMM must always be in a file. */
 
   /* Open the file. Look in current directory.
    * If that doesn't work, check environment var for
@@ -197,7 +199,6 @@ HMMFileOpen(char *hmmfile, char *env) {
   /* Open the SSI index file. If it doesn't exist, or it's corrupt, or
    * some error happens, hmmfp->ssi stays NULL.
    */
-  SQD_DPRINTF1(("Opening ssifile %s...\n", ssifile));
   SSIOpen(ssifile, &(hmmfp->ssi));
   free(ssifile);
 
@@ -217,49 +218,48 @@ HMMFileOpen(char *hmmfile, char *env) {
 
   if (magic == v20magic) {
     hmmfp->parser    = read_bin20hmm;
-    hmmfp->is_binary = TRUE;
+    hmmfp->is_binary = true;
     return hmmfp;
   } else if (magic == v20swap) {
-    SQD_DPRINTF1(("Opened a HMMER 2.0 binary file [byteswapped]\n"));
     hmmfp->parser    = read_bin20hmm;
-    hmmfp->is_binary = TRUE;
-    hmmfp->byteswap  = TRUE;
+    hmmfp->is_binary = true;
+    hmmfp->byteswap  = true;
     return hmmfp;
   } else if (magic == v19magic) {
     hmmfp->parser    = read_bin19hmm;
-    hmmfp->is_binary = TRUE;
+    hmmfp->is_binary = true;
     return hmmfp;
   } else if (magic == v19swap) {
     hmmfp->parser    = read_bin19hmm;
-    hmmfp->is_binary = TRUE;
-    hmmfp->byteswap  = TRUE;
+    hmmfp->is_binary = true;
+    hmmfp->byteswap  = true;
     return hmmfp;
   } else if (magic == v17magic) {
     hmmfp->parser    = read_bin17hmm;
-    hmmfp->is_binary = TRUE;
+    hmmfp->is_binary = true;
     return hmmfp;
   } else if (magic == v17swap) {
     hmmfp->parser    = read_bin17hmm;
-    hmmfp->is_binary = TRUE;
-    hmmfp->byteswap  = TRUE;
+    hmmfp->is_binary = true;
+    hmmfp->byteswap  = true;
     return hmmfp;
   } else if (magic == v11magic) {
     hmmfp->parser    = read_bin11hmm;
-    hmmfp->is_binary = TRUE;
+    hmmfp->is_binary = true;
     return hmmfp;
   } else if (magic == v11swap) {
     hmmfp->parser    = read_bin11hmm;
-    hmmfp->is_binary = TRUE;
-    hmmfp->byteswap  = TRUE;
+    hmmfp->is_binary = true;
+    hmmfp->byteswap  = true;
     return hmmfp;
   } else if (magic == v10magic) {
     hmmfp->parser    = read_bin10hmm;
-    hmmfp->is_binary = TRUE;
+    hmmfp->is_binary = true;
     return hmmfp;
   } else if (magic == v10swap) {
     hmmfp->parser    = read_bin10hmm;
-    hmmfp->is_binary = TRUE;
-    hmmfp->byteswap  = TRUE;
+    hmmfp->is_binary = true;
+    hmmfp->byteswap  = true;
     return hmmfp;
   }
   /* else we fall thru; it may be an ASCII file. */
@@ -291,12 +291,6 @@ or may be a different kind of binary altogether.\n", hmmfile);
     return hmmfp;
   } else if (strncmp("# HMM v1.7", buf, 10) == 0) {
     hmmfp->parser = read_asc17hmm;
-    return hmmfp;
-  } else if (strncmp("# HMM v1.1", buf, 10) == 0) {
-    hmmfp->parser = read_asc11hmm;
-    return hmmfp;
-  } else if (strncmp("# HMM v1.0", buf, 10) == 0) {
-    hmmfp->parser = read_asc10hmm;
     return hmmfp;
   }
 
@@ -579,18 +573,18 @@ read_asc20hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
         Die("Alphabet mismatch error.\nI thought we were working with %s, but tried to read a %s HMM.\n", AlphabetType2String(Alphabet_type), AlphabetType2String(atype));
     } else if (strncmp(buffer, "RF   ", 5) == 0) {
       /* Reference annotation present? */
-      if (sre_toupper(*(buffer+6)) == 'Y') hmm->flags |= PLAN7_RF;
+      if (toupper(*(buffer+6)) == 'Y') hmm->flags |= PLAN7_RF;
     } else if (strncmp(buffer, "CS   ", 5) == 0) {
       /* Consensus annotation present? */
-      if (sre_toupper(*(buffer+6)) == 'Y') hmm->flags |= PLAN7_CS;
+      if (toupper(*(buffer+6)) == 'Y') hmm->flags |= PLAN7_CS;
     } else if (strncmp(buffer, "MAP  ", 5) == 0) {
       /* Map annotation present? */
-      if (sre_toupper(*(buffer+6)) == 'Y') hmm->flags |= PLAN7_MAP;
+      if (toupper(*(buffer+6)) == 'Y') hmm->flags |= PLAN7_MAP;
     } else if (strncmp(buffer, "COM  ", 5) == 0) {
       /* Command line log */
       StringChop(buffer+6);
       if (hmm->comlog == NULL)
-        hmm->comlog = Strdup(buffer+6);
+        hmm->comlog = strdup(buffer+6);
       else {
         hmm->comlog = ReallocOrDie(hmm->comlog, sizeof(char *) *
                                    (strlen(hmm->comlog) + 1 + strlen(buffer+6)));
@@ -600,7 +594,7 @@ read_asc20hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
     } else if (strncmp(buffer, "DATE ", 5) == 0) {
       /* Date file created */
       StringChop(buffer+6);
-      hmm->ctime= Strdup(buffer+6);
+      hmm->ctime= strdup(buffer+6);
     } else if (strncmp(buffer, "GA   ", 5) == 0) {
       if ((s = strtok(buffer+6, " \t\n")) == NULL) goto FAILURE;
       hmm->ga1 = atof(s);
@@ -912,8 +906,6 @@ FAILURE:
 
 
 /* Function: read_asc19hmm()
- * Date:     Tue Apr  7 17:11:29 1998 [StL]
- *
  * Purpose:  Read ASCII-format tabular (1.9 and later) save files.
  *
  *           HMMER 1.9 was only used internally at WashU, as far as
@@ -1059,7 +1051,7 @@ read_asc19hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
   hmm->flags |= PLAN7_HASPROB;  /* probabilities are valid */
   hmm->flags &= ~PLAN7_HASBITS;  /* scores are not valid    */
   Plan7Renormalize(hmm);
-  hmm->comlog = Strdup("[converted from an old Plan9 HMM]");
+  hmm->comlog = strdup("[converted from an old Plan9 HMM]");
   Plan7SetCtime(hmm);
   *ret_hmm = hmm;
   return 1;
@@ -1090,7 +1082,7 @@ read_bin19hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
 
   Plan9toPlan7(p9hmm, &hmm);
 
-  hmm->comlog = Strdup("[converted from an old Plan9 HMM]");
+  hmm->comlog = strdup("[converted from an old Plan9 HMM]");
   Plan7SetCtime(hmm);
 
   P9FreeHMM(p9hmm);
@@ -1116,7 +1108,7 @@ read_asc17hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
 
   Plan9toPlan7(p9hmm, &hmm);
 
-  hmm->comlog = Strdup("[converted from an old Plan9 HMM]");
+  hmm->comlog = strdup("[converted from an old Plan9 HMM]");
   Plan7SetCtime(hmm);
 
   P9FreeHMM(p9hmm);
@@ -1145,7 +1137,7 @@ read_bin17hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
 
   Plan9toPlan7(p9hmm, &hmm);
 
-  hmm->comlog = Strdup("[converted from an old Plan9 HMM]");
+  hmm->comlog = strdup("[converted from an old Plan9 HMM]");
   Plan7SetCtime(hmm);
 
   P9FreeHMM(p9hmm);
@@ -1153,11 +1145,12 @@ read_bin17hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
   return 1;
 }
 
-static int
-read_asc11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
-  Die("1.1 ASCII HMMs unsupported");
-  return 1;
-}
+// static int
+// read_asc11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
+//   Die("1.1 ASCII HMMs unsupported");
+//   return 1;
+// }
+
 static int
 read_bin11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
   unsigned int     magic;
@@ -1178,7 +1171,7 @@ read_bin11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
 
   Plan9toPlan7(p9hmm, &hmm);
 
-  hmm->comlog = Strdup("[converted from an old Plan9 HMM]");
+  hmm->comlog = strdup("[converted from an old Plan9 HMM]");
   Plan7SetCtime(hmm);
 
   P9FreeHMM(p9hmm);
@@ -1186,11 +1179,11 @@ read_bin11hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
   return 1;
 }
 
-static int
-read_asc10hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
-  Die("1.0 ASCII HMMs unsupported");
-  return 1;
-}
+// static int
+// read_asc10hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
+//   Die("1.0 ASCII HMMs unsupported");
+//   return 1;
+// }
 
 static int
 read_bin10hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
@@ -1212,7 +1205,7 @@ read_bin10hmm(HMMFILE *hmmfp, struct plan7_s **ret_hmm) {
 
   Plan9toPlan7(p9hmm, &hmm);
 
-  hmm->comlog = Strdup("[converted from an old Plan9 HMM]");
+  hmm->comlog = strdup("[converted from an old Plan9 HMM]");
   Plan7SetCtime(hmm);
 
   P9FreeHMM(p9hmm);
@@ -1283,8 +1276,6 @@ byteswap(char *swap, int nbytes) {
 }
 
 /* Function: write_bin_string()
- * Date:     SRE, Wed Oct 29 13:49:27 1997 [TWA 721 over Canada]
- *
  * Purpose:  Write a string in binary save format: an integer
  *           for the string length (including \0), followed by
  *           the string.
@@ -1303,13 +1294,11 @@ write_bin_string(FILE *fp, char *s) {
 }
 
 /* Function: read_bin_string()
- * Date:     SRE, Wed Oct 29 14:03:23 1997 [TWA 721]
- *
  * Purpose:  Read in a string from a binary file, where
  *           the first integer is the length (including '\0').
  *
  * Args:     fp       - FILE to read from
- *           doswap   - TRUE to byteswap
+ *           doswap   - true to byteswap
  *           ret_s    - string to read into
  *
  * Return:   0 on failure. ret_s is malloc'ed here.
@@ -1358,7 +1347,7 @@ multiline(FILE *fp, char *pfx, char *s) {
   char *sptr;
 
   if (s == NULL) return;
-  buf  = Strdup(s);
+  buf  = strdup(s);
   sptr = strtok(buf, "\n");
   while (sptr != NULL) {
     fprintf(fp, "%s%s\n", pfx, sptr);

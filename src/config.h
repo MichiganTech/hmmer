@@ -26,27 +26,6 @@
 #endif
 
 
-#define ALILENGTH   50    /* length of displayed alignment lines        */
-
-
-/*****************************************************************
- * 2. The next section consists of compile-time constants that control
- *    empirically tuned HMMER default parameters.
- *    You can edit it, but you ought not to, unless you're trying to
- *    improve on our empirical data.
- *****************************************************************/
-
-/* ENTROPYLOSS_ defaults:
- * For proteins, hmmbuild's effective sequence number calculation
- * aims to achieve a certain entropy loss relative to background null model.
- * (= average score, per match emission).
- * These are empirically tuned constants, from the work of Steve Johnson.
- */
-#define ENTROPYLOSS_LS_AMINO_DEFAULT  1.30 /* bits */
-#define ENTROPYLOSS_FS_AMINO_DEFAULT  0.59 /* bits */
-
-
-
 /*****************************************************************
  * 3. The next section probably shouldn't be edited at all, unless
  *    you really know what you're doing. It controls some fundamental

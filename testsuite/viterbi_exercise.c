@@ -16,7 +16,7 @@
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
-#include "squid.h"
+//#include "squid.h"
 
 static char banner[] = "\
 viterbi_exercise : testing of Plan7 Viterbi code";
@@ -33,9 +33,9 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-h",       TRUE,  sqdARG_NONE },
-  { "-v",       TRUE,  sqdARG_NONE },
-  { "--hmm",    FALSE, sqdARG_STRING },
+  { "-h",       true,  sqdARG_NONE },
+  { "-v",       true,  sqdARG_NONE },
+  { "--hmm",    false, sqdARG_STRING },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -67,13 +67,13 @@ main(int argc, char **argv) {
    * Parse command line
    ***********************************************/
 
-  be_verbose = FALSE;
+  be_verbose = false;
   hmmfile    = "fn3.hmm";
   nseq       = 100;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
-    if      (strcmp(optname, "-v")       == 0) be_verbose = TRUE;
+    if      (strcmp(optname, "-v")       == 0) be_verbose = true;
     else if (strcmp(optname, "--hmm")    == 0) hmmfile    = optarg;
     else if (strcmp(optname, "-h")       == 0) {
       HMMERBanner(stdout, banner);
@@ -127,7 +127,7 @@ main(int argc, char **argv) {
     default:
       Die("never happens");
     }
-    P7Logoddsify(hmm, TRUE);
+    P7Logoddsify(hmm, true);
 
 
     mx = CreatePlan7Matrix(1, hmm->M, 25, 0);

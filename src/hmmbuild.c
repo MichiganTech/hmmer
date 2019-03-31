@@ -4,19 +4,28 @@
  */
 
 #include "config.h"    /* compile-time configuration constants */
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "squid.h"    /* general sequence analysis library    */
-#include "msa.h"                /* squid's multiple alignment i/o       */
+//#include "squid.h"    /* general sequence analysis library    */
+//#include "msa.h"                /* squid's multiple alignment i/o       */
 
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
 #include "lsjfuncs.h"    /* Steve Johnson's additions            */
+
+/* ENTROPYLOSS_ defaults:
+ * For proteins, hmmbuild's effective sequence number calculation
+ * aims to achieve a certain entropy loss relative to background null model.
+ * (= average score, per match emission).
+ * These are empirically tuned constants, from the work of Steve Johnson.
+ */
+#define ENTROPYLOSS_LS_AMINO_DEFAULT  1.30 /* bits */
+#define ENTROPYLOSS_FS_AMINO_DEFAULT  0.59 /* bits */
 
 static char banner[] = "hmmbuild - build a hidden Markov model from an alignment";
 
@@ -82,44 +91,44 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-f", TRUE, sqdARG_NONE },
-  { "-g", TRUE, sqdARG_NONE },
-  { "-h", TRUE, sqdARG_NONE },
-  { "-n", TRUE, sqdARG_STRING},
-  { "-o", TRUE, sqdARG_STRING},
-  { "-s", TRUE, sqdARG_NONE },
-  { "-A", TRUE, sqdARG_NONE },
-  { "-F", TRUE, sqdARG_NONE },
-  { "--amino",   FALSE, sqdARG_NONE  },
-  { "--binary",  FALSE, sqdARG_NONE  },
-  { "--cfile",   FALSE, sqdARG_STRING},
-  { "--effnone", FALSE, sqdARG_NONE },
-  { "--effclust",FALSE, sqdARG_NONE },
-  { "--effent",  FALSE, sqdARG_NONE },
-  { "--effset",  FALSE, sqdARG_FLOAT },
-  { "--eidlevel",FALSE, sqdARG_FLOAT },
-  { "--eloss",   FALSE, sqdARG_FLOAT },
-  { "--evolve",  FALSE, sqdARG_NONE  },
-  { "--evolveic", FALSE, sqdARG_FLOAT },
-  { "--fast",    FALSE, sqdARG_NONE },
-  { "--hand",    FALSE, sqdARG_NONE},
-  { "--informat",FALSE, sqdARG_STRING },
-  { "--matrix",  FALSE, sqdARG_STRING },
-  { "--nucleic", FALSE, sqdARG_NONE },
-  { "--null",    FALSE, sqdARG_STRING },
-  { "--pam",     FALSE, sqdARG_STRING },
-  { "--pamwgt",  FALSE, sqdARG_FLOAT },
-  { "--pbswitch",FALSE, sqdARG_INT },
-  { "--prior",   FALSE, sqdARG_STRING },
-  { "--symfrac", FALSE, sqdARG_FLOAT },
-  { "--verbose", FALSE, sqdARG_NONE  },
-  { "--wgsc",    FALSE, sqdARG_NONE },
-  { "--wblosum", FALSE, sqdARG_NONE },
-  { "--widlevel",FALSE, sqdARG_FLOAT },
-  { "--wme",     FALSE, sqdARG_NONE },
-  { "--wnone",   FALSE, sqdARG_NONE },
-  { "--wpb",     FALSE, sqdARG_NONE },
-  { "--wvoronoi",FALSE, sqdARG_NONE },
+  { "-f", true, sqdARG_NONE },
+  { "-g", true, sqdARG_NONE },
+  { "-h", true, sqdARG_NONE },
+  { "-n", true, sqdARG_STRING},
+  { "-o", true, sqdARG_STRING},
+  { "-s", true, sqdARG_NONE },
+  { "-A", true, sqdARG_NONE },
+  { "-F", true, sqdARG_NONE },
+  { "--amino",   false, sqdARG_NONE  },
+  { "--binary",  false, sqdARG_NONE  },
+  { "--cfile",   false, sqdARG_STRING},
+  { "--effnone", false, sqdARG_NONE },
+  { "--effclust",false, sqdARG_NONE },
+  { "--effent",  false, sqdARG_NONE },
+  { "--effset",  false, sqdARG_FLOAT },
+  { "--eidlevel",false, sqdARG_FLOAT },
+  { "--eloss",   false, sqdARG_FLOAT },
+  { "--evolve",  false, sqdARG_NONE  },
+  { "--evolveic", false, sqdARG_FLOAT },
+  { "--fast",    false, sqdARG_NONE },
+  { "--hand",    false, sqdARG_NONE},
+  { "--informat",false, sqdARG_STRING },
+  { "--matrix",  false, sqdARG_STRING },
+  { "--nucleic", false, sqdARG_NONE },
+  { "--null",    false, sqdARG_STRING },
+  { "--pam",     false, sqdARG_STRING },
+  { "--pamwgt",  false, sqdARG_FLOAT },
+  { "--pbswitch",false, sqdARG_INT },
+  { "--prior",   false, sqdARG_STRING },
+  { "--symfrac", false, sqdARG_FLOAT },
+  { "--verbose", false, sqdARG_NONE  },
+  { "--wgsc",    false, sqdARG_NONE },
+  { "--wblosum", false, sqdARG_NONE },
+  { "--widlevel",false, sqdARG_FLOAT },
+  { "--wme",     false, sqdARG_NONE },
+  { "--wnone",   false, sqdARG_NONE },
+  { "--wpb",     false, sqdARG_NONE },
+  { "--wvoronoi",false, sqdARG_NONE },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -167,11 +176,11 @@ struct p7config_s {
   float eff_nseq;    /* effective sequence number                    */
   float eidlevel;    /* --effclust: frac id filter level [0.62]      */
   float eloss;            /* --effent: target entropy loss                */
-  int   eloss_set;    /* --effent: TRUE if eloss set on commandline   */
+  int   eloss_set;    /* --effent: true if eloss set on commandline   */
   float etarget;    /* --effent: target entropy (background - eloss)*/
 
   /* Phylogenetic extrapolation */
-  int  evolve_ic;              /* TRUE to evolve to specified info content */
+  int  evolve_ic;              /* true to evolve to specified info content */
   float info;            /* specified ave model info content      */
   char *matrixfile;       /* open file containing rate matrices    */
 
@@ -187,10 +196,10 @@ struct p7config_s {
 
   /* Control over normal hmmbuild outputs
    */
-  int   overwrite_protect;  /* TRUE to prevent overwriting HMM file  */
-  int   verbose;    /* TRUE to show a lot of output          */
-  int   do_append;    /* TRUE to append to hmmfile             */
-  int   do_binary;    /* TRUE to write in binary format        */
+  int   overwrite_protect;  /* true to prevent overwriting HMM file  */
+  int   verbose;    /* true to show a lot of output          */
+  int   do_append;    /* true to append to hmmfile             */
+  int   do_binary;    /* true to write in binary format        */
 };
 
 
@@ -321,7 +330,7 @@ main(int argc, char **argv) {
      * isfrag[i] is a 1/0 flag for whether we defined it as a frag or not.
      */
     int *rlen;  // raw (unaligned) seq lengths 0..nseq-1
-    char *isfrag;  // TRUE/FALSE for candidate seq frags
+    char *isfrag;  // true/false for candidate seq frags
     rlen   = MallocOrDie(sizeof(int)  * msa->nseq);
     isfrag = MallocOrDie(sizeof(char) * msa->nseq);
     tag_candidate_seq_fragments(msa, cfg.fragthresh, rlen, isfrag);
@@ -508,23 +517,23 @@ default_config(struct p7config_s *cfg) {
   cfg->widlevel     = 0.62;
   cfg->c_strategy   = P7_FAST_CONSTRUCTION;
   cfg->symfrac      = 0.5;
-  cfg->symfrac_set  = FALSE;
+  cfg->symfrac_set  = false;
   cfg->eff_strategy = EFF_NCLUSTERS;
   cfg->eff_nseq     = 0.;  /* not set yet */
   cfg->eidlevel     = 0.62;
   cfg->eloss        = 0.0;  /* not set yet */
-  cfg->eloss_set    = FALSE;
+  cfg->eloss_set    = false;
   cfg->etarget      = 0.0;  /* not set yet */
-  cfg->evolve_ic    = FALSE;
+  cfg->evolve_ic    = false;
   cfg->info         = 0.;  /* not set yet */
   cfg->matrixfile   = NULL;
   cfg->mode         = P7_LS_MODE;
   cfg->align_ofile  = NULL;
   cfg->cfile        = NULL;
-  cfg->overwrite_protect = TRUE;
-  cfg->verbose           = FALSE;
-  cfg->do_append         = FALSE;
-  cfg->do_binary         = FALSE;
+  cfg->overwrite_protect = true;
+  cfg->verbose           = false;
+  cfg->do_append         = false;
+  cfg->do_binary         = false;
 }
 
 static void
@@ -540,10 +549,10 @@ process_cmdline(int argc, char **argv, struct p7config_s *cfg, char **hmmfile, c
     else if (strcmp(optname, "-n") == 0) cfg->setname           = optarg;
     else if (strcmp(optname, "-o") == 0) cfg->align_ofile       = optarg;
     else if (strcmp(optname, "-s") == 0) cfg->mode              = P7_SW_MODE;
-    else if (strcmp(optname, "-A") == 0) cfg->do_append         = TRUE;
-    else if (strcmp(optname, "-F") == 0) cfg->overwrite_protect = FALSE;
+    else if (strcmp(optname, "-A") == 0) cfg->do_append         = true;
+    else if (strcmp(optname, "-F") == 0) cfg->overwrite_protect = false;
     else if (strcmp(optname, "--amino")   == 0) SetAlphabet(hmmAMINO);
-    else if (strcmp(optname, "--binary")  == 0) cfg->do_binary     = TRUE;
+    else if (strcmp(optname, "--binary")  == 0) cfg->do_binary     = true;
     else if (strcmp(optname, "--cfile")   == 0) cfg->cfile         = optarg;
     else if (strcmp(optname, "--effclust")== 0) cfg->eff_strategy  = EFF_NCLUSTERS;
     else if (strcmp(optname, "--effent")  == 0) cfg->eff_strategy  = EFF_ENTROPY;
@@ -554,10 +563,10 @@ process_cmdline(int argc, char **argv, struct p7config_s *cfg, char **hmmfile, c
     } else if (strcmp(optname, "--eidlevel")== 0) cfg->eidlevel      = atof(optarg);
     else if (strcmp(optname, "--eloss")   == 0) {
       cfg->eloss       = atof(optarg);
-      cfg->eloss_set  = TRUE;
-    } else if (strcmp(optname, "--evolve")  == 0) cfg->evolve_ic     = TRUE;
+      cfg->eloss_set  = true;
+    } else if (strcmp(optname, "--evolve")  == 0) cfg->evolve_ic     = true;
     else if (strcmp(optname, "--evolveic")== 0) {
-      cfg->evolve_ic   = TRUE;
+      cfg->evolve_ic   = true;
       cfg->info          = atof(optarg);
     } else if (strcmp(optname, "--hand")    == 0) cfg->c_strategy    = P7_HAND_CONSTRUCTION;
     else if (strcmp(optname, "--matrix")  == 0) cfg->matrixfile    = optarg;
@@ -569,8 +578,8 @@ process_cmdline(int argc, char **argv, struct p7config_s *cfg, char **hmmfile, c
     else if (strcmp(optname, "--prior")   == 0) cfg->prifile       = optarg;
     else if (strcmp(optname, "--symfrac") == 0) {
       cfg->symfrac     = atof(optarg);
-      cfg->symfrac_set = TRUE;
-    } else if (strcmp(optname, "--verbose") == 0) cfg->verbose       = TRUE;
+      cfg->symfrac_set = true;
+    } else if (strcmp(optname, "--verbose") == 0) cfg->verbose       = true;
     else if (strcmp(optname, "--wgsc")    == 0) cfg->w_strategy    = WGT_GSC;
     else if (strcmp(optname, "--wblosum") == 0) cfg->w_strategy    = WGT_BLOSUM;
     else if (strcmp(optname, "--widlevel")== 0) cfg->widlevel      = atof(optarg);
@@ -744,9 +753,9 @@ set_alphabet(MSA *msa) {
  *
  * Called when we're using entropy-weighting to determine
  * effective sequence number.
- *   eloss_set: TRUE/FALSE, whether we set a target entropy loss
+ *   eloss_set: true/false, whether we set a target entropy loss
  *              w/ --eloss <x> on the command line;
- *   eloss:     if eloss_set was TRUE, what was the setting;
+ *   eloss:     if eloss_set was true, what was the setting;
  *   mode:      alignment mode, example: P7_FS_MODE;
  *              affects choice of default eloss.
  *   randomseq: the null model, for calculating background
@@ -848,7 +857,7 @@ set_relative_weights(MSA *msa, struct p7config_s *cfg) {
  *            rlen   - RETURN: raw (unaligned) lengths of seqs in residues,
  *                      [0..nseq-1]
  *                  old    (Caller allocates this for at least msa->nseq integers).
- *            isfrag - RETURN: TRUE/FALSE flags for whether seq i is a candidate
+ *            isfrag - RETURN: true/false flags for whether seq i is a candidate
  *                      fragment or not; [0..nseq-1]
  *                      Caller allocates this for at least msa->nseq chars.
  *
@@ -877,10 +886,10 @@ tag_candidate_seq_fragments(MSA *msa, float thresh, int *rlen, char *isfrag) {
   nfrags = 0;
   for (i = 0; i < msa->nseq; i++)
     if (rlen[i] < (int) (thresh * mean)) {
-      isfrag[i] = TRUE;
+      isfrag[i] = true;
       nfrags++;
     } else
-      isfrag[i] = FALSE;
+      isfrag[i] = false;
 
   printf("done.\n");
   return nfrags;
@@ -966,7 +975,7 @@ print_all_scores(FILE *fp, struct plan7_s *hmm,
   int idx;      /* counter for sequences */
 
   /* make sure model scores are ready */
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
   /* header */
   fputs("**\n", fp);
   fputs("Individual training sequence scores:\n", fp);
@@ -1058,8 +1067,6 @@ save_countvectors(FILE *cfp, char *cfile, char *name, struct plan7_s *hmm) {
 
 
 /* Function: position_average_score()
- * Date:     Wed Dec 31 09:36:35 1997 [StL]
- *
  * Purpose:  Calculate scores from tracebacks, keeping them
  *           in a position specific array. The final array
  *           is normalized position-specifically too, according
@@ -1149,8 +1156,6 @@ position_average_score(struct plan7_s    *hmm,
 
 
 /* Function: frag_trace_score()
- * Date:     SRE, Wed Dec 31 10:03:47 1997 [StL]
- *
  * Purpose:  Allow MD/ME optimization to be used for alignments
  *           that include fragments and multihits -- estimate a full-length
  *           per-domain score.
@@ -1185,8 +1190,6 @@ frag_trace_score(struct plan7_s *hmm, unsigned char *dsq, struct p7trace_s *tr,
 
 
 /* Function: maximum_entropy()
- * Date:     SRE, Fri Jan  2 10:56:00 1998 [StL]
- *
  * Purpose:  Optimizes a model according to maximum entropy weighting.
  *           See Krogh and Mitchison (1995).
  *
@@ -1246,7 +1249,7 @@ maximum_entropy(struct plan7_s *hmm, unsigned char **dsq, MSA *msa,
    * Find relative entropy and gradient.
    */
   Plan7SWConfig(hmm, 0.5, 0.5);
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
 
   FSet(wgt, msa->nseq, eff_nseq / (float) msa->nseq);
   position_average_score(hmm, dsq, wgt, msa->nseq, tr, pernode,&expscore);
@@ -1310,7 +1313,7 @@ maximum_entropy(struct plan7_s *hmm, unsigned char **dsq, MSA *msa,
 
       /* Evaluate new point */
       Plan7SWConfig(hmm, 0.5, 0.5);
-      P7Logoddsify(hmm, TRUE);
+      P7Logoddsify(hmm, true);
       position_average_score(hmm, dsq, new_wgt, msa->nseq, tr, pernode, &expscore);
       for (idx = 0; idx < msa->nseq; idx++)
         sc[idx]      = frag_trace_score(hmm, dsq[idx], tr[idx], pernode, expscore);
@@ -1420,13 +1423,13 @@ set_model_name(struct plan7_s *hmm, char *setname, char *msa_name, char *alifile
   fflush(stdout);
 
   if (nali == 0) {  /* first (only?) HMM in file:  */
-    if      (setname  != NULL) name = Strdup(setname);
-    else if (msa_name != NULL) name = Strdup(msa_name);
-    else                       name = FileTail(alifile, TRUE);
+    if      (setname  != NULL) name = strdup(setname);
+    else if (msa_name != NULL) name = strdup(msa_name);
+    else                       name = FileTail(alifile, true);
   } else {
     if (setname != NULL)
       Die("Oops. Wait. You can't use -n with an alignment database.");
-    else if (msa_name != NULL) name = Strdup(msa_name);
+    else if (msa_name != NULL) name = strdup(msa_name);
     else
       Die("Oops. Wait. I need name annotation on each alignment.\n");
   }
@@ -1457,7 +1460,7 @@ print_statistics(FILE *fp, struct plan7_s *hmm, unsigned char **dsq, int nseq,
   float total, best, worst;  /* for the avg. and range of the scores */
   float sqsum, stddev;    /* for the std. deviation of the scores */
 
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
   /* find individual trace scores */
   score = P7TraceScore(hmm, dsq[0], tr[0]);
   total = best = worst = score;
@@ -1505,7 +1508,7 @@ save_hmmbuild_alignment(FILE *alignfp, MSA *msa, unsigned char **dsq, struct pla
   fflush(stdout);
   sqinfo  = MSAToSqinfo(msa);
   new_msa = P7Traces2Alignment(dsq, sqinfo, msa->wgt, msa->nseq,
-                               hmm->M, tr, FALSE);
+                               hmm->M, tr, false);
   WriteStockholm(alignfp, new_msa);
   MSAFree(new_msa);
   for (idx = 0; idx < msa->nseq; idx++)

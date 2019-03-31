@@ -14,6 +14,7 @@
  * many functions borrowed from Elena Rivas matrix package (as noted)
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,8 +26,8 @@
 #include "structs.h"
 #include "config.h"
 #include "funcs.h"
-#include "squid.h"
-#include "msa.h"
+//#include "squid.h"
+//#include "msa.h"
 
 #define accuracy 0.99
 #define MARGIN   0.0001
@@ -57,126 +58,6 @@ AssignMatrixNotLog (double *Qij, int matrix_n, double time, double *P_emit_ij) {
   return;
 }
 
-/*  Function: AssignMatrix()
- *
- *  Purpose:  assign a matrix to P_emit_ij based on a time and a Qij
- *
- *  Args:     Qij   - rate matrix
- *        matrix_n  - width or height of matrix
- *        time   - time to use as exponentiation factor for Qij
- *        P_emit_ij - conditional matrix
- *
- *  Return:  (void)
- */
-
-/*
-//REPORTED UNUSED***************************************************************
-void
-AssignMatrix (double *Qij, int matrix_n, double time, double *P_emit_ij)
-{
-  double *temp_matrix;   //   temp matrix to pass Qij to Cal_M_Exp
-
-  temp_matrix = (double *) MallocOrDie(sizeof(double) * matrix_n * matrix_n);
-
-  CopyMatrix(temp_matrix, Qij, matrix_n);
-  temp_matrix = Cal_M_Exp(temp_matrix, matrix_n, time);
-  LogifyMatrix(temp_matrix, matrix_n);
-  CopyMatrix(P_emit_ij, temp_matrix, matrix_n);
-  free (temp_matrix);
-  return;
-}
-// */
-
-/* Function: PrintMatrices()
- *
- * Purpose:  print the elements of a matrix(ces)
- *
- * Args:     prob - elements of the matrix
- *       L - width or height of matrix
- *       environ - number of environmental classes (matrices)
- *
- * Return:  (void)
- */
-/*
-//REPORTED UNUSED***************************************************************
-void
-PrintMatrices(double *prob, int L, int environ)
-{
-  int i,j;   //   count through matrices
-  int n;   //   count through environ
-
-  printf("\n");
-  for (n = 0; n < environ; n++)
-  {
-    for (i = 0; i < L; i++)
-    {
-      for (j = 0; j < L; j++)
-      {
-        printf("%.4f ", prob[n*L*L + i*L + j]);
-      }
-      printf("\n");
-    }
-    printf("\n");
-  }
-  return;
-}
-//*/
-
-/* Function: UnlogAndPrintMatrices()
- *
- * Purpose:  exponentiate and print elements of a matrix(ces)
- *
- * Args:     prob - elements of the matrix
- *       L - width or height of matrix
- *       environ - number of environmental classes (matrices)
- *
- * Return:  (void)
- */
-/*
-//REPORTED UNUSED***************************************************************
-void
-UnlogAndPrintMatrices(double *prob, int L, int environ)
-{
-  int i,j;   //  count through matrices
-  int n;   //  count through environ
-
-  printf("\n");
-  for (n = 0; n < environ; n++)
-  {
-    for (i = 0; i < L; i++)
-    {
-      for (j = 0; j < L; j++)
-      {
-        printf("%.4f ", exp(prob[n*L*L + i*L + j]));
-      }
-      printf("\n");
-    }
-    printf("\n");
-  }
-  return;
-}
-//*/
-
-/*  Function: ReadAAMatrices ()
- *
- *  Purpose: Read in a symmetric amino acid matrix (or matrices)
- *           and residue freqs from matrixfile
- *
- *           note that this is a special version of readmatrices for amino acids,
- *       since need to convert residue order using jonesint array
- *       (hmmer and traditional substitution matrices have different
- *        residue orders)
- *
- *  Args:     ret_Sij    - pointer to a symmetric matrix
- *          ret_pi    - pointer to residue frequencies
- *            matrixfile - file to read
- *        environ    - number of matrices being read
- *        L    - number of elements in a row or col of the matrix
- *
- *     Sij is allocated here, freed in main
- *
- *  Return:  (void)
- */
 
 void
 ReadAAMatrices (double **ret_Sij, double **ret_pi, char *matrixfile, int environ, int L) {
@@ -224,7 +105,7 @@ ReadAAMatrices (double **ret_Sij, double **ret_pi, char *matrixfile, int environ
     sum = 0.0;
     /* Read residue frequencies and check that they sum to 1.0*/
     for (i = 0; i < L; i++) {
-      fscanf(fp, "%19s", TempString);
+      assert(fscanf(fp, "%19s", TempString));
       /* again, use jonesint to reorder elements  */
       pi[n * L + jonesint[i]] = atof (TempString);
       sum += pi[n * L + jonesint[i]];
@@ -240,82 +121,6 @@ ReadAAMatrices (double **ret_Sij, double **ret_pi, char *matrixfile, int environ
   return;
 }
 
-/*  Function: ReadMatrices ()
- *
- *  Purpose:  Read in a symmetric matrix (or matrices)
- *            and residue freqs from matrixfile
- *
- *  Args:     ret_Sij    - pointer to a symmetric matrix
- *          ret_pi    - pointer to residue frequencies
- *            matrixfile - file to read
- *        environ    - number of matrices being read
- *        L    - number of elements in a row or col of the matrix
- *
- *     Sij is allocated here, freed in main
- *
- *  Return:  (void)
- */
-/*
-//REPORTED UNUSED***************************************************************
-void
-ReadMatrices (double **ret_Sij, double **ret_pi, char *matrixfile, int environ, int L)
-{
-  int size;     // number of elements in symmetric matrix
-  int i, j;      // count through elements in Sij and pi
-  int n;     // count through environ
-  char TempString[10];   // temp holder for read in string
-//  float read_element;   // temp holder for matrix element
-  FILE *fp;    // file pointer
-  double *Sij;     // symmetric matrix
-  double *pi;     // amino acid frequencies
-  double sum;     // to check input frequencies sum to 1
-
-  size = L * L;
-
-    // allocate and initialize Sij
-  Sij = (double *) MallocOrDie(sizeof(double) * environ * size);
-  for (i = 0; i < environ * size; i++)    Sij[i] = 0.0;
-
-      // allocate and initialize pi
-  pi = (double *) MallocOrDie(sizeof(double) * environ * L);
-  for (i = 0; i < environ * L; i++)    pi[i] = 0.0;
-
-      // open read file
-  if ((fp = fopen(matrixfile, "r")) == NULL)
-      Die("Failed to open matrix file '%s'\n", matrixfile);
-
-      // for each environ read in matrix and residue freqs
-  for (n = 0; n < environ; n++)
-  {
-        // Read a symmetric matrix Sij
-    for (i = 1; i < L; i++)
-    {
-      for (j = 0; j < i; j++)
-      {
-         if (fscanf(fp, "%s", TempString) == EOF){
-           Die("Too little data in your specified input matrixfile.\n");
-         }
-     Sij[n * size + i * L + j] = atof (TempString);
-   Sij[n * size + j * L + i] = atof (TempString);
-      }
-    }
-    sum = 0.0;
-      // Read residue frequencies and check that they sum to 1.0
-    for (i = 0; i < L; i++)
-    {
-      fscanf(fp, "%s", TempString);
-      pi[n * L + i] = atof (TempString);
-      sum += pi[n * L + i];
-    }
-    if (sum - 1.0 > 0.01 || sum - 1.0 < -0.01)
-      Die("The frequencies in %s sum to %f.\n", matrixfile, sum);
-  }
-
-  *ret_Sij = Sij;
-  *ret_pi = pi;
-  return;
-}
-//*/
 
 /*  Function: SymToRateMatrices ()
  *
@@ -393,13 +198,13 @@ Check_Accuracy(double *vec, int L) {
   int    i;
   int    issig;
 
-  issig = FALSE;
+  issig = false;
 
   for (i = 0; i < L; i ++) {
     double m;
     m = (vec[i] > 0)? vec[i]:-vec[i];
     if (m > (1.-accuracy)/(1.*L)) {
-      issig = TRUE;
+      issig = true;
       break;
     }
   }
@@ -408,8 +213,6 @@ Check_Accuracy(double *vec, int L) {
 }
 
 /* Function: Cal_Id()
- * Date:     ER, Thu Apr 13 10:28:16 CDT 2000 [St. Louis]
- *
  * Purpose:  Creates a Id(LxL) matrix
  *
  * Args:    L - dimension
@@ -435,10 +238,6 @@ Cal_Id(int L) {
 
 
 /* Function: Cal_M_Exp()
- * Date:     ER, Wed Mar  1 11:04:24 CST 2000 [St. Louis]
- *
- *           modified by DJB
- *
  * Purpose:  Given a matrix M, calculate exp{r*M}
  *
  *            exp{rM} = \sum_{n=0}^{\infty} [ r^n * M^n / n!   ]
@@ -456,7 +255,7 @@ Cal_M_Exp(double *M, int L, double r) {
   double *Mpower;    /* holds at a given n (M_I)^n */
   double  coeff;
   int     L2;
-  int     stop = FALSE;
+  int     stop = false;
   int     i;
   int     n = 0;
 
@@ -490,7 +289,7 @@ Cal_M_Exp(double *M, int L, double r) {
         Qr[i] += taylorQr[i];
       }
     } else {
-      stop = TRUE;
+      stop = true;
     }
   }
 
@@ -499,27 +298,8 @@ Cal_M_Exp(double *M, int L, double r) {
   return Qr;
 }
 
-/* Function: Comp_M_Exp()
-   from Elena Rivas' matrix functions package
-   */
-/*
-//REPORTED UNUSED***************************************************************
-void
-Comp_M_Exp(double *M, int L, double r)
-{
-  double *Qr;        // Qr = exp{r*M} matrix
-
-  Qr = Cal_M_Exp(M, L, r);
-
-  CopyMatrix (M, Qr, L);
-
-  free(Qr);
-  return;
-}
-//*/
 
 /* Function: Cal_M_N_Prod()
- * Date:     ER, Thu Apr 13 10:30:38 CDT 2000 [St. Louis]
  *
  * Purpose:  given M (LixLk) and N (LkxLj) calculate Mprod(LixLk) = M * N.
  *
@@ -566,33 +346,6 @@ Comp_M_N_Prod(double *M, double *N, int L) {
   return;
 }
 
-/* Function: CheckSingleProb()
- * Date:     ER, Tue May 25 13:18:02 CDT 1999  [St. Louis]
- *
- * Purpose:  Verify that \sum_x P(x) = 1
- *
- * Args:     psingle - single-argument probability distribution to check
- *
- * Returns:  void.
- */
-/*
-//REPORTED UNUSED***************************************************************
-
-void
-CheckSingleProb(double *psingle, int size)
-{
-  int x;
-  double sum = 0.0;
-
-  for (x = 0; x < size; x++) {
-    if (psingle[x] < -MARGIN) Die ("probabilities are getting too small here, P = %f", psingle[x]);
-    sum += psingle[x];
-  }
-
-  if (sum > 2. - accuracy || sum < accuracy) Die ("sum_x P(x) is %f\n", sum);
-  return;
-}
-//*/
 
 /* Function: CopyMatrix()
    from Elena Rivas' matrix functions package
@@ -607,39 +360,6 @@ CopyMatrix (double *copyQ, double *Q, int N) {
   return;
 }
 
-/* Function: LogifyMatrix
-   convert elements of matrix to log values
-  */
-/*
-//RECORDED UNUSED***************************************************************
-void
-LogifyMatrix (double *M, int N)
-{
-  int col, row;
-
-  for (row = 0; row < N; row++)
-    for (col = 0; col < N; col++)
-      M[row*N+col] = log(M[row*N+col]);
-  return;
-}
-*/
-
-/*  Function: AssignWagMatrix ()
- *
- *  Purpose: Assign WAG rate matrix
- *
- *           note that this is a special version of readmatrices for amino acids,
- *       since need to convert residue order using jonesint array
- *       (hmmer and traditional substitution matrices have different
- *        residue orders)
- *
- *  Args:     ret_Sij    - pointer to a symmetric matrix
- *          ret_pi    - pointer to residue frequencies
- *
- *     Sij is allocated here, freed in main
- *
- *  Return:  (void)
- */
 
 void
 AssignWagMatrix (double **ret_Sij, double **ret_pi) {

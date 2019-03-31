@@ -14,15 +14,20 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "squid.h"
+//#include "squid.h"
 #include "structs.h"
 #include "funcs.h"
+
+#include "vectorops.h"
+
+#define ALILENGTH   50    /* length of displayed alignment lines        */
+
 
 static void rightjustify(char *s, int n);
 
@@ -395,7 +400,7 @@ P7TraceScore(struct plan7_s *hmm, unsigned char *dsq, struct p7trace_s *tr) {
  *           nseq       - number of sequences
  *           mlen       - length of model (number of match states)
  *           tr         - array of tracebacks
- *           matchonly  - TRUE if we don't print insert-generated symbols at all
+ *           matchonly  - true if we don't print insert-generated symbols at all
  * Return:   MSA structure; NULL on failure.
  *           Caller responsible for freeing msa with MSAFree(msa);
  */
@@ -558,7 +563,7 @@ P7Traces2Alignment(unsigned char **dsq, SQINFO *sqinfo, float *wgt, int nseq, in
   sprintf(msa->au, "HMMER %s", PACKAGE_VERSION);
   /* copy sqinfo array and weights */
   for (idx = 0; idx < nseq; idx++) {
-    msa->sqname[idx] = sre_strdup(sqinfo[idx].name, -1);
+    msa->sqname[idx] = strdup(sqinfo[idx].name);
     if (sqinfo[idx].flags & SQINFO_ACC)
       MSASetSeqAccession(msa, idx, sqinfo[idx].acc);
     if (sqinfo[idx].flags & SQINFO_DESC)
@@ -749,8 +754,8 @@ CreateFancyAli(struct p7trace_s *tr, struct plan7_s *hmm,
     memset(ali->csline, ' ', tr->tlen);
   }
 
-  ali->query  = Strdup(hmm->name);
-  ali->target = Strdup(name);
+  ali->query  = strdup(hmm->name);
+  ali->target = strdup(name);
 
   if (Alphabet_type == hmmAMINO) mthresh = 0.5;
   else                           mthresh = 0.9;

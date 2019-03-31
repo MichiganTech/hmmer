@@ -14,7 +14,7 @@
  */
 
 #include "config.h"    /* compile-time configuration constants */
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +23,7 @@
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
-#include "squid.h"    /* general sequence analysis library    */
+//#include "squid.h"    /* general sequence analysis library    */
 
 static char banner[] = "hmmbuild - build a hidden Markov model from an alignment";
 
@@ -84,41 +84,41 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-f", TRUE, sqdARG_NONE },
-  { "-g", TRUE, sqdARG_NONE },
-  { "-h", TRUE, sqdARG_NONE },
-  { "-n", TRUE, sqdARG_STRING},
-  { "-r", TRUE, sqdARG_STRING},
-  { "-m", TRUE, sqdARG_STRING},
-  { "-o", TRUE, sqdARG_STRING},
-  { "-s", TRUE, sqdARG_NONE },
-  { "-A", TRUE, sqdARG_NONE },
-  { "-F", TRUE, sqdARG_NONE },
-  { "--amino",   FALSE, sqdARG_NONE  },
-  { "--archpri", FALSE, sqdARG_FLOAT },
-  { "--binary",  FALSE, sqdARG_NONE  },
-  { "--cfile",   FALSE, sqdARG_STRING},
-  { "--fast",    FALSE, sqdARG_NONE},
-  { "--gapmax",  FALSE, sqdARG_FLOAT },
-  { "--hand",    FALSE, sqdARG_NONE},
-  { "--idlevel", FALSE, sqdARG_FLOAT },
-  { "--informat",FALSE, sqdARG_STRING },
-  { "--noeff",   FALSE, sqdARG_NONE },
-  { "--nucleic", FALSE, sqdARG_NONE },
-  { "--null",    FALSE, sqdARG_STRING },
-  { "--optacc",  FALSE, sqdARG_NONE  },
-  { "--pam",     FALSE, sqdARG_STRING },
-  { "--pamwgt",  FALSE, sqdARG_FLOAT },
-  { "--prior",   FALSE, sqdARG_STRING },
-  { "--swentry", FALSE, sqdARG_FLOAT },
-  { "--swexit",  FALSE, sqdARG_FLOAT },
-  { "--verbose", FALSE, sqdARG_NONE  },
-  { "--viterbi", FALSE, sqdARG_NONE  },
-  { "--wgsc",    FALSE, sqdARG_NONE },
-  { "--wblosum", FALSE, sqdARG_NONE },
-  { "--wme",     FALSE, sqdARG_NONE },
-  { "--wnone",   FALSE, sqdARG_NONE },
-  { "--wvoronoi",FALSE, sqdARG_NONE },
+  { "-f", true, sqdARG_NONE },
+  { "-g", true, sqdARG_NONE },
+  { "-h", true, sqdARG_NONE },
+  { "-n", true, sqdARG_STRING},
+  { "-r", true, sqdARG_STRING},
+  { "-m", true, sqdARG_STRING},
+  { "-o", true, sqdARG_STRING},
+  { "-s", true, sqdARG_NONE },
+  { "-A", true, sqdARG_NONE },
+  { "-F", true, sqdARG_NONE },
+  { "--amino",   false, sqdARG_NONE  },
+  { "--archpri", false, sqdARG_FLOAT },
+  { "--binary",  false, sqdARG_NONE  },
+  { "--cfile",   false, sqdARG_STRING},
+  { "--fast",    false, sqdARG_NONE},
+  { "--gapmax",  false, sqdARG_FLOAT },
+  { "--hand",    false, sqdARG_NONE},
+  { "--idlevel", false, sqdARG_FLOAT },
+  { "--informat",false, sqdARG_STRING },
+  { "--noeff",   false, sqdARG_NONE },
+  { "--nucleic", false, sqdARG_NONE },
+  { "--null",    false, sqdARG_STRING },
+  { "--optacc",  false, sqdARG_NONE  },
+  { "--pam",     false, sqdARG_STRING },
+  { "--pamwgt",  false, sqdARG_FLOAT },
+  { "--prior",   false, sqdARG_STRING },
+  { "--swentry", false, sqdARG_FLOAT },
+  { "--swexit",  false, sqdARG_FLOAT },
+  { "--verbose", false, sqdARG_NONE  },
+  { "--viterbi", false, sqdARG_NONE  },
+  { "--wgsc",    false, sqdARG_NONE },
+  { "--wblosum", false, sqdARG_NONE },
+  { "--wme",     false, sqdARG_NONE },
+  { "--wnone",   false, sqdARG_NONE },
+  { "--wvoronoi",false, sqdARG_NONE },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -166,11 +166,11 @@ main(int argc, char **argv) {
     P7_BASE_CONFIG, P7_LS_CONFIG, P7_FS_CONFIG, P7_SW_CONFIG
   } cfg_strategy;
   float gapmax;      /* max frac gaps in mat col for -k       */
-  int   overwrite_protect;  /* TRUE to prevent overwriting HMM file  */
+  int   overwrite_protect;  /* true to prevent overwriting HMM file  */
   enum  realignment_strategy {  /* re-alignment strategy                 */
     REALIGN_NONE, REALIGN_VITERBI, REALIGN_OPTACC
   } r_strategy;
-  int   verbose;    /* TRUE to show a lot of output          */
+  int   verbose;    /* true to show a lot of output          */
   char *align_ofile;            /* name of output alignment file         */
   char *rndfile;    /* random sequence model file to read    */
   char *prifile;    /* Dirichlet prior file to read          */
@@ -178,12 +178,12 @@ main(int argc, char **argv) {
   char *cfile;      /* output file for count vectors         */
   float archpri;    /* "architecture" prior on model size    */
   float pamwgt;      /* weight on PAM for heuristic prior     */
-  int   do_append;    /* TRUE to append to hmmfile             */
-  int   do_binary;    /* TRUE to write in binary format        */
+  int   do_append;    /* true to append to hmmfile             */
+  int   do_binary;    /* true to write in binary format        */
   float blosumlevel;    /* BLOSUM frac id filtering level [0.62] */
   float swentry;    /* S/W aggregate entry probability       */
   float swexit;      /* S/W aggregate exit probability        */
-  int   do_eff;      /* TRUE to set an effective seq number   */
+  int   do_eff;      /* true to set an effective seq number   */
 
   struct dpmatrix_s *forward_mx;   /* Forward matrix                        */
   struct dpmatrix_s *backward_mx;  /* Backward matrix                       */
@@ -200,9 +200,9 @@ main(int argc, char **argv) {
   blosumlevel       = 0.62;
   cfg_strategy      = P7_LS_CONFIG;
   gapmax            = 0.5;
-  overwrite_protect = TRUE;
+  overwrite_protect = true;
   r_strategy        = REALIGN_NONE;
-  verbose           = FALSE;
+  verbose           = false;
   readfile          = NULL;
   hmmfile           = NULL;
   align_ofile       = NULL;
@@ -214,33 +214,33 @@ main(int argc, char **argv) {
   pamwgt            = 20.;
   Alphabet_type     = hmmNOTSETYET;  /* initially unknown */
   name              = NULL;
-  do_append         = FALSE;
+  do_append         = false;
   swentry           = 0.5;
   swexit            = 0.5;
-  do_eff            = TRUE;
-  do_binary         = FALSE;
+  do_eff            = true;
+  do_binary         = false;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
     if      (strcmp(optname, "-f") == 0) cfg_strategy      = P7_FS_CONFIG;
     else if (strcmp(optname, "-g") == 0) cfg_strategy      = P7_BASE_CONFIG;
-    else if (strcmp(optname, "-n") == 0) name              = Strdup(optarg);
+    else if (strcmp(optname, "-n") == 0) name              = strdup(optarg);
     else if (strcmp(optname, "-r") == 0) readfile          = optarg;//BUG: incorrect argument handling
     else if (strcmp(optname, "-r") == 0) rndfile           = optarg;//BUG: incorrect argument handling
     else if (strcmp(optname, "-m") == 0) hmmfile           = optarg;
     else if (strcmp(optname, "-o") == 0) align_ofile       = optarg;
     else if (strcmp(optname, "-s") == 0) cfg_strategy      = P7_SW_CONFIG;
-    else if (strcmp(optname, "-A") == 0) do_append         = TRUE;
-    else if (strcmp(optname, "-F") == 0) overwrite_protect = FALSE;
+    else if (strcmp(optname, "-A") == 0) do_append         = true;
+    else if (strcmp(optname, "-F") == 0) overwrite_protect = false;
     else if (strcmp(optname, "--amino")   == 0) SetAlphabet(hmmAMINO);
     else if (strcmp(optname, "--archpri") == 0) archpri       = atof(optarg);
-    else if (strcmp(optname, "--binary")  == 0) do_binary     = TRUE;
+    else if (strcmp(optname, "--binary")  == 0) do_binary     = true;
     else if (strcmp(optname, "--cfile")   == 0) cfile         = optarg;
     else if (strcmp(optname, "--fast")    == 0) c_strategy    = P7_FAST_CONSTRUCTION;
     else if (strcmp(optname, "--hand")    == 0) c_strategy    = P7_HAND_CONSTRUCTION;
     else if (strcmp(optname, "--gapmax")  == 0) gapmax        = atof(optarg);
     else if (strcmp(optname, "--idlevel") == 0) blosumlevel   = atof(optarg);
-    else if (strcmp(optname, "--noeff")   == 0) do_eff        = FALSE;
+    else if (strcmp(optname, "--noeff")   == 0) do_eff        = false;
     else if (strcmp(optname, "--nucleic") == 0) SetAlphabet(hmmNUCLEIC);
     else if (strcmp(optname, "--optacc")  == 0) r_strategy    = REALIGN_OPTACC;
     else if (strcmp(optname, "--pam")     == 0) pamfile       = optarg;
@@ -248,7 +248,7 @@ main(int argc, char **argv) {
     else if (strcmp(optname, "--prior")   == 0) prifile       = optarg;
     else if (strcmp(optname, "--swentry") == 0) swentry       = atof(optarg);
     else if (strcmp(optname, "--swexit")  == 0) swexit        = atof(optarg);
-    else if (strcmp(optname, "--verbose") == 0) verbose       = TRUE;
+    else if (strcmp(optname, "--verbose") == 0) verbose       = true;
     else if (strcmp(optname, "--viterbi") == 0) r_strategy    = REALIGN_VITERBI;
     else if (strcmp(optname, "--wgsc")    == 0) w_strategy    = WGT_GSC;
     else if (strcmp(optname, "--wblosum") == 0) w_strategy    = WGT_BLOSUM;
@@ -318,7 +318,7 @@ main(int argc, char **argv) {
 
   /* In some respects we treat DNA more crudely... */
   if (Alphabet_type == hmmNUCLEIC) {
-    do_eff     = FALSE;  /* don't do effective seq #; it's calibrated for protein */
+    do_eff     = false;  /* don't do effective seq #; it's calibrated for protein */
   }
 
   /***********************************************
@@ -389,7 +389,7 @@ main(int argc, char **argv) {
       printf("done.\n");
     }
 
-    /* Set the effective sequence number (if do_eff is FALSE, eff_nseq
+    /* Set the effective sequence number (if do_eff is false, eff_nseq
      * was set to nseq).
      */
     FNorm(msa->wgt, msa->nseq);
@@ -450,7 +450,7 @@ main(int argc, char **argv) {
     /* Give the model a name; by default, the name of the alignment file
      * without any filename extension (i.e. "globins.slx" becomes "globins"
      */
-    if (name == NULL) name = FileTail(seqfile, TRUE);
+    if (name == NULL) name = FileTail(seqfile, true);
     Plan7SetName(hmm, name);
     Plan7ComlogAppend(hmm, argc, argv);
     Plan7SetCtime(hmm);
@@ -480,7 +480,7 @@ main(int argc, char **argv) {
 
   /* Optionally save new HMM to disk: open a file for appending or writing.
    */
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
   if (hmmfile)
     save_model(hmm, hmmfile, do_append, do_binary);
 
@@ -553,7 +553,7 @@ main(int argc, char **argv) {
 
     sqinfo = MSAToSqinfo(msa);
     new_msa = P7Traces2Alignment(dsq, sqinfo, msa->wgt, msa->nseq,
-                                 hmm->M, tr, FALSE);
+                                 hmm->M, tr, false);
     FILE *fp; // OUTPUT file handle (misc.)
     if ((fp = fopen(align_ofile, "w")) == NULL) {
       Warn("Failed to open alignment resave file %s; using stdout instead",
@@ -594,8 +594,8 @@ main(int argc, char **argv) {
  *
  * Args:     hmm       - model to save
  *           hmmfile   - file to save to (if NULL, use stdout)
- *           do_append - TRUE to append to file
- *           do_binary - TRUE to write a binary file
+ *           do_append - true to append to file
+ *           do_binary - true to write a binary file
  *
  * Return:   (void)
  */
@@ -666,7 +666,7 @@ print_all_scores(FILE *fp, struct plan7_s *hmm,
   int idx;      /* counter for sequences */
 
   /* make sure model scores are ready */
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
   /* header */
   fputs("**\n", fp);
   fputs("Individual training sequence scores:\n", fp);
@@ -734,8 +734,6 @@ save_countvectors(char *cfile, struct plan7_s *hmm) {
 
 
 /* Function: position_average_score()
- * Date:     Wed Dec 31 09:36:35 1997 [StL]
- *
  * Purpose:  Calculate scores from tracebacks, keeping them
  *           in a position specific array. The final array
  *           is normalized position-specifically too, according
@@ -825,8 +823,6 @@ position_average_score(struct plan7_s    *hmm,
 
 
 /* Function: frag_trace_score()
- * Date:     SRE, Wed Dec 31 10:03:47 1997 [StL]
- *
  * Purpose:  Allow MD/ME optimization to be used for alignments
  *           that include fragments and multihits -- estimate a full-length
  *           per-domain score.
@@ -861,8 +857,6 @@ frag_trace_score(struct plan7_s *hmm, unsigned char *dsq, struct p7trace_s *tr,
 
 
 /* Function: maximum_entropy()
- * Date:     SRE, Fri Jan  2 10:56:00 1998 [StL]
- *
  * Purpose:  Optimizes a model according to maximum entropy weighting.
  *           See Krogh and Mitchison (1995).
  *
@@ -922,7 +916,7 @@ maximum_entropy(struct plan7_s *hmm, unsigned char **dsq, AINFO *ainfo, int nseq
    * Find relative entropy and gradient.
    */
   Plan7SWConfig(hmm, 0.5, 0.5);
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
 
   FSet(wgt, nseq, 1.0);
   position_average_score(hmm, dsq, wgt, nseq, tr, pernode, &expscore);
@@ -997,7 +991,7 @@ maximum_entropy(struct plan7_s *hmm, unsigned char **dsq, AINFO *ainfo, int nseq
 
       /* Evaluate new point */
       Plan7SWConfig(hmm, 0.5, 0.5);
-      P7Logoddsify(hmm, TRUE);
+      P7Logoddsify(hmm, true);
       position_average_score(hmm, dsq, new_wgt, nseq, tr, pernode, &expscore);
       for (idx = 0; idx < nseq; idx++)
         sc[idx]      = frag_trace_score(hmm, dsq[idx], tr[idx], pernode, expscore);

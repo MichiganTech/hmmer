@@ -14,12 +14,11 @@
  * Also, a few miscellaneous macros and global variable declarations.
  */
 
-#ifndef STRUCTSH_INCLUDED
-#define STRUCTSH_INCLUDED
+#pragma once
 
 #include "config.h"
 
-#include "squid.h"
+//#include "squid.h"
 #include "ssi.h"
 
 /* Miscellaneous math macros used in the package
@@ -333,8 +332,8 @@ struct hmmfile_s {
   FILE    *f;      /* pointer to file opened for reading           */
   SSIFILE *ssi;      /* pointer to open SSI index, or NULL           */
   int (*parser)(struct hmmfile_s *, struct plan7_s **);  /* parsing function    */
-  int   is_binary;    /* TRUE if format is a binary one               */
-  int   byteswap;               /* TRUE if binary and byteswapped               */
+  int   is_binary;    /* true if format is a binary one               */
+  int   byteswap;               /* true if binary and byteswapped               */
 
   /* Ewan (GeneWise) needs the input API to know the offset of each
    * HMM on the disk, as it's being read. This might be enough
@@ -343,7 +342,7 @@ struct hmmfile_s {
    * opaque offset type in the SSI API - the call you need
    * is SSISetFilePosition().
    */
-  int       is_seekable;  /* TRUE if we use offsets in this HMM file      */
+  int       is_seekable;  /* true if we use offsets in this HMM file      */
   int       mode;    /* type of offset                               */
   SSIOFFSET offset;    /* Disk offset for beginning of the current HMM */
 };
@@ -571,5 +570,3 @@ struct plan9_s {
 #define DELETE 2
 #define BEGIN  MATCH
 #define END    MATCH
-
-#endif /* STRUCTSH_INCLUDED */

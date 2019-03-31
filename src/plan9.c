@@ -15,18 +15,19 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-#include "squid.h"
+//#include "squid.h"
 #include "structs.h"
 #include "funcs.h"
+#include "vectorops.h"
 
-struct plan9_s *
+struct plan9_s*
 P9AllocHMM(int M) {                 /* length of model to make */
   struct plan9_s *hmm;        /* RETURN: blank HMM */
 
@@ -38,12 +39,14 @@ P9AllocHMM(int M) {                 /* length of model to make */
   hmm->cs    = (char *)  MallocOrDie ((M+2) * sizeof(char));
   hmm->xray  = (float *) MallocOrDie ((M+2) * sizeof(float) * NINPUTS);
   hmm->M     = M;
-  hmm->name  = Strdup("unnamed"); /* name is not optional. */
+  hmm->name  = strdup("unnamed"); /* name is not optional. */
 
   hmm->flags = 0;
   P9ZeroHMM(hmm);
   return hmm;
 }
+
+
 int
 P9FreeHMM(struct plan9_s *hmm) {
   if (hmm == NULL) return 0;

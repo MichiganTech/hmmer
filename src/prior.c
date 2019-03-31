@@ -14,13 +14,15 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <string.h>
 
 #include "squid.h"
 #include "structs.h"
 #include "funcs.h"
+#include "vectorops.h"
+#include "getopt.h"
 
 
 static struct p7prior_s *default_amino_prior(void);

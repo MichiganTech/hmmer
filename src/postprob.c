@@ -71,9 +71,9 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
-#include "squid.h"
+//#include "squid.h"
 #include "structs.h"
 #include "funcs.h"
 

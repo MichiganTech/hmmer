@@ -15,7 +15,7 @@
  */
 
 #include "config.h"    /* compile-time configuration constants */
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "squid.h"    /* general sequence analysis library    */
+//#include "squid.h"    /* general sequence analysis library    */
 #include "stopwatch.h"    /* process timings                      */
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
@@ -54,14 +54,14 @@ static char experts[] = "\
 ";
 
 static struct opt_s OPTIONS[] = {
-  { "-h",         TRUE,  sqdARG_NONE  },
-  { "--cpu",      FALSE, sqdARG_INT },
-  { "--fixed",    FALSE, sqdARG_INT   },
-  { "--histfile", FALSE, sqdARG_STRING },
-  { "--mean",     FALSE, sqdARG_FLOAT },
-  { "--num",      FALSE, sqdARG_INT   },
-  { "--sd",       FALSE, sqdARG_FLOAT },
-  { "--seed",     FALSE, sqdARG_INT},
+  { "-h",         true,  sqdARG_NONE  },
+  { "--cpu",      false, sqdARG_INT },
+  { "--fixed",    false, sqdARG_INT   },
+  { "--histfile", false, sqdARG_STRING },
+  { "--mean",     false, sqdARG_FLOAT },
+  { "--num",      false, sqdARG_INT   },
+  { "--sd",       false, sqdARG_FLOAT },
+  { "--seed",     false, sqdARG_INT},
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -269,11 +269,11 @@ main(int argc, char **argv) {
 
 
     /* Fit an EVD to the observed histogram.
-     * The TRUE left-censors and fits only the right slope of the histogram.
+     * The true left-censors and fits only the right slope of the histogram.
      * The 9999. is an arbitrary high number that means we won't trim
      * outliers on the right.
      */
-    if (! ExtremeValueFitHistogram(hist, TRUE, 9999.))
+    if (! ExtremeValueFitHistogram(hist, true, 9999.))
       Die("fit failed; --num may be set too small?\n");
 
     mu[nhmm]     = hist->param[EVD_MU];
@@ -369,8 +369,6 @@ main(int argc, char **argv) {
 }
 
 /* Function: main_loop_serial()
- * Date:     SRE, Tue Aug 18 16:18:28 1998 [St. Louis]
- *
  * Purpose:  Given an HMM and parameters for synthesizing random
  *           sequences; return a histogram of scores.
  *           (Serial version)
@@ -403,7 +401,7 @@ main_loop_serial(struct plan7_s *hmm, int seed, int nsample,
    * HMM input sets the alphabet).
    */
   sre_srandom(seed);
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
   P7DefaultNullModel(randomseq, &p1);
   hist = AllocHistogram(-200, 200, 100);
   mx = CreatePlan7Matrix(1, hmm->M, 25, 0);
@@ -450,8 +448,6 @@ main_loop_serial(struct plan7_s *hmm, int seed, int nsample,
 
 
 /* Function: main_loop_threaded()
- * Date:     SRE, Wed Dec  1 12:43:09 1999 [St. Louis]
- *
  * Purpose:  Given an HMM and parameters for synthesizing random
  *           sequences; return a histogram of scores.
  *           (Threaded version.)
@@ -486,7 +482,7 @@ main_loop_threaded(struct plan7_s *hmm, int seed, int nsample,
    * HMM input sets the alphabet).
    */
   sre_srandom(seed);
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
   P7DefaultNullModel(randomseq, &p1);
   hist = AllocHistogram(-200, 200, 100);
 
@@ -515,8 +511,6 @@ main_loop_threaded(struct plan7_s *hmm, int seed, int nsample,
  *****************************************************************/
 
 /* Function: workpool_start()
- * Date:     SRE, Thu Jul 16 11:09:05 1998 [St. Louis]
- *
  * Purpose:  Initialize a workpool_s structure, and return it.
  *
  * Args:     hmm      - the HMM to calibrate
@@ -577,8 +571,6 @@ workpool_start(struct plan7_s *hmm, float lenmean, float lensd, int fixedlen,
 }
 
 /* Function: workpool_stop()
- * Date:     SRE, Thu Jul 16 11:20:16 1998 [St. Louis]
- *
  * Purpose:  Waits for threads in a workpool to finish.
  *
  * Args:     wpool -- ptr to the workpool structure
@@ -596,8 +588,6 @@ workpool_stop(struct workpool_s *wpool) {
 }
 
 /* Function: workpool_free()
- * Date:     SRE, Thu Jul 16 11:26:27 1998 [St. Louis]
- *
  * Purpose:  Free a workpool_s structure, after the threads
  *           have finished.
  *
@@ -613,8 +603,6 @@ workpool_free(struct workpool_s *wpool) {
 }
 
 /* Function: worker_thread()
- * Date:     SRE, Thu Jul 16 10:41:02 1998 [St. Louis]
- *
  * Purpose:  The procedure executed by the worker threads.
  *
  * Args:     ptr  - (void *) that is recast to a pointer to

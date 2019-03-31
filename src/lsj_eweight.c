@@ -17,14 +17,14 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #include "structs.h"
 #include "funcs.h"
-#include "squid.h"
+//#include "squid.h"
 #include "vectorops.h"
 #include "lsjfuncs.h"
 

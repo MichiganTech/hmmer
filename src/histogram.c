@@ -30,7 +30,6 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -39,9 +38,169 @@
 #include <math.h>
 
 #include "squid.h"
-#include "dirichlet.h"    /* IncompleteGamma() is in dirichlet module */
 #include "structs.h"
 #include "funcs.h"
+
+
+
+
+/* Function: Linefit()
+ * 
+ * Purpose:  Given points x[0..N-1] and y[0..N-1], fit to
+ *           a straight line y = a + bx.
+ *           a, b, and the linear correlation coefficient r
+ *           are filled in for return.
+ *           
+ * Args:     x     - x values of data
+ *           y     - y values of data               
+ *           N     - number of data points
+ *           ret_a - RETURN: intercept
+ *           ret_b - RETURN: slope
+ *           ret_r - RETURN: correlation coefficient  
+ *           
+ * Return:   1 on success, 0 on failure.
+ */
+int          
+Linefit(float *x, float *y, int N, float *ret_a, float *ret_b, float *ret_r) 
+{       
+  float xavg, yavg;
+  float sxx, syy, sxy;
+  int   i;
+  
+  /* Calculate averages, xavg and yavg
+   */
+  xavg = yavg = 0.0;
+  for (i = 0; i < N; i++)
+    {
+      xavg += x[i];
+      yavg += y[i];
+    }
+  xavg /= (float) N;
+  yavg /= (float) N;
+
+  sxx = syy = sxy = 0.0;
+  for (i = 0; i < N; i++)
+    {
+      sxx    += (x[i] - xavg) * (x[i] - xavg);
+      syy    += (y[i] - yavg) * (y[i] - xavg);
+      sxy    += (x[i] - xavg) * (y[i] - yavg);
+    }
+  *ret_b = sxy / sxx;
+  *ret_a = yavg - xavg*(*ret_b);
+  *ret_r = sxy / (sqrt(sxx) * sqrt(syy));
+  return 1;
+}
+
+
+/* Function: IncompleteGamma()
+ * 
+ * Purpose:  Returns 1 - P(a,x) where:
+ *           P(a,x) = \frac{1}{\Gamma(a)} \int_{0}^{x} t^{a-1} e^{-t} dt
+ *                  = \frac{\gamma(a,x)}{\Gamma(a)}
+ *                  = 1 - \frac{\Gamma(a,x)}{\Gamma(a)}
+ *                  
+ *           Used in a chi-squared test: for a X^2 statistic x
+ *           with v degrees of freedom, call:
+ *                  p = IncompleteGamma(v/2., x/2.) 
+ *           to get the probability p that a chi-squared value
+ *           greater than x could be obtained by chance even for
+ *           a correct model. (i.e. p should be large, say 
+ *           0.95 or more).
+ *           
+ * Method:   Based on ideas from Numerical Recipes in C, Press et al.,
+ *           Cambridge University Press, 1988. 
+ *           
+ * Args:     a  - for instance, degrees of freedom / 2     [a > 0]
+ *           x  - for instance, chi-squared statistic / 2  [x >= 0] 
+ *           
+ * Return:   1 - P(a,x).
+ */          
+double
+IncompleteGamma(double a, double x)
+{
+  int iter;     /* iteration counter */
+
+  if (a <= 0.) Die("IncompleteGamma(): a must be > 0");
+  if (x <  0.) Die("IncompleteGamma(): x must be >= 0");
+
+  /* For x > a + 1 the following gives rapid convergence;
+   * calculate 1 - P(a,x) = \frac{\Gamma(a,x)}{\Gamma(a)}:
+   *     use a continued fraction development for \Gamma(a,x).
+   */
+  if (x > a+1) 
+    {
+      double oldp;    /* previous value of p    */
+      double nu0, nu1;    /* numerators for continued fraction calc   */
+      double de0, de1;    /* denominators for continued fraction calc */
+
+      nu0 = 0.;     /* A_0 = 0       */
+      de0 = 1.;     /* B_0 = 1       */
+      nu1 = 1.;     /* A_1 = 1       */
+      de1 = x;      /* B_1 = x       */
+
+      oldp = nu1;
+      for (iter = 1; iter < 100; iter++)
+  {
+    /* Continued fraction development:
+     * set A_j = b_j A_j-1 + a_j A_j-2
+     *     B_j = b_j B_j-1 + a_j B_j-2
+           * We start with A_2, B_2.
+     */
+        /* j = even: a_j = iter-a, b_j = 1 */
+        /* A,B_j-2 are in nu0, de0; A,B_j-1 are in nu1,de1 */
+    nu0 = nu1 + ((double)iter - a) * nu0;
+    de0 = de1 + ((double)iter - a) * de0;
+
+        /* j = odd: a_j = iter, b_j = x */
+        /* A,B_j-2 are in nu1, de1; A,B_j-1 in nu0,de0 */
+    nu1 = x * nu0 + (double) iter * nu1;
+    de1 = x * de0 + (double) iter * de1;
+
+        /* rescale */
+    if (de1 != 0.) 
+      { 
+        nu0 /= de1; 
+        de0 /= de1;
+        nu1 /= de1;
+        de1 =  1.;
+      }
+        /* check for convergence */
+    if (fabs((nu1-oldp)/nu1) < 1.e-7)
+      return nu1 * exp(a * log(x) - x - Gammln(a));
+
+    oldp = nu1;
+  }
+      Die("IncompleteGamma(): failed to converge using continued fraction approx");
+    }
+  else /* x <= a+1 */
+    {
+      double p;     /* current sum               */
+      double val;   /* current value used in sum */
+
+      /* For x <= a+1 we use a convergent series instead:
+       *   P(a,x) = \frac{\gamma(a,x)}{\Gamma(a)},
+       * where
+       *   \gamma(a,x) = e^{-x}x^a \sum_{n=0}{\infty} \frac{\Gamma{a}}{\Gamma{a+1+n}} x^n
+       * which looks appalling but the sum is in fact rearrangeable to
+       * a simple series without the \Gamma functions:
+       *   = \frac{1}{a} + \frac{x}{a(a+1)} + \frac{x^2}{a(a+1)(a+2)} ...
+       * and it's obvious that this should converge nicely for x <= a+1.
+       */
+      
+      p = val = 1. / a;
+      for (iter = 1; iter < 10000; iter++)
+  {
+    val *= x / (a+(double)iter);
+    p   += val;
+    
+    if (fabs(val/p) < 1.e-7)
+      return 1. - p * exp(a * log(x) - x - Gammln(a));
+  }
+      Die("IncompleteGamma(): failed to converge using series approx");
+    }
+  /*NOTREACHED*/
+  return 0.;
+}
 
 /* Function: AllocHistogram()
  *
@@ -163,8 +322,6 @@ AddToHistogram(struct histogram_s *h, float sc) {
   if (score < h->lowscore) h->lowscore   = score;
   if (score > h->highscore) h->highscore = score;
 
-  SQD_DPRINTF3(("AddToHistogram(): added %.1f; rounded to %d; in bin %d (%d-%d)\n",
-                sc, score, score-h->min, h->min, h->max));
   return;
 }
 
@@ -333,8 +490,6 @@ PrintASCIIHistogram(FILE *fp, struct histogram_s *h) {
 
 
 /* Function: PrintXMGRHistogram()
- * Date:     SRE, Wed Nov 12 11:02:00 1997 [St. Louis]
- *
  * Purpose:  Print an XMGR data file that contains two data sets:
  *               - xy data for the observed histogram
  *               - xy data for the theoretical histogram
@@ -369,8 +524,6 @@ PrintXMGRHistogram(FILE *fp, struct histogram_s *h) {
 
 
 /* Function: PrintXMGRRegressionLine()
- * Date:     SRE, Wed Nov 12 11:02:19 1997 [St. Louis]
- *
  * Purpose:  Print an XMGR data file that contains two data sets:
  *               - xy data for log log transform of observed distribution P(S<x)
  *               - xy data for log log transform of theoretical distribution P(S<x)
@@ -409,8 +562,6 @@ PrintXMGRRegressionLine(FILE *fp, struct histogram_s *h) {
 //*/
 
 /* Function: EVDBasicFit()
- * Date:     SRE, Wed Nov 12 11:02:27 1997 [St. Louis]
- *
  * Purpose:  Fit a score histogram to the extreme value
  *           distribution. Set the parameters lambda
  *           and mu in the histogram structure. Fill in the
@@ -487,8 +638,6 @@ EVDBasicFit(struct histogram_s *h) {
 //*/
 
 /* Function: ExtremeValueFitHistogram()
- * Date:     SRE, Sat Nov 15 17:16:15 1997 [St. Louis]
- *
  * Purpose:  Fit a score histogram to the extreme value
  *           distribution. Set the parameters lambda
  *           and mu in the histogram structure. Calculate
@@ -500,7 +649,7 @@ EVDBasicFit(struct histogram_s *h) {
  *           described by [Mott92].
  *
  * Args:     h         - histogram to fit
- *           censor    - TRUE to censor data left of the peak
+ *           censor    - true to censor data left of the peak
  *           high_hint - score cutoff; above this are `real' hits that aren't fit
  *
  * Return:   1 if fit is judged to be valid.
@@ -689,7 +838,7 @@ ExtremeValueSetHistogram(struct histogram_s *h, float mu, float lambda,
  *           else 0 if fit is invalid (too few seqs.)
  */
 int
-GaussianFitHistogram(struct histogram_s *h, float high_hint) {
+GaussianFitHistogram(struct histogram_s *h) {
   float sum;
   float sqsum;
   float delta;
@@ -766,8 +915,6 @@ GaussianFitHistogram(struct histogram_s *h, float high_hint) {
 
 
 /* Function: EVDDistribution()
- * Date:     SRE, Tue Nov 18 08:02:22 1997 [St. Louis]
- *
  * Purpose:  Returns the extreme value distribution P(S < x)
  *           evaluated at x, for an EVD controlled by parameters
  *           mu and lambda.
@@ -840,19 +987,11 @@ ExtremeValueE(float x, float mu, float lambda, int N) {
 //USED EXTERNALLY***************************************************************
 float
 EVDrandom(float mu, float lambda) {
-  float p = 0.0;
-
-  // Very unlikely, but possible,
-  // that sre_random() would give us exactly 0 or 1
-
-  while (p == 0. || p == 1.) p = sre_random();
-  return mu - log(-1. * log(p)) / lambda;
+  return mu - log(-1. * log(drand48())) / lambda;
 }
 //*/
 
 /* Function: Lawless416()
- * Date:     SRE, Thu Nov 13 11:48:50 1997 [St. Louis]
- *
  * Purpose:  Equation 4.1.6 from [Lawless82], pg. 143, and
  *           its first derivative with respect to lambda,
  *           for finding the ML fit to EVD lambda parameter.
@@ -903,8 +1042,6 @@ Lawless416(float *x, int *y, int n, float lambda, float *ret_f, float *ret_df) {
 
 
 /* Function: Lawless422()
- * Date:     SRE, Mon Nov 17 09:42:48 1997 [St. Louis]
- *
  * Purpose:  Equation 4.2.2 from [Lawless82], pg. 169, and
  *           its first derivative with respect to lambda,
  *           for finding the ML fit to EVD lambda parameter
@@ -965,8 +1102,6 @@ Lawless422(float *x, int *y, int n, int z, float c,
 
 
 /* Function: EVDMaxLikelyFit()
- * Date:     SRE, Fri Nov 14 07:56:29 1997 [St. Louis]
- *
  * Purpose:  Given a list or a histogram of EVD-distributed samples,
  *           find maximum likelihood parameters lambda and
  *           mu.
@@ -1019,8 +1154,7 @@ EVDMaxLikelyFit(float *x, int *c, int n, float *ret_mu, float *ret_lambda) {
    */
   if (i == 100) {
     float left, right, mid;
-    SQD_DPRINTF2(("EVDMaxLikelyFit(): Newton/Raphson failed; switchover to bisection"));
-
+    
     /* First we need to bracket the root */
     lambda = right = left = 0.2;
     Lawless416(x, c, n, lambda, &fx, &dfx);
@@ -1028,7 +1162,6 @@ EVDMaxLikelyFit(float *x, int *c, int n, float *ret_mu, float *ret_lambda) {
       do {
         left -= 0.1;
         if (left < 0.) {
-          SQD_DPRINTF2(("EVDMaxLikelyFit(): failed to bracket root"));
           return 0;
         }
         Lawless416(x, c, n, left, &fx, &dfx);
@@ -1038,7 +1171,6 @@ EVDMaxLikelyFit(float *x, int *c, int n, float *ret_mu, float *ret_lambda) {
         right += 0.1;
         Lawless416(x, c, n, right, &fx, &dfx);
         if (right > 100.) {
-          SQD_DPRINTF2(("EVDMaxLikelyFit(): failed to bracket root"));
           return 0;
         }
       } while (fx > 0.);
@@ -1052,7 +1184,6 @@ EVDMaxLikelyFit(float *x, int *c, int n, float *ret_mu, float *ret_lambda) {
       else          right = mid;
     }
     if (i == 100) {
-      SQD_DPRINTF2(("EVDMaxLikelyFit(): even the bisection search failed"));
       return 0;
     }
     lambda = mid;
@@ -1077,8 +1208,6 @@ EVDMaxLikelyFit(float *x, int *c, int n, float *ret_mu, float *ret_lambda) {
 
 
 /* Function: EVDCensoredFit()
- * Date:     SRE, Mon Nov 17 10:01:05 1997 [St. Louis]
- *
  * Purpose:  Given a /left-censored/ list or histogram of EVD-distributed
  *           samples, as well as the number of censored samples z and the
  *           censoring value c,
@@ -1137,14 +1266,12 @@ EVDCensoredFit(float *x, int *y, int n, int z, float c,
   if (i == 100) {
     float left, right, mid;
     /* First we need to bracket the root */
-    SQD_DPRINTF2(("EVDCensoredFit(): Newton/Raphson failed; switched to bisection"));
     lambda = right = left = 0.2;
     Lawless422(x, y, n, z, c, lambda, &fx, &dfx);
     if (fx < 0.) {     /* fix right; search left. */
       do {
         left -= 0.03;
         if (left < 0.) {
-          SQD_DPRINTF2(("EVDCensoredFit(): failed to bracket root"));
           return 0;
         }
         Lawless422(x, y, n, z, c, left, &fx, &dfx);
@@ -1154,7 +1281,6 @@ EVDCensoredFit(float *x, int *y, int n, int z, float c,
         right += 0.1;
         Lawless422(x, y, n, z, c, left, &fx, &dfx);
         if (right > 100.) {
-          SQD_DPRINTF2(("EVDCensoredFit(): failed to bracket root"));
           return 0;
         }
       } while (fx > 0.);
@@ -1168,7 +1294,6 @@ EVDCensoredFit(float *x, int *y, int n, int z, float c,
       else          right = mid;
     }
     if (i == 100) {
-      SQD_DPRINTF2(("EVDCensoredFit(): even the bisection search failed"));
       return 0;
     }
     lambda = mid;

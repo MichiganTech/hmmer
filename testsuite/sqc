@@ -398,7 +398,7 @@ unlink "$tmp.stderr" if -e "$tmp.stderr";
 # filename_substitution(tmpprefix, command_template)
 # 
 # Uses a global, %used_tmpfile, which is a hash
-# that is TRUE for each tmpfile names that we'll 
+# that is true for each tmpfile names that we'll 
 # try to delete upon exit.
 sub
 filename_substitution

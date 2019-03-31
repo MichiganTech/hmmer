@@ -25,8 +25,8 @@
 #include "structs.h"
 #include "config.h"
 #include "funcs.h"
-#include "squid.h"
-#include "msa.h"
+//#include "squid.h"
+//#include "msa.h"
 
 
 /* Function: AdjustAveInfoContent()

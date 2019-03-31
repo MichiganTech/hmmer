@@ -1,5 +1,4 @@
 /* tophits_test.c
- * SRE, Tue Oct 28 08:03:10 1997 [Newton Institute, Cambridge UK]
  *
  * Test driver for tophits.c. Returns 0 if everything is OK.
  *
@@ -16,7 +15,7 @@
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
-#include "squid.h"
+//#include "squid.h"
 
 static char banner[] = "\
 tophits_test : internal verification of tophits.c";
@@ -33,9 +32,9 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-h", TRUE, sqdARG_NONE },
-  { "-s", TRUE, sqdARG_INT  },
-  { "-v", TRUE, sqdARG_NONE },
+  { "-h", true, sqdARG_NONE },
+  { "-s", true, sqdARG_INT  },
+  { "-v", true, sqdARG_NONE },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -44,7 +43,7 @@ main(int argc, char **argv) {
   struct tophit_s *hit;         /* hit list                     */
   int i,j;      /* counters                     */
   int nsamples;     /* option: # of random "scores" */
-  int be_verbose;   /* option: TRUE to show output  */
+  int be_verbose;   /* option: true to show output  */
   int seed;     /* option: random number seed   */
   int paramH;     /* option: H parameter          */
   int paramA;     /* option: A parameter          */
@@ -59,7 +58,7 @@ main(int argc, char **argv) {
   /***********************************************
    * Parse command line
    ***********************************************/
-  be_verbose = FALSE;
+  be_verbose = false;
   seed       = (int) time ((time_t *) NULL);
   paramH     = 100;
   paramA     = 10;
@@ -70,7 +69,7 @@ main(int argc, char **argv) {
     if      (strcmp(optname, "-s") == 0) {
       seed       = atoi(optarg);
     } else if (strcmp(optname, "-v") == 0) {
-      be_verbose = TRUE;
+      be_verbose = true;
     } else if (strcmp(optname, "-h") == 0) {
       HMMERBanner(stdout, banner);
       puts(usage);
@@ -81,7 +80,6 @@ main(int argc, char **argv) {
   if (argc - optind != 0)
     Die("Incorrect number of arguments.\n%s\n", usage);
 
-  sre_srandom(seed);
   if (be_verbose)
     printf("%d\tSEED\n", seed);
 
@@ -95,11 +93,11 @@ main(int argc, char **argv) {
 
   list = MallocOrDie (sizeof(double) * nsamples);
   for (i = 0; i < paramA; i++)
-    list[i] = 1000. + 1000. * sre_random();
+    list[i] = 1000. + 1000. * drand48();
   for (; i < paramA + paramH; i++)
-    list[i] = 100. + 100. * sre_random();
+    list[i] = 100. + 100. * drand48();
   for (; i < nsamples; i++)
-    list[i] = 10. + 10. * sre_random();
+    list[i] = 10. + 10. * drand48();
 
   for (i = 0; i < nsamples; i++) {
     j = CHOOSE(nsamples);

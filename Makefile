@@ -12,7 +12,7 @@ export MANDIR      = ${prefix}/share/man
 export PROGSUFFIX = 2
 export MANSUFFIX = 1
 
-export CFLAGS += -pipe -Wall -Wextra -fPIC -O3
+export CFLAGS += -pipe -Wall -Wextra -Wpedantic -Wno-sign-compare -fPIC -O0 -ggdb
 export LIBS    = -lm -pthread
 
 # The program lists below for HMMER are not necessarily

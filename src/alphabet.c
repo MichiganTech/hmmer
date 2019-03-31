@@ -13,7 +13,7 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +23,7 @@
 #include "structs.h"
 #include "funcs.h"
 #include "squid.h"
+#include "msa.h"
 
 static void set_degenerate(char iupac, char *syms);
 
@@ -213,8 +214,6 @@ DigitizeSequence(char *seq, int L) {
 
 
 /* Function: DedigitizeSequence()
- * Date:     SRE, Tue Dec 16 10:39:19 1997 [StL]
- *
  * Purpose:  Returns a 0..L-1 character string, converting the
  *           dsq back to the real alphabet.
  */
@@ -247,17 +246,17 @@ DedigitizeSequence(unsigned char *dsq, int L) {
 void
 DigitizeAlignment(MSA *msa, unsigned char ***ret_dsqs) {
   unsigned char **dsq;
-  int    idx;      /* counter for sequences     */
-  int    dpos;      /* position in digitized seq */
-  int    apos;      /* position in aligned seq   */
+  // idx      /* counter for sequences     */
+  // apos;      /* position in aligned seq   */
 
   dsq = MallocOrDie (sizeof(unsigned char *) * msa->nseq);
-  for (idx = 0; idx < msa->nseq; idx++) {
+  for (size_t idx = 0; idx < msa->nseq; idx++) {
     dsq[idx] = MallocOrDie (sizeof(unsigned char) * (msa->alen+2));
 
     dsq[idx][0] = (unsigned char) Alphabet_iupac; /* sentinel byte at start */
 
-    for (apos = 0, dpos = 1; apos < msa->alen; apos++) {
+    int dpos = 1;      /* position in digitized seq */
+    for (size_t apos = 0; apos < msa->alen; apos++) {
       if (! isgap(msa->aseq[idx][apos]))  /* skip gaps */
         dsq[idx][dpos++] = SymbolIndex(msa->aseq[idx][apos]);
     }

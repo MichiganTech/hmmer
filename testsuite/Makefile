@@ -1,7 +1,7 @@
 
 LIBS      =  -lm -pthread
-MYLIBS    = -lhmmer$(PROGSUFFIX) -lsquid
-CFLAGS   += -I/usr/include/biosquid
+MYLIBS    = -lhmmer$(PROGSUFFIX)
+CFLAGS   +=
 
 SHIVA = alignalign_test\
 	evd_test\

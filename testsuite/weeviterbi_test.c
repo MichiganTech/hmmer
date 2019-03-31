@@ -16,7 +16,7 @@
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
-#include "squid.h"
+//#include "squid.h"
 
 static char banner[] = "\
 weeviterbi_test : testing of Plan7 Myers/Miller/Hirschberg Viterbi traceback code";
@@ -34,10 +34,10 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-h",       TRUE,  sqdARG_NONE },
-  { "-v",       TRUE,  sqdARG_NONE },
-  { "--hmm",    FALSE, sqdARG_STRING },
-  { "--seq",    FALSE, sqdARG_STRING },
+  { "-h",       true,  sqdARG_NONE },
+  { "-v",       true,  sqdARG_NONE },
+  { "--hmm",    false, sqdARG_STRING },
+  { "--seq",    false, sqdARG_STRING },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -67,13 +67,13 @@ main(int argc, char **argv) {
    * Parse command line
    ***********************************************/
 
-  be_verbose = FALSE;
+  be_verbose = false;
   hmmfile    = "weeviterbi_test.hmm";
   seqfile    = "weeviterbi_test.seq";
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
-    if      (strcmp(optname, "-v")       == 0) be_verbose = TRUE;
+    if      (strcmp(optname, "-v")       == 0) be_verbose = true;
     else if (strcmp(optname, "--hmm")    == 0) hmmfile    = optarg;
     else if (strcmp(optname, "--seq")    == 0) seqfile    = optarg;
     else if (strcmp(optname, "-h")       == 0) {
@@ -104,7 +104,7 @@ main(int argc, char **argv) {
     Die("Failed to read any HMMs from %s\n", hmmfile);
   if (hmm == NULL)
     Die("HMM file %s corrupt or in incorrect format? Parse failed", hmmfile);
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
 
   /***********************************************
    * Search HMM against each sequence

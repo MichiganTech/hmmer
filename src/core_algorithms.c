@@ -15,85 +15,23 @@
  * see fast_algorithms.c.
  */
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include "structs.h"
 #include "funcs.h"
-#include "squid.h"
+//#include "squid.h"
+#include "vectorops.h"
 
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
-static float get_wee_midpt(struct plan7_s *hmm, unsigned char *dsq, int L,
+static float get_wee_midpt(struct plan7_s *hmm, unsigned char *dsq,
                            int k1, char t1, int s1,
                            int k3, char t3, int s3,
                            int *ret_k2, char *ret_t2, int *ret_s2);
 
 
-#ifndef ALTIVEC
-/* Function: CreatePlan7Matrix()
- *
- * Purpose:  Create a dynamic programming matrix for standard Forward,
- *           Backward, or Viterbi, with scores kept as scaled log-odds
- *           integers. Keeps 2D arrays compact in RAM in an attempt
- *           to maximize cache hits.
- *
- *           The mx structure can be dynamically grown, if a new
- *           HMM or seq exceeds the currently allocated size. Dynamic
- *           growing is more efficient than an alloc/free of a whole
- *           matrix for every new target. The ResizePlan7Matrix()
- *           call does this reallocation, if needed. Here, in the
- *           creation step, we set up some pads - to inform the resizing
- *           call how much to overallocate when it realloc's.
- *
- * Args:     N     - N+1 rows are allocated, for sequence.
- *           M     - size of model in nodes
- *           padN  - over-realloc in seq/row dimension, or 0
- *           padM  - over-realloc in HMM/column dimension, or 0
- *
- * Return:   mx
- *           mx is allocated here. Caller frees with FreePlan7Matrix(mx).
- */
-struct dpmatrix_s *
-CreatePlan7Matrix(int N, int M, int padN, int padM) {
-  struct dpmatrix_s *mx;
-  int i;
-
-  mx          = (struct dpmatrix_s *) MallocOrDie (sizeof(struct dpmatrix_s));
-  mx->xmx     = (int **) MallocOrDie (sizeof(int *) * (N+1));
-  mx->mmx     = (int **) MallocOrDie (sizeof(int *) * (N+1));
-  mx->imx     = (int **) MallocOrDie (sizeof(int *) * (N+1));
-  mx->dmx     = (int **) MallocOrDie (sizeof(int *) * (N+1));
-  mx->xmx_mem = (void *) MallocOrDie (sizeof(int) * ((N+1)*5));
-  mx->mmx_mem = (void *) MallocOrDie (sizeof(int) * ((N+1)*(M+2)));
-  mx->imx_mem = (void *) MallocOrDie (sizeof(int) * ((N+1)*(M+2)));
-  mx->dmx_mem = (void *) MallocOrDie (sizeof(int) * ((N+1)*(M+2)));
-
-  /* The indirect assignment below looks wasteful; it's actually
-   * used for aligning data on 16-byte boundaries as a cache
-   * optimization in the fast altivec implementation
-   */
-  mx->xmx[0] = (int *) mx->xmx_mem;
-  mx->mmx[0] = (int *) mx->mmx_mem;
-  mx->imx[0] = (int *) mx->imx_mem;
-  mx->dmx[0] = (int *) mx->dmx_mem;
-  for (i = 1; i <= N; i++) {
-    mx->xmx[i] = mx->xmx[0] + (i*5);
-    mx->mmx[i] = mx->mmx[0] + (i*(M+2));
-    mx->imx[i] = mx->imx[0] + (i*(M+2));
-    mx->dmx[i] = mx->dmx[0] + (i*(M+2));
-  }
-
-  mx->maxN = N;
-  mx->maxM = M;
-  mx->padN = padN;
-  mx->padM = padM;
-
-  return mx;
-}
-#endif /*ALTIVEC*/
-
-#ifndef ALTIVEC
 /* Function: ResizePlan7Matrix()
  *
  * Purpose:  Reallocate a dynamic programming matrix, if necessary,
@@ -170,11 +108,8 @@ DONE:
   if (imx != NULL) *imx = mx->imx;
   if (dmx != NULL) *dmx = mx->dmx;
 }
-#endif /*ALTIVEC*/
 
 /* Function: AllocPlan7Matrix()
- * Date:     SRE, Tue Nov 19 07:14:47 2002 [St. Louis]
- *
  * Purpose:  Used to be the main allocator for dp matrices; we used to
  *           allocate, calculate, free. But this spent a lot of time
  *           in malloc(). Replaced with Create..() and Resize..() to
@@ -291,13 +226,13 @@ FreeShadowMatrix(struct dpshadow_s *tb) {
 /* Function:  P7ViterbiSpaceOK()
  * Incept:    SRE, Wed Oct  1 12:53:13 2003 [St. Louis]
  *
- * Purpose:   Returns TRUE if the existing matrix allocation
+ * Purpose:   Returns true if the existing matrix allocation
  *            is already sufficient to hold the requested MxN, or if
  *            the matrix can be expanded in M and/or N without
  *            exceeding RAMLIMIT megabytes.
  *
  *            This gets called anytime we're about to do P7Viterbi().
- *            If it returns FALSE, we switch into the appropriate
+ *            If it returns false, we switch into the appropriate
  *            small-memory alternative: P7SmallViterbi() or
  *            P7WeeViterbi().
  *
@@ -312,7 +247,7 @@ FreeShadowMatrix(struct dpshadow_s *tb) {
  *
  * Args:
  *
- * Returns:   TRUE if we can run P7Viterbi(); FALSE if we need
+ * Returns:   true if we can run P7Viterbi(); false if we need
  *            to use a small memory variant.
  *
  * Xref:      STL7 p.122.
@@ -322,7 +257,7 @@ P7ViterbiSpaceOK(int L, int M, struct dpmatrix_s *mx) {
   int newM;
   int newN;
 
-  if (M <= mx->maxM && L <= mx->maxN) return TRUE;
+  if (M <= mx->maxM && L <= mx->maxN) return true;
 
   if (M > mx->maxM) newM = M + mx->padM;
   else newM = mx->maxM;
@@ -330,14 +265,13 @@ P7ViterbiSpaceOK(int L, int M, struct dpmatrix_s *mx) {
   else newN = mx->maxN;
 
   if (P7ViterbiSize(newN, newM) <= RAMLIMIT)
-    return TRUE;
+    return true;
   else
-    return FALSE;
+    return false;
 }
 
 
 /* Function: P7ViterbiSize()
- * Date:     SRE, Fri Mar  6 15:13:20 1998 [St. Louis]
  *
  * Purpose:  Returns the ballpark predicted memory requirement for a
  *           P7Viterbi() alignment, in MB.
@@ -597,7 +531,6 @@ P7Viterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct dpmatrix_s *mx,
 #endif /*SLOW*/
 
 /* Function: P7ViterbiTrace()
- * Date:     SRE, Sat Aug 23 10:30:11 1997 (St. Louis Lambert Field)
  *
  * Purpose:  Traceback of a Viterbi matrix: i.e. retrieval
  *           of optimum alignment.
@@ -844,7 +777,6 @@ P7ViterbiTrace(struct plan7_s *hmm, unsigned char *dsq, int N,
 
 
 /* Function: P7SmallViterbi()
- * Date:     SRE, Fri Mar  6 15:29:41 1998 [St. Louis]
  *
  * Purpose:  Wrapper function, for linear memory alignment
  *           with same arguments as P7Viterbi().
@@ -906,8 +838,6 @@ P7SmallViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct dpmatrix_s
     sqlen = ctr->pos[i*2+2] - ctr->pos[i*2+1];   /* length of subseq */
 
     if (P7ViterbiSpaceOK(sqlen, hmm->M, mx)) {
-      SQD_DPRINTF1(("      -- using P7Viterbi on an %dx%d subproblem\n",
-                    hmm->M, sqlen));
       P7Viterbi(dsq + ctr->pos[i*2+1], sqlen, hmm, mx, &(tarr[i]));
     } else if (sqlen == 1) {
       /* xref bug#h30. P7WeeViterbi() can't take L=1. This
@@ -915,14 +845,10 @@ P7SmallViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct dpmatrix_s
        Attempts to use our main dp mx will violate our
        RAMLIMIT guarantee, so allocate a tiny linear one. */
       struct dpmatrix_s *tiny;
-      SQD_DPRINTF1(("      -- using P7Viterbi on %dx%d subproblem that P7WeeV should get\n",
-                    hmm->M, sqlen));
       tiny = CreatePlan7Matrix(1, hmm->M, 0, 0);
       P7Viterbi(dsq + ctr->pos[i*2+1], sqlen, hmm, tiny, &(tarr[i]));
       FreePlan7Matrix(tiny);
     } else {
-      SQD_DPRINTF1(("      -- using P7WeeViterbi on an %dx%d subproblem\n",
-                    hmm->M, sqlen));
       P7WeeViterbi(dsq + ctr->pos[i*2+1], sqlen, hmm, &(tarr[i]));
     }
 
@@ -1017,7 +943,6 @@ P7SmallViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct dpmatrix_s
 
 
 /* Function: P7ParsingViterbi()
- * Date:     SRE, Wed Mar  4 14:07:31 1998 [St. Louis]
  *
  * Purpose:  The "hmmfs" linear-memory algorithm for finding
  *           the optimal alignment of a very long sequence to
@@ -1248,8 +1173,6 @@ P7ParsingViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct p7trace_
 }
 
 /* Function: P7WeeViterbi()
- * Date:     SRE, Wed Mar  4 08:24:04 1998 [St. Louis]
- *
  * Purpose:  Hirschberg/Myers/Miller linear memory alignment.
  *           See [Hirschberg75,MyM-88a] for the idea of the algorithm.
  *           Adapted to HMM implementation.
@@ -1320,6 +1243,9 @@ P7WeeViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct p7trace_s **
     s1 = startlist[lpos];
     k1 = kassign[s1];
     t1 = tassign[s1];
+    s2 = 0;
+    k2 = 0;
+    t2 = 0;
     s3 = endlist[lpos];
     k3 = kassign[s3];
     t3 = tassign[s3];
@@ -1327,7 +1253,7 @@ P7WeeViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct p7trace_s **
 
     /* find optimal midpoint of segment */
     float sc;    /* score of segment optimal alignment */
-    sc = get_wee_midpt(hmm, dsq, L, k1, t1, s1, k3, t3, s3, &k2, &t2, &s2);
+    sc = get_wee_midpt(hmm, dsq, k1, t1, s1, k3, t3, s3, &k2, &t2, &s2);
     kassign[s2] = k2;
     tassign[s2] = t2;
     /* score is valid on first pass */
@@ -1489,8 +1415,6 @@ P7WeeViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct p7trace_s **
 
 
 /* Function: get_wee_midpt()
- * Date:     SRE, Wed Mar  4 08:27:11 1998 [St. Louis]
- *
  * Purpose:  The heart of the divide and conquer algorithm
  *           for P7WeeViterbi(). This function is called
  *           recursively to find successive optimal midpoints
@@ -1512,8 +1436,13 @@ P7WeeViterbi(unsigned char *dsq, int L, struct plan7_s *hmm, struct p7trace_s **
  *
  * Returns: score of optimal alignment, in bits.
  */
+// static float
+// get_wee_midpt(struct plan7_s *hmm, unsigned char *dsq, int L,
+//               int k1, char t1, int s1,
+//               int k3, char t3, int s3,
+//               int *ret_k2, char *ret_t2, int *ret_s2) {
 static float
-get_wee_midpt(struct plan7_s *hmm, unsigned char *dsq, int L,
+get_wee_midpt(struct plan7_s *hmm, unsigned char *dsq,
               int k1, char t1, int s1,
               int k3, char t3, int s3,
               int *ret_k2, char *ret_t2, int *ret_s2) {
@@ -1877,7 +1806,6 @@ get_wee_midpt(struct plan7_s *hmm, unsigned char *dsq, int L,
 
 
 /* Function: P7ViterbiAlignAlignment()
- * Date:     SRE, Sat Jul  4 13:39:00 1998 [St. Louis]
  *
  * Purpose:  Align a multiple alignment to an HMM without
  *           changing the multiple alignment itself.
@@ -1920,9 +1848,9 @@ P7ViterbiAlignAlignment(MSA *msa, struct plan7_s *hmm) {
   char **xtb, **mtb, **itb, **dtb;
   float **con;                  /* [1..alen][0..Alphabet_size-1], consensus counts */
   float  *mocc;                 /* fractional occupancy of a column; used to weight transitions */
-  int     i;      /* counter for columns */
+  size_t  i;      /* counter for columns */
   int     k;      /* counter for model positions */
-  int     idx;      /* counter for seqs */
+  // idx      /* counter for seqs */
   int     sym;      /* counter for alphabet symbols */
   int     sc;      /* temp variable for holding score */
   float   denom;    /* total weight of seqs; used to "normalize" counts */
@@ -1944,7 +1872,7 @@ P7ViterbiAlignAlignment(MSA *msa, struct plan7_s *hmm) {
   /* "normalized" to have a max total count of 1 per col */
   denom = FSum(msa->wgt, msa->nseq);
   for (i = 1; i <= msa->alen; i++) {
-    for (idx = 0; idx < msa->nseq; idx++)
+    for (size_t idx = 0; idx < msa->nseq; idx++)
       if (! isgap(msa->aseq[idx][i-1]))
         P7CountSymbol(con[i], SYMIDX(msa->aseq[idx][i-1]), msa->wgt[idx]);
     FScale(con[i], Alphabet_size, 1./denom);
@@ -2119,8 +2047,6 @@ P7ViterbiAlignAlignment(MSA *msa, struct plan7_s *hmm) {
 
 
 /* Function: ShadowTrace()
- * Date:     SRE, Sun Jul  5 11:38:24 1998 [St. Louis]
- *
  * Purpose:  Given a shadow matrix, trace it back, and return
  *           the trace.
  *
@@ -2280,8 +2206,6 @@ ShadowTrace(struct dpshadow_s *tb, struct plan7_s *hmm, int L) {
 
 
 /* Function: PostprocessSignificantHit()
- * Date:     SRE, Wed Dec 20 12:11:01 2000 [StL]
- *
  * Purpose:  Add a significant hit to per-seq and per-domain hit
  *           lists, after postprocessing the scores appropriately,
  *           and making sure per-domain scores add up to the per-seq
@@ -2339,11 +2263,11 @@ ShadowTrace(struct dpshadow_s *tb, struct plan7_s *hmm, int L) {
  *           seqname  - name of sequence (same as targname, in hmmsearch)
  *           seqacc   - seq's accession (or NULL)
  *           seqdesc  - seq's description (or NULL)
- *           do_forward  - TRUE if we've already calculated final per-seq score
- *           sc_override - per-seq score to use if do_forward is TRUE
- *           do_null2    - TRUE to apply the null2 scoring correction
+ *           do_forward  - true if we've already calculated final per-seq score
+ *           sc_override - per-seq score to use if do_forward is true
+ *           do_null2    - true to apply the null2 scoring correction
  *           thresh      - contains the threshold/cutoff information.
- *           hmmpfam_mode - TRUE if called by hmmpfam, else assumes hmmsearch;
+ *           hmmpfam_mode - true if called by hmmpfam, else assumes hmmsearch;
  *                          affects how the lists' sort keys are set.
  *
  * Returns:  the recalculated per-seq score (or sc_override),
@@ -2374,7 +2298,7 @@ PostprocessSignificantHit(struct tophit_s    *ghit,
   int i1, i2;      /* start, stop in sequence    */
   float   whole_sc;    /* whole sequence score = \sum domain scores */
   float  *score;                /* array of raw scores for each domain */
-  int    *usedomain;            /* TRUE if this domain is accepted */
+  int    *usedomain;            /* true if this domain is accepted */
   double  whole_pval;
   double  pvalue;
   double  sortkey;
@@ -2401,11 +2325,11 @@ PostprocessSignificantHit(struct tophit_s    *ghit,
     score[tidx]  = P7TraceScore(hmm, dsq, tarr[tidx]);
     if (do_null2) score[tidx] -= TraceScoreCorrection(hmm, tarr[tidx], dsq);
     if (score[tidx] > 0.0) {
-      usedomain[tidx] = TRUE;
+      usedomain[tidx] = true;
       ndom++;
       whole_sc += score[tidx];
     } else
-      usedomain[tidx] = FALSE;
+      usedomain[tidx] = false;
   }
 
   /* Make sure at least one positive scoring domain is in
@@ -2416,7 +2340,7 @@ PostprocessSignificantHit(struct tophit_s    *ghit,
    */
   if (ndom == 0) {
     tidx            = FArgMax(score, ntr);
-    usedomain[tidx] = TRUE;
+    usedomain[tidx] = true;
     whole_sc        = score[tidx];
     ndom            = 1;
   }

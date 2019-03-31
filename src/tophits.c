@@ -56,7 +56,7 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <string.h>
 #include <float.h>
@@ -178,9 +178,9 @@ RegisterHit(struct tophit_s *h, double key,
    */
   if (h->num == h->alloc) GrowTophits(h);
 
-  h->unsrt[h->num].name    = Strdup(name);
-  h->unsrt[h->num].acc     = Strdup(acc);
-  h->unsrt[h->num].desc    = Strdup(desc);
+  h->unsrt[h->num].name    = strdup(name);
+  h->unsrt[h->num].acc     = strdup(acc);
+  h->unsrt[h->num].desc    = strdup(desc);
   h->unsrt[h->num].sortkey = key;
   h->unsrt[h->num].pvalue  = pvalue;
   h->unsrt[h->num].score   = score;

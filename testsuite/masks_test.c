@@ -14,7 +14,7 @@
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
-#include "squid.h"
+//#include "squid.h"
 
 static char banner[] = "\
 masks_test : testing of repeat masking code in masks.c";
@@ -31,9 +31,9 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-h",       TRUE,  sqdARG_NONE  },
-  { "-v",       TRUE,  sqdARG_NONE  },
-  { "--xnu",    FALSE, sqdARG_STRING },
+  { "-h",       true,  sqdARG_NONE  },
+  { "-v",       true,  sqdARG_NONE  },
+  { "--xnu",    false, sqdARG_STRING },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -70,13 +70,13 @@ main(int argc, char **argv) {
    * Parse command line
    ***********************************************/
 
-  be_verbose = FALSE;
+  be_verbose = false;
   xnufile    = NULL;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
     if      (strcmp(optname, "-v")       == 0) {
-      be_verbose = TRUE;
+      be_verbose = true;
     } else if (strcmp(optname, "--xnu")    == 0) {
       xnufile    = optarg;
     } else if (strcmp(optname, "-h")       == 0) {

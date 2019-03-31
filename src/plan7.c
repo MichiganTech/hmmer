@@ -15,7 +15,7 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -25,6 +25,7 @@
 #include "squid.h"
 #include "funcs.h"
 #include "structs.h"
+#include "vectorops.h"
 
 
 /* Functions: AllocPlan7(), AllocPlan7Shell(), AllocPlan7Body(), FreePlan7()
@@ -230,7 +231,7 @@ ZeroPlan7(struct plan7_s *hmm) {
 void
 Plan7SetName(struct plan7_s *hmm, char *name) {
   if (hmm->name != NULL) free(hmm->name);
-  hmm->name = Strdup(name);
+  hmm->name = strdup(name);
   StringChop(hmm->name);
 }
 /* Function: Plan7SetAccession()
@@ -242,7 +243,7 @@ Plan7SetName(struct plan7_s *hmm, char *name) {
 void
 Plan7SetAccession(struct plan7_s *hmm, char *acc) {
   if (hmm->acc != NULL) free(hmm->acc);
-  hmm->acc = Strdup(acc);
+  hmm->acc = strdup(acc);
   StringChop(hmm->acc);
   hmm->flags |= PLAN7_ACC;
 }
@@ -256,7 +257,7 @@ Plan7SetAccession(struct plan7_s *hmm, char *acc) {
 void
 Plan7SetDescription(struct plan7_s *hmm, char *desc) {
   if (hmm->desc != NULL) free(hmm->desc);
-  hmm->desc = Strdup(desc);
+  hmm->desc = strdup(desc);
   StringChop(hmm->desc);
   hmm->flags |= PLAN7_DESC;
 }
@@ -303,7 +304,7 @@ void
 Plan7SetCtime(struct plan7_s *hmm) {
   time_t date = time(NULL);
   if (hmm->ctime != NULL) free(hmm->ctime);
-  hmm->ctime = Strdup(ctime(&date));
+  hmm->ctime = strdup(ctime(&date));
   StringChop(hmm->ctime);
 }
 
@@ -361,7 +362,7 @@ Plan7SetNullModel(struct plan7_s *hmm, float null[MAXABET], float p1) {
  *         the P7TraceScore().
  *
  * Args:      hmm          - the hmm to calculate scores in.
- *            viterbi_mode - TRUE to fold wings in Viterbi configuration.
+ *            viterbi_mode - true to fold wings in Viterbi configuration.
  *
  * Return:    (void)
  *            hmm scores are filled in.

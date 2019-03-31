@@ -25,15 +25,16 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
 
-#include "squid.h"
+//#include "squid.h"
 #include "structs.h"
 #include "funcs.h"
+#include "vectorops.h"
 
 /* The PAM120 score matrix, in HMMER's AMINO_ALPHABET alphabetic order
  */
@@ -65,8 +66,6 @@ static int xpam120[23][23] = {
 
 
 /* Function: XNU()
- * Date:     18 Nov 1997 [StL]
- *
  * Purpose:  x-out of repetitive sequence. XNU tends to be
  *           good at x'ing out short period tandem repeats.
  *
@@ -152,8 +151,6 @@ XNU(unsigned char *dsq, int len) {
 
 
 /* Function: TraceScoreCorrection()
- * Date:     Sun Dec 21 12:05:47 1997 [StL]
- *
  * Purpose:  Calculate a correction (in integer log_2 odds) to be
  *           applied to a sequence, using a second null model,
  *           based on a traceback. M/I emissions are corrected;

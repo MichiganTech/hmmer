@@ -21,11 +21,14 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
 #include "squid.h"
+#include "msa.h"
+#include "getopt.c"
 
 static char banner[] = "\
 alignalign_test : testing of P7ViterbiAlignAlignment() code";
@@ -43,12 +46,109 @@ static char experts[] = "\
 \n";
 
 static struct opt_s OPTIONS[] = {
-  { "-h",       TRUE,  sqdARG_NONE },
-  { "-v",       TRUE,  sqdARG_NONE },
-  { "--ali",    FALSE, sqdARG_STRING },
-  { "--hmm",    FALSE, sqdARG_STRING },
+  { "-h",       true,  sqdARG_NONE },
+  { "-v",       true,  sqdARG_NONE },
+  { "--ali",    false, sqdARG_STRING },
+  { "--hmm",    false, sqdARG_STRING },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
+
+
+/* Function: GCGchecksum()
+ * Date:     SRE, Mon May 31 11:13:21 1999 [St. Louis]
+ *
+ * Purpose:  Calculate a GCG checksum for a sequence.
+ *           Code provided by Steve Smith of Genetics
+ *           Computer Group.
+ *
+ * Args:     seq -  sequence to calculate checksum for.
+ *                  may contain gap symbols.
+ *           len -  length of sequence (usually known,
+ *                  so save a strlen() call)       
+ *
+ * Returns:  GCG checksum.
+ */
+int
+GCGchecksum(char *seq, int len)
+{
+  int i;      /* position in sequence */
+  int chk = 0;      /* calculated checksum  */
+
+  for (i = 0; i < len; i++) 
+    chk = (chk + (i % 57 + 1) * (toupper((int) seq[i]))) % 10000;
+  return chk;
+}
+
+
+/* Function: GCGMultchecksum()
+ * 
+ * Purpose:  GCG checksum for a multiple alignment: sum of
+ *           individual sequence checksums (including their
+ *           gap characters) modulo 10000.
+ *
+ *           Implemented using spec provided by Steve Smith of
+ *           Genetics Computer Group.
+ *           
+ * Args:     seqs - sequences to be checksummed; aligned or not
+ *           nseq - number of sequences
+ *           
+ * Return:   the checksum, a number between 0 and 9999
+ */                      
+int
+GCGMultchecksum(char **seqs, int nseq)
+{
+  int chk = 0;
+  int idx;
+
+  for (idx = 0; idx < nseq; idx++)
+    chk = (chk + GCGchecksum(seqs[idx], strlen(seqs[idx]))) % 10000;
+  return chk;
+}
+
+
+/* Function: DealignAseqs()
+ * 
+ * Given an array of (num) aligned sequences aseqs,
+ * strip the gaps. Store the raw sequences in a new allocated array.
+ * 
+ * Caller is responsible for free'ing the memory allocated to
+ * rseqs.
+ * 
+ * Returns 1 on success. Returns 0 and sets squid_errno on
+ * failure.
+ */
+int
+DealignAseqs(char **aseqs, int num, char ***ret_rseqs)
+{
+  char **rseqs;                 /* de-aligned sequence array   */
+  int    idx;     /* counter for sequences       */
+  int    depos;     /* position counter for dealigned seq*/
+  int    apos;      /* position counter for aligned seq */
+  int    seqlen;    /* length of aligned seq */
+
+        /* alloc space */
+  rseqs = (char **) MallocOrDie (num * sizeof(char *));
+        /* main loop */
+  for (idx = 0; idx < num; idx++)
+    {
+      seqlen = strlen(aseqs[idx]);
+        /* alloc space */
+      rseqs[idx] = (char *) MallocOrDie ((seqlen + 1) * sizeof(char));
+
+        /* strip gaps */
+      depos = 0;
+      for (apos = 0; aseqs[idx][apos] != '\0'; apos++)
+  if (!isgap(aseqs[idx][apos]))
+    {
+      rseqs[idx][depos] = aseqs[idx][apos];
+      depos++;
+    }
+      rseqs[idx][depos] = '\0';
+    }
+  *ret_rseqs = rseqs;
+  return 1;
+}
+
 
 int
 main(int argc, char **argv) {
@@ -71,7 +171,7 @@ main(int argc, char **argv) {
   int       rlen;   /* length of an unaligned sequence         */
 
   int be_verbose;
-  int be_standard;    /* TRUE when running standard test */
+  int be_standard;    /* true when running standard test */
 
   char *optname;                /* name of option found by Getopt()         */
   char *optarg;                 /* argument found by Getopt()               */
@@ -84,18 +184,18 @@ main(int argc, char **argv) {
   hmmfile     = "fn3.hmm";
   afile       = "fn3.seed";
   format      = MSAFILE_STOCKHOLM;
-  be_verbose  = FALSE;
-  be_standard = TRUE;
+  be_verbose  = false;
+  be_standard = true;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg))  {
-    if      (strcmp(optname, "-v")       == 0) be_verbose = TRUE;
+    if      (strcmp(optname, "-v")       == 0) be_verbose = true;
     else if (strcmp(optname, "--ali")    == 0) {
       afile   = optarg;
-      be_standard = FALSE;
+      be_standard = false;
     } else if (strcmp(optname, "--hmm")    == 0) {
       hmmfile = optarg;
-      be_standard = FALSE;
+      be_standard = false;
     } else if (strcmp(optname, "-h")       == 0) {
       HMMERBanner(stdout, banner);
       puts(usage);
@@ -132,7 +232,7 @@ main(int argc, char **argv) {
   if (hmm == NULL)
     Die("HMM file %s corrupt or in incorrect format? Parse failed", hmmfile);
   HMMFileClose(hmmfp);
-  P7Logoddsify(hmm, TRUE);
+  P7Logoddsify(hmm, true);
 
   if (! (hmm->flags & PLAN7_MAP))
     Die("HMM in %s has no map", hmmfile);
@@ -195,7 +295,7 @@ main(int argc, char **argv) {
       Die("alignalign: Test FAILED; %d seqs read, should be 109\n", msa->nseq);
   }
 
-  if (be_verbose) printf("alignalign: Test passed; %d/%d differ, as expected\n",
+  if (be_verbose) printf("alignalign: Test passed; %d/%ld differ, as expected\n",
                            ndiff, msa->nseq);
 
   /* Cleanup.
@@ -213,5 +313,5 @@ main(int argc, char **argv) {
   FreePlan7(hmm);
   SqdClean();
 
-  return EXIT_SUCCESS;
+  return 0;
 }

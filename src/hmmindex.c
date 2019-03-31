@@ -14,13 +14,13 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "squid.h"
+//#include "squid.h"
 #include "ssi.h"
 #include "structs.h"
 #include "funcs.h"
@@ -40,8 +40,8 @@ static char experts[] = "\
 ";
 
 static struct opt_s OPTIONS[] = {
-  { "-h",   TRUE,  sqdARG_NONE  },
-  { "--av", FALSE, sqdARG_NONE  },
+  { "-h",   true,  sqdARG_NONE  },
+  { "--av", false, sqdARG_NONE  },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -56,7 +56,7 @@ main(int argc, char **argv) {
   int     npri, nsec;    /* # of names, accessions          */
   int     fh;      /* file handle                     */
   int     status;    /* return status from SSI call     */
-  int     do_av;    /* TRUE to index accession separately */
+  int     do_av;    /* true to index accession separately */
   int     nacc;      /* number of accessions, when --av    */
 
   char *optname;    /* name of option found by Getopt() */
@@ -67,11 +67,11 @@ main(int argc, char **argv) {
    * Parse the command line
    ***********************************************/
 
-  do_av = FALSE;
+  do_av = false;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg)) {
-    if (strcmp(optname, "--av")      == 0) do_av = TRUE;
+    if (strcmp(optname, "--av")      == 0) do_av = true;
 
     if (strcmp(optname, "-h")        == 0) {
       HMMERBanner(stdout, banner);

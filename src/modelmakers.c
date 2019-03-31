@@ -30,8 +30,9 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -39,10 +40,11 @@
 #include <float.h>
 #include <ctype.h>
 
-#include "squid.h"
-#include "msa.h"
+//#include "squid.h"
+//#include "msa.h"
 #include "structs.h"
 #include "funcs.h"
+#include "vectorops.h"
 
 
 
@@ -99,7 +101,7 @@ void
 P7Handmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag,
                  struct plan7_s **ret_hmm, struct p7trace_s ***ret_tr) {
   int     *matassign;           /* MAT state assignments if 1; 1..alen */
-  int      apos;                /* counter for aligned columns         */
+  // apos                /* counter for aligned columns         */
 
   /* Make sure we have all the info about the alignment that we need */
   if (msa->rf == NULL)
@@ -111,7 +113,7 @@ P7Handmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag,
   /* Determine match assignment from optional annotation
    */
   matassign[0] = 0;
-  for (apos = 0; apos < msa->alen; apos++) {
+  for (size_t apos = 0; apos < msa->alen; apos++) {
     matassign[apos+1] = 0;
     if (!isgap(msa->rf[apos]))
       matassign[apos+1] |= ASSIGN_MATCH;
@@ -189,12 +191,12 @@ void
 P7Fastmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag, float symfrac,
                  struct plan7_s **ret_hmm, struct p7trace_s ***ret_tr) {
   int     *matassign;           /* MAT state assignments if 1; 1..alen */
-  int      idx;                 /* counter over sequences              */
-  int      apos;                /* counter for aligned columns         */
+  // idx                 /* counter over sequences              */
+  // apos                /* counter for aligned columns         */
   float   *r;            /* weighted frac of gaps in column     */
   float    totwgt;          /* total non-fragment seq weight       */
   float    maxR;               /* maximum r_i                         */
-  int      incfrags;    /* TRUE to include candidate frags  */
+  int      incfrags;    /* true to include candidate frags  */
 
   /* Allocations: matassign is 1..alen array of bit flags;
    *              gapfrac is 1..alen array of fractions 0<=gapfrac[i]<=1
@@ -204,9 +206,9 @@ P7Fastmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag, float symfrac,
 
   /* Determine total non-frag weight, just once.
    */
-  incfrags = FALSE;
+  incfrags = false;
   totwgt   = 0.;
-  for (idx = 0; idx < msa->nseq; idx++)
+  for (size_t idx = 0; idx < msa->nseq; idx++)
     if (! isfrag[idx]) totwgt += msa->wgt[idx];
 
   /* Fallback position, if we don't have any non-candidate frags:
@@ -214,15 +216,15 @@ P7Fastmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag, float symfrac,
    */
   if (totwgt == 0.) { /* yes, this fp compare is safe */
     totwgt = FSum(msa->wgt, msa->nseq);
-    incfrags = TRUE;
+    incfrags = true;
   }
 
   /* Determine weighted sym freq in each column; keep track of max.
    * Mind the off-by-one (r is 1..alen, msa->aseq is 0..alen-1)
    */
-  for (apos = 0; apos < msa->alen; apos++) {
+  for (size_t apos = 0; apos < msa->alen; apos++) {
     r[apos+1] = 0.;
-    for (idx = 0; idx < msa->nseq; idx++)
+    for (size_t idx = 0; idx < msa->nseq; idx++)
       if ((incfrags || ! isfrag[idx])
           && ! isgap(msa->aseq[idx][apos]))
         r[apos+1] += msa->wgt[idx];
@@ -233,7 +235,7 @@ P7Fastmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag, float symfrac,
   /* Determine match assignment. (Both matassign and r are 1..alen)
    */
   matassign[0] = 0;
-  for (apos = 1; apos <= msa->alen; apos++) {
+  for (size_t apos = 1; apos <= msa->alen; apos++) {
     matassign[apos] = 0;
     if (r[apos] >= symfrac * maxR) matassign[apos] |= ASSIGN_MATCH;
     else                           matassign[apos] |= ASSIGN_INSERT;
@@ -273,8 +275,8 @@ matassign2hmm(MSA *msa, unsigned char **dsq, char *isfrag, int *matassign,
   struct plan7_s    *hmm;       /* RETURN: new hmm                     */
   struct p7trace_s **tr;        /* fake tracebacks for each seq        */
   int      M;                   /* length of new model in match states */
-  int      idx;                 /* counter over sequences              */
-  int      apos;                /* counter for aligned columns         */
+  // idx                 /* counter over sequences              */
+  size_t apos;                /* counter for aligned columns         */
 
   /* how many match states in the HMM? */
   M = 0;
@@ -307,7 +309,7 @@ options to hmmbuild.");
   /* build model from tracebacks */
   hmm = AllocPlan7(M);
   ZeroPlan7(hmm);
-  for (idx = 0; idx < msa->nseq; idx++) {
+  for (size_t idx = 0; idx < msa->nseq; idx++) {
     /* P7PrintTrace(stdout, tr[idx], NULL, NULL);   */
     P7TraceCount(hmm, dsq[idx], msa->wgt[idx], tr[idx]);
   }
@@ -327,7 +329,7 @@ options to hmmbuild.");
   /* Cleanup and return. */
   if (ret_tr != NULL) *ret_tr = tr;
   else   {
-    for (idx = 0; idx < msa->nseq; idx++) P7FreeTrace(tr[idx]);
+    for (size_t idx = 0; idx < msa->nseq; idx++) P7FreeTrace(tr[idx]);
     free(tr);
   }
   if (ret_hmm != NULL) *ret_hmm = hmm;
@@ -597,8 +599,8 @@ trace_doctor(struct p7trace_s *tr, int mlen, int *ret_ndi, int *ret_nid) {
  */
 static void
 annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
-  int   apos;      /* position in matassign, 1.alen  */
-  int   k;      /* position in model, 1.M         */
+  // apos      /* position in matassign, 1.alen  */
+  size_t k;      /* position in model, 1.M         */
   char *pri;      /* X-PRM, X-PRI, X-PRT annotation */
 
   /* Transfer reference coord annotation from alignment,
@@ -606,7 +608,7 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
    */
   if (msa->rf != NULL) {
     hmm->rf[0] = ' ';
-    for (apos = k = 1; apos <= msa->alen; apos++)
+    for (size_t apos = k = 1; apos <= msa->alen; apos++)
       if (matassign[apos] & ASSIGN_MATCH) /* ainfo is off by one from HMM */
         hmm->rf[k++] = (msa->rf[apos-1] == ' ') ? '.' : msa->rf[apos-1];
     hmm->rf[k] = '\0';
@@ -618,7 +620,7 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
    */
   if (msa->ss_cons != NULL) {
     hmm->cs[0] = ' ';
-    for (apos = k = 1; apos <= msa->alen; apos++)
+    for (size_t apos = k = 1; apos <= msa->alen; apos++)
       if (matassign[apos] & ASSIGN_MATCH)
         hmm->cs[k++] = (msa->ss_cons[apos-1] == ' ') ? '.' : msa->ss_cons[apos-1];
     hmm->cs[k] = '\0';
@@ -630,7 +632,7 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
    */
   if (msa->sa_cons != NULL) {
     hmm->ca[0] = ' ';
-    for (apos = k = 1; apos <= msa->alen; apos++)
+    for (size_t apos = k = 1; apos <= msa->alen; apos++)
       if (matassign[apos] & ASSIGN_MATCH)
         hmm->ca[k++] = (msa->sa_cons[apos-1] == ' ') ? '.' : msa->sa_cons[apos-1];
     hmm->ca[k] = '\0';
@@ -639,7 +641,7 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
 
   /* Store the alignment map
    */
-  for (apos = k = 1; apos <= msa->alen; apos++)
+  for (size_t apos = k = 1; apos <= msa->alen; apos++)
     if (matassign[apos] & ASSIGN_MATCH)
       hmm->map[k++] = apos;
   hmm->flags |= PLAN7_MAP;
@@ -652,7 +654,7 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
    */
   if ((pri = MSAGetGC(msa, "X-PRM")) != NULL) {
     hmm->mpri = MallocOrDie(sizeof(int) * (hmm->M+1));
-    for (apos = k = 1; apos <= msa->alen; apos++)
+    for (size_t apos = k = 1; apos <= msa->alen; apos++)
       if (matassign[apos] & ASSIGN_MATCH) {
         if      (isdigit((int) pri[apos-1])) hmm->mpri[k] = pri[apos-1] - '0';
         else if (islower((int) pri[apos-1])) hmm->mpri[k] = pri[apos-1] - 'a' + 10;
@@ -665,7 +667,7 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
    */
   if ((pri = MSAGetGC(msa, "X-PRI")) != NULL) {
     hmm->ipri = MallocOrDie(sizeof(int) * (hmm->M+1));
-    for (apos = k = 1; apos <= msa->alen; apos++)
+    for (size_t apos = k = 1; apos <= msa->alen; apos++)
       if (matassign[apos] & ASSIGN_MATCH) {
         if      (isdigit((int) pri[apos-1])) hmm->ipri[k] = pri[apos-1] - '0';
         else if (islower((int) pri[apos-1])) hmm->ipri[k] = pri[apos-1] - 'a' + 10;
@@ -678,7 +680,7 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
    */
   if ((pri = MSAGetGC(msa, "X-PRT")) != NULL) {
     hmm->tpri = MallocOrDie(sizeof(int) * (hmm->M+1));
-    for (apos = k = 1; apos <= msa->alen; apos++)
+    for (size_t apos = k = 1; apos <= msa->alen; apos++)
       if (matassign[apos] & ASSIGN_MATCH) {
         if      (isdigit((int) pri[apos-1])) hmm->tpri[k] = pri[apos-1] - '0';
         else if (islower((int) pri[apos-1])) hmm->tpri[k] = pri[apos-1] - 'a' + 10;
@@ -690,18 +692,3 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
 
 }
 
-#if 0
-static void
-print_matassign(int *matassign, int alen) {
-  int apos;
-
-  for (apos = 0; apos <= alen; apos++) {
-    printf("%3d %c %c %c\n",
-           apos,
-           (matassign[apos] & ASSIGN_MATCH) ? 'x':' ',
-           (matassign[apos] & FIRST_MATCH || matassign[apos] & LAST_MATCH) ? '<' : ' ',
-           (matassign[apos] & EXTERNAL_INSERT_N ||
-            matassign[apos] & EXTERNAL_INSERT_C) ? '|':' ');
-  }
-}
-#endif

@@ -1,5 +1,4 @@
 /* fitting_test.c
- * 17 June 1997 (see notebook)
  */
 
 #include "config.h"
@@ -13,7 +12,7 @@
 
 #include "structs.h"
 #include "funcs.h"
-#include "squid.h"
+//#include "squid.h"
 
 #include "globals.h"
 
@@ -56,7 +55,7 @@ main(int argc, char **argv) {
     else if (!set && fit_evd)
       ExtremeValueFitHistogram(histog, 9999.);
     else
-      GaussianFitHistogram(histog, 9999.);
+      GaussianFitHistogram(histog);
 
     printf("%f\n", histog->chip);
 

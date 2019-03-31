@@ -13,14 +13,14 @@ cc -O2 -o weetest -I ~/lib/squid.linux -L/nfs/wol2/people/eddy/lib/squid.linux w
 /* This test looks at histogram of protein lengths in Swissprot
  */
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
-#include "squid.h"
+//#include "squid.h"
 
 int
 main(int argc, char **argv) {
@@ -42,7 +42,7 @@ main(int argc, char **argv) {
   while (ReadSeq(sqfp, format, &seq, &sqinfo))
     AddToHistogram(h, (float) sqinfo.len);
 
-  GaussianFitHistogram(h, 999999.);
+  GaussianFitHistogram(h);
   PrintASCIIHistogram(stdout, h);
 
   printf("mean = %f\n", h->param[GAUSS_MEAN]);

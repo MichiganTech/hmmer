@@ -19,6 +19,8 @@
  * [bug #h25. xref STL7 p121]
  */
 
+#pragma once
+
 char  Alphabet[MAXCODE+1]; /* ACGT, for instance                    */
 int   Alphabet_type;       /* hmmNUCLEIC or hmmAMINO                */
 int   Alphabet_size;       /* uniq alphabet size: 4 or 20           */

@@ -1,18 +1,19 @@
 
 
-MYLIBS	 = -lsquid
+MYLIBS	 =
 MYLIBDIR = 
-MYINCDIR = -I/usr/include/biosquid
+MYINCDIR =
 
 HMMLIB = libhmmer$(PROGSUFFIX).so
 
 
 OBJS =	alphabet.o\
+	fast_algorithms.o\
 	core_algorithms.o\
 	debug.o\
 	emit.o\
 	emulation.o\
-	fast_algorithms.o\
+	getopt.o\
 	histogram.o\
 	hmmio.o\
 	infocontent.o\
@@ -27,7 +28,18 @@ OBJS =	alphabet.o\
 	postprob.o\
 	prior.o\
 	tophits.o\
-	trace.o
+	trace.o\
+	ugly.o\
+	hsregex.o\
+	vectorops.o\
+	msa.o\
+	squid.o\
+	stockholm.o\
+	selex.o\
+	phylip.o\
+	msf.o\
+	a2m.o\
+	ssi.o
 
 HDRS =	config.h\
 	funcs.h\
@@ -45,7 +57,7 @@ HDRS =	config.h\
 all:	 $(PROGS)
 
 ${PROGS}: %: %.o ${OBJS}
-	${CC} ${CFLAGS} ${MYLIBDIR} -o $@ $@.o ${OBJS} ${MYLIBS} ${PTHREAD_LIBS} ${LIBS} $(LDFLAGS)
+	${CC} ${CFLAGS} ${MYLIBDIR} -o $@ ${OBJS} ${MYLIBS} $@.o ${PTHREAD_LIBS} ${LIBS} $(LDFLAGS)
 
 
 #################################################################

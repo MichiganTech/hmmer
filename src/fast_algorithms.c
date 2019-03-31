@@ -37,11 +37,11 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include "structs.h"
 #include "funcs.h"
-#include "squid.h"
+//#include "squid.h"
 
 
 /* the DEFAULT P7Viterbi() is portably optimized; code follows:
@@ -293,32 +293,14 @@ AllocPlan7Body(struct plan7_s *hmm, int M) {
 }
 
 
-/* Function: CreatePlan7Matrix()
- *
- * Purpose:  Create a dynamic programming matrix for standard Forward,
- *           Backward, or Viterbi, with scores kept as scaled log-odds
- *           integers. Keeps 2D arrays compact in RAM in an attempt
- *           to maximize cache hits.
- *
- *           The mx structure can be dynamically grown, if a new
- *           HMM or seq exceeds the currently allocated size. Dynamic
- *           growing is more efficient than an alloc/free of a whole
- *           matrix for every new target. The ResizePlan7Matrix()
- *           call does this reallocation, if needed. Here, in the
- *           creation step, we set up some pads - to inform the resizing
- *           call how much to overallocate when it realloc's. If a pad
- *           is zero, we will not resize in that dimension.
- *
- * Args:     N     - N+1 rows are allocated, for sequence.
- *           M     - size of model in nodes
- *           padN  - over-realloc in seq/row dimension, or 0
- *           padM  - over-realloc in HMM/column dimension, or 0
- *
- * Return:   mx
- *           mx is allocated here. Caller frees with FreePlan7Matrix(mx).
- */
+
 struct dpmatrix_s *
-CreatePlan7Matrix(int N, int M, int padN, int padM) {
+CreatePlan7Matrix(
+  int N, 
+  int M, 
+  int padN, 
+  int padM
+){
   struct dpmatrix_s *mx;
 
   mx         = (struct dpmatrix_s *) MallocOrDie (sizeof(struct dpmatrix_s));

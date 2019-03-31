@@ -15,13 +15,13 @@
  */
 
 #include "config.h"
-#include "squidconf.h"
+//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "squid.h"
+//#include "squid.h"
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
@@ -39,8 +39,8 @@ static char experts[] = "\
 ";
 
 static struct opt_s OPTIONS[] = {
-  { "-h", TRUE, sqdARG_NONE  },
-  { "-n", TRUE, sqdARG_NONE  },
+  { "-h", true, sqdARG_NONE  },
+  { "-n", true, sqdARG_NONE  },
 };
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
@@ -62,11 +62,11 @@ main(int argc, char **argv) {
    * Parse the command line
    ***********************************************/
 
-  by_number = FALSE;
+  by_number = false;
 
   while (Getopt(argc, argv, OPTIONS, NOPTIONS, usage,
                 &optind, &optname, &optarg)) {
-    if      (strcmp(optname, "-n") == 0) by_number = TRUE;
+    if      (strcmp(optname, "-n") == 0) by_number = true;
     else if (strcmp(optname, "-h") == 0) {
       HMMERBanner(stdout, banner);
       puts(usage);
