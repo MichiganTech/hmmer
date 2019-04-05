@@ -17,22 +17,18 @@ SHIVA = alignalign_test\
 #######
 
 .c.o:
-	$(CC) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -I../src -c $<
+	$(CXX) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -I../src -c $<
 
 all: 	$(SHIVA)
 
 $(SHIVA): %: %.o
-	$(CC) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -o $@ -I../src -L../src $@.o $(MYLIBS) $(PTHREAD_LIBS) $(LIBS)
+	$(CXX) $(CFLAGS) $(PTHREAD_CFLAGS) $(DEFS) -o $@ -I../src -L../src $@.o $(MYLIBS) $(PTHREAD_LIBS) $(LIBS)
 
 #######
 ## `make check` actually runs the tests.
 #######
 
 check:
-	@echo
-	@echo Running test suite exercises.
-	@echo Warning: some tests may take several minutes to complete.
-	@echo
 	LD_LIBRARY_PATH=LD_LIBRARY_PATH:../src/ ./sqc 2 exercises.sqc . ../src
 
 

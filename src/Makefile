@@ -60,7 +60,7 @@ HDRS =	config.h\
 	structs.h
 
 .c.o:
-	${CC} ${CFLAGS} ${PTHREAD_CFLAGS} ${MYINCDIR} ${LIBS} -c $<
+	${CXX} ${CFLAGS} ${PTHREAD_CFLAGS} ${MYINCDIR} ${LIBS} -c $<
 
 #################################################################
 ## Targets defining how to make HMMER executables.
@@ -68,7 +68,7 @@ HDRS =	config.h\
 all:	 $(PROGS)
 
 ${PROGS}: %: %.o ${OBJS}
-	${CC} ${CFLAGS} ${MYLIBDIR} -o $@ ${OBJS} ${MYLIBS} $@.o ${PTHREAD_LIBS} ${LIBS} $(LDFLAGS)
+	${CXX} ${CFLAGS} ${MYLIBDIR} -o $@ ${OBJS} ${MYLIBS} $@.o ${PTHREAD_LIBS} ${LIBS} $(LDFLAGS)
 
 
 #################################################################
