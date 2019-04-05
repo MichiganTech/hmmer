@@ -45,6 +45,8 @@ AllocPlan7(int M) {
   AllocPlan7Body(hmm, M);
   return hmm;
 }
+
+
 struct plan7_s *
 AllocPlan7Shell(void) {
   struct plan7_s *hmm;
@@ -97,71 +99,7 @@ AllocPlan7Shell(void) {
   hmm->flags = 0;
   return hmm;
 }
-#ifndef ALTIVEC  /* in Altivec port, replaced in fast_algorithms.c */
-void
-AllocPlan7Body(struct plan7_s *hmm, int M) {
-  int k, x;
 
-  hmm->M = M;
-
-  hmm->rf     = MallocOrDie ((M+2) * sizeof(char));
-  hmm->cs     = MallocOrDie ((M+2) * sizeof(char));
-  hmm->ca     = MallocOrDie ((M+2) * sizeof(char));
-  hmm->map    = MallocOrDie ((M+1) * sizeof(int));
-
-  hmm->t      = MallocOrDie (M     *           sizeof(float *));
-  hmm->mat    = MallocOrDie ((M+1) *           sizeof(float *));
-  hmm->ins    = MallocOrDie (M     *           sizeof(float *));
-  hmm->t[0]   = MallocOrDie ((7*M)     *       sizeof(float));
-  hmm->mat[0] = MallocOrDie ((MAXABET*(M+1)) * sizeof(float));
-  hmm->ins[0] = MallocOrDie ((MAXABET*M) *     sizeof(float));
-
-  hmm->tsc     = MallocOrDie (7     *           sizeof(int *));
-  hmm->msc     = MallocOrDie (MAXCODE   *       sizeof(int *));
-  hmm->isc     = MallocOrDie (MAXCODE   *       sizeof(int *));
-  hmm->tsc_mem = MallocOrDie ((7*M)     *       sizeof(int));
-  hmm->msc_mem = MallocOrDie ((MAXCODE*(M+1)) * sizeof(int));
-  hmm->isc_mem = MallocOrDie ((MAXCODE*M) *     sizeof(int));
-
-  hmm->tsc[0] = hmm->tsc_mem;
-  hmm->msc[0] = hmm->msc_mem;
-  hmm->isc[0] = hmm->isc_mem;
-
-  /* note allocation strategy for important 2D arrays -- trying
-   * to keep locality as much as possible, cache efficiency etc.
-   */
-  for (k = 1; k <= M; k++) {
-    hmm->mat[k] = hmm->mat[0] + k * MAXABET;
-    if (k < M) {
-      hmm->ins[k] = hmm->ins[0] + k * MAXABET;
-      hmm->t[k]   = hmm->t[0]   + k * 7;
-    }
-  }
-  for (x = 1; x < MAXCODE; x++) {
-    hmm->msc[x] = hmm->msc[0] + x * (M+1);
-    hmm->isc[x] = hmm->isc[0] + x * M;
-  }
-  for (x = 0; x < 7; x++)
-    hmm->tsc[x] = hmm->tsc[0] + x * M;
-
-  /* tsc[x][0] is used as a boundary condition sometimes [Viterbi()],
-   * so set to -inf always.
-   */
-  for (x = 0; x < 7; x++)
-    hmm->tsc[x][0] = -INFTY;
-
-  hmm->begin  = MallocOrDie  ((M+1) * sizeof(float));
-  hmm->end    = MallocOrDie  ((M+1) * sizeof(float));
-
-  hmm->bsc_mem  = MallocOrDie  ((M+1) * sizeof(int));
-  hmm->esc_mem  = MallocOrDie  ((M+1) * sizeof(int));
-
-  hmm->bsc = hmm->bsc_mem;
-  hmm->esc = hmm->esc_mem;
-
-  return;
-}
-#endif /* ALTIVEC */
 
 void
 FreePlan7(struct plan7_s *hmm) {

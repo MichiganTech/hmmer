@@ -26,6 +26,11 @@
 #include "globals.h"    /* alphabet global variables            */
 //#include "squid.h"    /* general sequence analysis library    */
 //#include "msa.h"    /* squid's multiple sequence i/o        */
+#include "getopt.h"
+#include "sqio.h"
+#include "vectorops.h"
+#include "stockholm.h"
+
 
 static char banner[] = "hmmemit - generate sequences from a profile HMM";
 
@@ -107,7 +112,7 @@ main(int argc, char **argv) {
 
   hmmfile = argv[optind++];
 
-  sre_srandom(seed);
+  srand48(seed);
 
   if (do_alignment && do_consensus)
     Die("Sorry, -a and -c are incompatible.\nUsage:\n%s", usage);

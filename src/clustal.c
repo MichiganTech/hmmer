@@ -28,7 +28,6 @@ ReadClustal(
 ){
   MSA    *msa;
   char   *s;
-  int     slen;
   int     sqidx;
   char   *name;
   char   *seq;
@@ -55,9 +54,9 @@ ReadClustal(
    */
   while ((s = MSAFileGetLine(afp)) != NULL) 
     {
-      if ((name = sre_strtok(&s, WHITESPACE, NULL))  == NULL) continue;
-      if ((seq  = sre_strtok(&s, WHITESPACE, &slen)) == NULL) continue;
-      s2 = sre_strtok(&s, "\n", NULL);
+      if ((name = strtok(s, WHITESPACE))  == NULL) continue;
+      if ((seq  = strtok(NULL, WHITESPACE)) == NULL) continue;
+      s2 = strtok(NULL, "\n");
 
       /* The test for a conservation markup line
        */
@@ -71,7 +70,8 @@ ReadClustal(
        */
       sqidx = MSAGetSeqidx(msa, name, msa->lastidx+1);
       msa->lastidx = sqidx;
-      msa->sqlen[sqidx] = sre_strcat(&(msa->aseq[sqidx]), msa->sqlen[sqidx], seq, slen); 
+      msa->aseq[sqidx] = realloc(msa->aseq[sqidx], strlen(msa->aseq[sqidx]) + strlen(seq) + 1);
+      msa->sqlen[sqidx] = strlen(strcat(msa->aseq[sqidx], seq)); 
     }
 
   MSAVerifyParse(msa);    /* verifies, and also sets alen and wgt. */

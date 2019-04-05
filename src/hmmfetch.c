@@ -25,6 +25,8 @@
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
+#include "getopt.h"
+
 
 static char banner[] = "hmmfetch -- retrieve specific HMM from an HMM database";
 

@@ -25,6 +25,9 @@
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
 //#include "squid.h"    /* general sequence analysis library    */
+#include "getopt.h"
+#include "file.h"
+
 
 static char banner[] = "hmmconvert - convert between profile HMM file formats";
 

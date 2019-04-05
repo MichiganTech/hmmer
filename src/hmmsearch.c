@@ -28,6 +28,9 @@
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
+#include "getopt.h"
+#include "sqio.h"
+
 
 static char banner[] = "hmmsearch - search a sequence database with a profile HMM";
 
@@ -529,7 +532,7 @@ main_loop_serial(struct plan7_s *hmm, SQFILE *sqfp, struct threshold_s *thresh, 
   mx = CreatePlan7Matrix(1, hmm->M, 25, 0);
 
   nseq = 0;
-  while (ReadSeq(sqfp, sqfp->format, &seq, &sqinfo)) {
+  while (ReadSeq(sqfp, &seq, &sqinfo)) {
     /* Silently skip length 0 seqs.
      * What, you think this doesn't occur? Welcome to genomics,
      * young grasshopper.
@@ -548,40 +551,7 @@ main_loop_serial(struct plan7_s *hmm, SQFILE *sqfp, struct threshold_s *thresh, 
      *    about underflow issues), and tr will be returned as NULL.
      */
 
-#ifdef ALTIVEC
 
-    /* By default we call an Altivec routine that doesn't save the full
-     * trace. This also means the memory usage is just proportional to the
-     * model (hmm->M), so we don't need to check if space is OK unless
-     * we need the trace.
-     */
-    if(do_forward && do_null2) {
-      /* Need the trace - first check space */
-      if (P7ViterbiSpaceOK(sqinfo.len, hmm->M, mx)) {
-        /* Slower altivec */
-        sc = P7Viterbi(dsq, sqinfo.len, hmm, mx, &tr);
-      } else {
-        /* C code */
-        sc = P7SmallViterbi(dsq, sqinfo.len, hmm, mx, &tr);
-      }
-
-    } else {
-      /* When using Altivec, the new dynamic programming process is so
-      * effective that it is constrained by the memory bandwidth used
-      * for loading/storing values in the dynamic programming matrix.
-      *
-      * In 99% of all cases the score is anyway so low that we are not
-      * interested in the alignment, and thus don't NEED the trace.
-      * which is the only reason to store the full programming matrix.
-      *
-      * Do the programming without a trace first, and recalculate the
-      * trace further down if it turns out we need it.
-      */
-      sc = P7ViterbiNoTrace(dsq, sqinfo.len, hmm, mx);
-      tr = NULL;
-    }
-
-#else /* not altivec */
 
     if (P7ViterbiSpaceOK(sqinfo.len, hmm->M, mx)) {
       sc = P7Viterbi(dsq, sqinfo.len, hmm, mx, &tr);
@@ -589,7 +559,6 @@ main_loop_serial(struct plan7_s *hmm, SQFILE *sqfp, struct threshold_s *thresh, 
       sc = P7SmallViterbi(dsq, sqinfo.len, hmm, mx, &tr);
     }
 
-#endif
 
     /* 2. If we're using Forward scores, calculate the
      *    whole sequence score; this overrides anything
@@ -599,22 +568,15 @@ main_loop_serial(struct plan7_s *hmm, SQFILE *sqfp, struct threshold_s *thresh, 
       sc  = P7Forward(dsq, sqinfo.len, hmm, NULL);
       if (do_null2) {
         /* We need the trace - recalculate it if we didn't already do it */
-#ifdef ALTIVEC
-        if(tr == NULL) {
-          if (P7ViterbiSpaceOK(sqinfo.len, hmm->M, mx)) {
-            sc = P7Viterbi(dsq, sqinfo.len, hmm, mx, &tr);
-          } else {
-            sc = P7SmallViterbi(dsq, sqinfo.len, hmm, mx, &tr);
-          }
-        }
-#endif
+
         sc -= TraceScoreCorrection(hmm, tr, dsq);
       }
     }
-
+    /*
 #if DEBUGLEVEL >= 2 && !(defined ALTIVEC)
     P7PrintTrace(stdout, tr, hmm, dsq);
 #endif
+    */
 
     /* 2. Store score/pvalue for global alignment; will sort on score,
      *    which in hmmsearch is monotonic with E-value.
@@ -628,15 +590,7 @@ main_loop_serial(struct plan7_s *hmm, SQFILE *sqfp, struct threshold_s *thresh, 
     evalue = thresh->Z ? (double) thresh->Z * pvalue : (double) nseq * pvalue;
     if (sc >= thresh->globT && evalue <= thresh->globE) {
       /* Recalculate trace if we used altivec */
-#ifdef ALTIVEC
-      if(tr == NULL) {
-        if (P7ViterbiSpaceOK(sqinfo.len, hmm->M, mx)) {
-          sc = P7Viterbi(dsq, sqinfo.len, hmm, mx, &tr);
-        } else {
-          sc = P7SmallViterbi(dsq, sqinfo.len, hmm, mx, &tr);
-        }
-      }
-#endif
+
       sc = PostprocessSignificantHit(ghit, dhit,
                                      tr, hmm, dsq, sqinfo.len,
                                      sqinfo.name,
@@ -648,7 +602,7 @@ main_loop_serial(struct plan7_s *hmm, SQFILE *sqfp, struct threshold_s *thresh, 
                                      false);
       /* false-> not hmmpfam mode, hmmsearch mode */
     }
-    SQD_DPRINTF2(("AddToHistogram: %s\t%f\n", sqinfo.name, sc));
+    //SQD_DPRINTF2(("AddToHistogram: %s\t%f\n", sqinfo.name, sc));
     AddToHistogram(histogram, sc);
     FreeSequence(seq, &sqinfo);
 
@@ -847,14 +801,14 @@ worker_thread(void *ptr) {
     int rtn; // a return code from pthreads lib
     if ((rtn = pthread_mutex_lock(&(wpool->input_lock))) != 0)
       Die("pthread_mutex_lock failure: %s\n", strerror(rtn));
-    if (! ReadSeq(wpool->sqfp, wpool->sqfp->format, &seq, &sqinfo)) {
+    if (! ReadSeq(wpool->sqfp, &seq, &sqinfo)) {
       /* we're done. release lock, exit thread */
       if ((rtn = pthread_mutex_unlock(&(wpool->input_lock))) != 0)
         Die("pthread_mutex_unlock failure: %s\n", strerror(rtn));
       FreePlan7Matrix(mx);
       pthread_exit(NULL);
     }
-    SQD_DPRINTF1(("a thread is working on %s\n", sqinfo.name));
+    //SQD_DPRINTF1(("a thread is working on %s\n", sqinfo.name));
     wpool->nseq++;
     /* release the lock */
     if ((rtn = pthread_mutex_unlock(&(wpool->input_lock))) != 0)
@@ -868,39 +822,7 @@ worker_thread(void *ptr) {
     /* 1. Recover a trace by Viterbi.
      */
 
-#ifdef ALTIVEC
 
-    /* By default we call an Altivec routine that doesn't save the full
-        * trace. This also means the memory usage is just proportional to the
-        * model (hmm->M), so we don't need to check if space is OK unless
-        * we need the trace.
-        */
-
-    if(wpool->do_forward && wpool->do_null2) {
-      /* Need the trace, first check space */
-      if (P7ViterbiSpaceOK(sqinfo.len, wpool->hmm->M, mx)) {
-        sc = P7Viterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
-      } else {
-        /* Low-memory version */
-        sc = P7SmallViterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
-      }
-    } else {
-      /* When using Altivec, the new dynamic programming process is so
-      * effective that it is constrained by the memory bandwidth used
-      * for loading/storing values in the dynamic programming matrix.
-      *
-      * In 99% of all cases the score is anyway so low that we are not
-      * interested in the alignment, and thus don't NEED the trace.
-      * which is the only reason to store the full programming matrix.
-      *
-      * Do the programming without a trace first, and recalculate the
-      * trace further down if it turns out we need it.
-      */
-      sc = P7ViterbiNoTrace(dsq, sqinfo.len, wpool->hmm, mx);
-      tr = NULL;
-    }
-
-#else /* not altivec */
 
     if (P7ViterbiSpaceOK(sqinfo.len, wpool->hmm->M, mx)) {
       sc = P7Viterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
@@ -908,7 +830,6 @@ worker_thread(void *ptr) {
       sc = P7SmallViterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
     }
 
-#endif
 
     /* 2. If we're using Forward scores, do another DP
      *    to get it; else, we already have a Viterbi score
@@ -918,15 +839,7 @@ worker_thread(void *ptr) {
       sc  = P7Forward(dsq, sqinfo.len, wpool->hmm, NULL);
       if (wpool->do_null2) {
         /* We need the trace - calculate it if necessary */
-#ifdef ALTIVEC
-        if(tr == NULL) {
-          if (P7ViterbiSpaceOK(sqinfo.len, wpool->hmm->M, mx)) {
-            sc = P7Viterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
-          } else {
-            sc = P7SmallViterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
-          }
-        }
-#endif
+
         sc -= TraceScoreCorrection(wpool->hmm, tr, dsq);
       }
     }
@@ -935,22 +848,14 @@ worker_thread(void *ptr) {
      */
     if ((rtn = pthread_mutex_lock(&(wpool->output_lock))) != 0)
       Die("pthread_mutex_lock failure: %s\n", strerror(rtn));
-    SQD_DPRINTF1(("seq %s scores %f\n", sqinfo.name, sc));
+    //SQD_DPRINTF1(("seq %s scores %f\n", sqinfo.name, sc));
 
     pvalue = PValue(wpool->hmm, sc);
     evalue = wpool->thresh->Z ? (double) wpool->thresh->Z * pvalue : (double) wpool->nseq * pvalue;
 
     if (sc >= wpool->thresh->globT && evalue <= wpool->thresh->globE) {
       /* Recalculate trace if we used altivec */
-#ifdef ALTIVEC
-      if(tr == NULL) {
-        if (P7ViterbiSpaceOK(sqinfo.len, wpool->hmm->M, mx)) {
-          sc = P7Viterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
-        } else {
-          sc = P7SmallViterbi(dsq, sqinfo.len, wpool->hmm, mx, &tr);
-        }
-      }
-#endif
+
       sc = PostprocessSignificantHit(wpool->ghit, wpool->dhit,
                                      tr, wpool->hmm, dsq, sqinfo.len,
                                      sqinfo.name,
@@ -962,7 +867,7 @@ worker_thread(void *ptr) {
                                      false);
       /* false-> not hmmpfam mode, hmmsearch mode */
     }
-    SQD_DPRINTF2(("AddToHistogram: %s\t%f\n", sqinfo.name, sc));
+    //SQD_DPRINTF2(("AddToHistogram: %s\t%f\n", sqinfo.name, sc));
     AddToHistogram(wpool->hist, sc);
     if ((rtn = pthread_mutex_unlock(&(wpool->output_lock))) != 0)
       Die("pthread_mutex_unlock failure: %s\n", strerror(rtn));

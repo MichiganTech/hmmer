@@ -8,8 +8,7 @@ HMMLIB = libhmmer$(PROGSUFFIX).so
 
 
 OBJS =	alphabet.o\
-	fast_algorithms.o\
-	core_algorithms.o\
+	algorithms.o\
 	debug.o\
 	emit.o\
 	emulation.o\
@@ -39,7 +38,19 @@ OBJS =	alphabet.o\
 	phylip.o\
 	msf.o\
 	a2m.o\
-	ssi.o
+	ssi.o\
+	alignio.o\
+	file.o\
+	clustal.o\
+	sqio.o\
+	weight.o\
+	cluster.o\
+	sre_math.o\
+	stack.o\
+	aligneval.o\
+	stopwatch.o\
+	sre_random.o\
+	sre_string.o
 
 HDRS =	config.h\
 	funcs.h\

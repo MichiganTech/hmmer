@@ -30,10 +30,13 @@
 #include "msf.h"
 #include "stockholm.h"
 
+#include "alignio.h"
+#include "file.h"
 #include "squid.h"
 #include "msa.h"	/* multiple sequence alignment object support */
 #include "ssi.h"	/* SSI sequence file indexing code */
 #include "vectorops.h"
+#include "aligneval.h"
 
 
 /*****************************************************************

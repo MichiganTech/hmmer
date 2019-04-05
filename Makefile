@@ -12,7 +12,32 @@ export MANDIR      = ${prefix}/share/man
 export PROGSUFFIX = 2
 export MANSUFFIX = 1
 
-export CFLAGS += -pipe -Wall -Wextra -Wpedantic -Wno-sign-compare -fPIC -O0 -ggdb
+export CFLAGS += -pipe\
+-Wall \
+-Wextra \
+-Wpedantic \
+-Wno-sign-compare \
+-fPIC \
+-O0 \
+-ggdb \
+-fsanitize=address \
+-fno-omit-frame-pointer \
+-Wredundant-decls \
+-Wcast-align \
+-Wmissing-declarations \
+-Wmissing-include-dirs \
+-Wswitch-enum \
+-Wswitch-default \
+-Werror \
+-Winvalid-pch \
+-Wredundant-decls \
+-Wmissing-prototypes \
+-Wformat=2 \
+-Wmissing-format-attribute \
+-Wformat-nonliteral \
+-flto
+
+
 export LIBS    = -lm -pthread
 
 # The program lists below for HMMER are not necessarily

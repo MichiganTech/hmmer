@@ -20,7 +20,7 @@
 #include <string.h>
 #include <ctype.h>
 
-//#include "squid.h"
+#include "alignio.h"
 #include "structs.h"
 #include "funcs.h"
 

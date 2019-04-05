@@ -30,6 +30,7 @@
  */
 
 #include "selex.h"
+#include "alignio.h"
 
 
 static char commentsyms[] = "%#";
@@ -297,8 +298,9 @@ ReadSELEX(
         /* second field is the weight */
     if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=SQ line in ReadSELEX()");
-    if (!IsReal(sptr)) 
-      Die("Parse error in #=SQ line in ReadSELEX(): weight is not a number");
+    //Removed because IsReal has been removed; replace this file with a proper grammar.
+    //if (!IsReal(sptr)) 
+    //  Die("Parse error in #=SQ line in ReadSELEX(): weight is not a number");
     ainfo->wgt[headnum] = atof(sptr);
 
         /* third field is database source id */

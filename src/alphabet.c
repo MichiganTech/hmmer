@@ -23,23 +23,14 @@
 #include "structs.h"
 #include "funcs.h"
 #include "squid.h"
-#include "msa.h"
-
-static void set_degenerate(char iupac, char *syms);
+#include "alphabet.h"
 
 
-/* Function: DetermineAlphabet()
- *
- * Purpose:  From a set of sequences (raw or aligned), make a good
- *           guess whether they're Nucleic, Amino, or something
- *           else, and set alphabet accordingly.
- *
- *           If Alphabet_type is already set, that means our
- *           autodetection was overridden from the command line,
- *           and we just set the other globals accordingly.
- */
 void
-DetermineAlphabet(char **rseqs, int  nseq) {
+DetermineAlphabet(
+  char **rseqs, 
+  int  nseq
+){
   int idx;
   int other, nucleic, amino;
   int type;
@@ -83,13 +74,10 @@ DetermineAlphabet(char **rseqs, int  nseq) {
 }
 
 
-/* Function: SetAlphabet()
- *
- * Purpose:  Set the alphabet globals, given an alphabet type
- *           of either hmmAMINO or hmmNUCLEIC.
- */
 void
-SetAlphabet(int type) {
+SetAlphabet(
+  int type
+){
   int x;
   pthread_mutex_t  alphabet_lock; /* alphabet is global; must protect to be threadsafe */
   int              rtn;      /* return code from pthreads */
@@ -168,40 +156,22 @@ SetAlphabet(int type) {
     Die("pthread_mutex_unlock failure: %s\n", strerror(rtn));
 }
 
-/* Function: SymbolIndex()
- *
- * Purpose:  Convert a symbol to its index in Alphabet[].
- *           Bogus characters are converted to 'X'.
- *           More robust than the SYMIDX() macro but
- *           presumably slower.
- */
+
 unsigned char
-SymbolIndex(char sym) {
+SymbolIndex(
+  char sym
+){
   char *s;
   return ((s = strchr(Alphabet, (char) toupper((int) sym))) == NULL) ?
          Alphabet_iupac-1 : s - Alphabet;
 }
 
 
-/* Function: DigitizeSequence()
- *
- * Purpose:  Internal representation of a sequence in HMMER is
- *           as a char array. 1..L are the indices
- *           of seq symbols in Alphabet[]. 0,L+1 are sentinel
- *           bytes, set to be Alphabet_iupac -- i.e. one more
- *           than the maximum allowed index.
- *
- *           Assumes that 'X', the fully degenerate character,
- *           is the last character in the allowed alphabet.
- *
- * Args:     seq - sequence to be digitized (0..L-1)
- *           L   - length of sequence
- *
- * Return:   digitized sequence, dsq.
- *           dsq is allocated here and must be free'd by caller.
- */
-unsigned char *
-DigitizeSequence(char *seq, int L) {
+unsigned char*
+DigitizeSequence(
+  char *seq, 
+  int L
+){
   unsigned char *dsq;
   int i;
 
@@ -213,12 +183,11 @@ DigitizeSequence(char *seq, int L) {
 }
 
 
-/* Function: DedigitizeSequence()
- * Purpose:  Returns a 0..L-1 character string, converting the
- *           dsq back to the real alphabet.
- */
-char *
-DedigitizeSequence(unsigned char *dsq, int L) {
+char*
+DedigitizeSequence(
+  unsigned char *dsq, 
+  int L
+){
   char *seq;
   int i;
 
@@ -230,21 +199,11 @@ DedigitizeSequence(unsigned char *dsq, int L) {
 }
 
 
-/* Function: DigitizeAlignment()
- *
- * Purpose:  Given an alignment, return digitized unaligned
- *           sequence array. (Tracebacks are always relative
- *           to digitized unaligned seqs, even if they are
- *           faked from an existing alignment in modelmakers.c.)
- *
- * Args:     msa      - alignment to digitize
- *           ret_dsqs - RETURN: array of digitized unaligned sequences
- *
- * Return:   (void)
- *           dsqs is alloced here. Free2DArray(dseqs, nseq).
- */
 void
-DigitizeAlignment(MSA *msa, unsigned char ***ret_dsqs) {
+DigitizeAlignment(
+  MSA *msa, 
+  unsigned char ***ret_dsqs
+){
   unsigned char **dsq;
   // idx      /* counter for sequences     */
   // apos;      /* position in aligned seq   */
@@ -266,21 +225,12 @@ DigitizeAlignment(MSA *msa, unsigned char ***ret_dsqs) {
 }
 
 
-/* Function: P7CountSymbol()
- *
- * Purpose:  Given a possibly degenerate symbol code, increment
- *           a symbol counter array (generally an emission
- *           probability vector in counts form) appropriately.
- *
- * Args:     counters:  vector to count into. [0..Alphabet_size-1]
- *           symidx:    symbol index to count: [0..Alphabet_iupac-1]
- *           wt:        weight to use for the count; often 1.0
- *
- * Return:   (void)
- */
 void
-P7CountSymbol(float *counters, unsigned char symidx, float wt) {
-
+P7CountSymbol(
+  float *counters, 
+  unsigned char symidx, 
+  float wt
+){
   if (symidx < Alphabet_size)
     counters[symidx] += wt;
   else
@@ -291,122 +241,7 @@ P7CountSymbol(float *counters, unsigned char symidx, float wt) {
 }
 
 
-/* Function: DefaultGeneticCode()
- *
- * Purpose:  Configure aacode, mapping triplets to amino acids.
- *           Triplet index: AAA = 0, AAC = 1, ... UUU = 63.
- *           AA index: alphabetical: A=0,C=1... Y=19
- *           Stop codon: -1.
- *           Uses the stdcode1[] global translation table from SQUID.
- *
- * Args:     aacode  - preallocated 0.63 array for genetic code
- *
- * Return:   (void)
- */
-/*
-//REPORTED UNUSED***************************************************************
 void
-DefaultGeneticCode(int *aacode)
-{
-  int x;
-
-  for (x = 0; x < 64; x++) {
-    if (*(stdcode1[x]) == '*') aacode[x] = -1;
-    else                       aacode[x] = SYMIDX(*(stdcode1[x]));
-  }
-}
-//*/
-
-/* Function: DefaultCodonBias()
- *
- * Purpose:  Configure a codonbias table, mapping triplets to
- *           probability of using the triplet for the amino acid
- *           it represents: P(triplet | aa).
- *           The default is to assume codons are used equiprobably.
- *
- * Args:     codebias:  0..63 array of P(triplet|aa), preallocated.
- *
- * Return:   (void)
- */
-/*
-//REPORTED UNUSED***************************************************************
-void
-DefaultCodonBias(float *codebias)
-{
-  codebias[0]  = 1./2.;  // AAA Lys 2
-  codebias[1]  = 1./2.;  // AAC Asn 2
-  codebias[2]  = 1./2.;  // AAG Lys 2
-  codebias[3]  = 1./2.;  // AAU Asn 2
-  codebias[4]  = 1./4.;  // ACA Thr 4
-  codebias[5]  = 1./4.;  // ACC Thr 4
-  codebias[6]  = 1./4.;  // ACG Thr 4
-  codebias[7]  = 1./4.;  // ACU Thr 4
-  codebias[8]  = 1./6.;  // AGA Ser 6
-  codebias[9]  = 1./6.;  // AGC Arg 6
-  codebias[10] = 1./6.;  // AGG Ser 6
-  codebias[11] = 1./6.;  // AGU Arg 6
-  codebias[12] = 1./3.; // AUA Ile 3
-  codebias[13] = 1./3.; // AUC Ile 3
-  codebias[14] = 1.;    // AUG Met 1
-  codebias[15] = 1./3.;  // AUU Ile 3
-  codebias[16] = 1./2.;  // CAA Gln 2
-  codebias[17] = 1./2.;  // CAC His 2
-  codebias[18] = 1./2.;  // CAG Gln 2
-  codebias[19] = 1./2.;  // CAU His 2
-  codebias[20] = 1./4.;  // CCA Pro 4
-  codebias[21] = 1./4.;  // CCC Pro 4
-  codebias[22] = 1./4.;  // CCG Pro 4
-  codebias[23] = 1./4.;  // CCU Pro 4
-  codebias[24] = 1./6.;  // CGA Arg 6
-  codebias[25] = 1./6.;  // CGC Arg 6
-  codebias[26] = 1./6.;  // CGG Arg 6
-  codebias[27] = 1./6.;  // CGU Arg 6
-  codebias[28] = 1./6.;  // CUA Leu 6
-  codebias[29] = 1./6.;  // CUC Leu 6
-  codebias[30] = 1./6.;  // CUG Leu 6
-  codebias[31] = 1./6.;  // CUU Leu 6
-  codebias[32] = 1./2.;  // GAA Glu 2
-  codebias[33] = 1./2.;  // GAC Asp 2
-  codebias[34] = 1./2.;  // GAG Glu 2
-  codebias[35] = 1./2.;  // GAU Asp 2
-  codebias[36] = 1./4.;  // GCA Ala 4
-  codebias[37] = 1./4.;  // GCC Ala 4
-  codebias[38] = 1./4.;  // GCG Ala 4
-  codebias[39] = 1./4.;  // GCU Ala 4
-  codebias[40] = 1./4.;  // GGA Gly 4
-  codebias[41] = 1./4.;  // GGC Gly 4
-  codebias[42] = 1./4.;  // GGG Gly 4
-  codebias[43] = 1./4.;  // GGU Gly 4
-  codebias[44] = 1./4.;  // GUA Val 4
-  codebias[45] = 1./4.;  // GUC Val 4
-  codebias[46] = 1./4.;  // GUG Val 4
-  codebias[47] = 1./4.;  // GUU Val 4
-  codebias[48] = 0.;  // UAA och -
-  codebias[49] = 1./2.;  // UAC Tyr 2
-  codebias[50] = 0.;  // UAG amb -
-  codebias[51] = 1./2.;  // UAU Tyr 2
-  codebias[52] = 1./6.;  // UCA Ser 6
-  codebias[53] = 1./6.;  // UCC Ser 6
-  codebias[54] = 1./6.;  // UCG Ser 6
-  codebias[55] = 1./6.;  // UCU Ser 6
-  codebias[56] = 0.;  // UGA opa -
-  codebias[57] = 1./2.;  // UGC Cys 2
-  codebias[58] = 1.;  // UGG Trp 1
-  codebias[59] = 1./2.;  // UGU Cys 2
-  codebias[60] = 1./6.;  // UUA Leu 6
-  codebias[61] = 1./2.;  // UUC Phe 2
-  codebias[62] = 1./6.; // UUG Leu 6
-  codebias[63] = 1./2.;  // UUU Phe 2
-}
-//*/
-
-
-/* Function: set_degenerate()
- *
- * Purpose:  convenience function for setting up
- *           Degenerate[][] global for the alphabet.
- */
-static void
 set_degenerate(char iupac, char *syms) {
   DegenCount[strchr(Alphabet,iupac)-Alphabet] = strlen(syms);
   while (*syms) {

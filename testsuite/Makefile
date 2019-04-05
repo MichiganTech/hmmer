@@ -1,7 +1,7 @@
 
 LIBS      =  -lm -pthread
 MYLIBS    = -lhmmer$(PROGSUFFIX)
-CFLAGS   +=
+CFLAGS   += -I../src
 
 SHIVA = alignalign_test\
 	evd_test\

@@ -33,6 +33,10 @@
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
+#include "getopt.h"
+#include "file.h"
+#include "sre_random.h"
+#include "sre_string.h"
 
 
 static char banner[] = "hmmcalibrate -- calibrate HMM search statistics";
@@ -66,7 +70,7 @@ static struct opt_s OPTIONS[] = {
 #define NOPTIONS (sizeof(OPTIONS) / sizeof(struct opt_s))
 
 
-static void main_loop_serial(struct plan7_s *hmm, int seed, int nsample,
+void main_loop_serial(struct plan7_s *hmm, int nsample,
                              float lenmean, float lensd, int fixedlen,
                              struct histogram_s **ret_hist, float *ret_max);
 
@@ -259,7 +263,7 @@ main(int argc, char **argv) {
       Die("HMM file may be corrupt or in incorrect format; parse failed");
 
     if (num_threads <= 1)
-      main_loop_serial(hmm, seed, nsample, lenmean, lensd, fixedlen,
+      main_loop_serial(hmm, nsample, lenmean, lensd, fixedlen,
                        &hist, &max);
     else if (num_threads > 0)
       main_loop_threaded(hmm, seed, nsample, lenmean, lensd, fixedlen,
@@ -301,7 +305,7 @@ main(int argc, char **argv) {
     FreeHistogram(hist);
     FreePlan7(hmm);
   }
-  SQD_DPRINTF1(("Main body believes it has calibrations for %d HMMs\n", nhmm));
+  //SQD_DPRINTF1(("Main body believes it has calibrations for %d HMMs\n", nhmm));
 
   /*****************************************************************
    * Rewind the HMM file for a second pass.
@@ -385,10 +389,17 @@ main(int argc, char **argv) {
  * Returns:  (void)
  *           hist is alloc'ed here, and must be free'd by caller.
  */
-static void
-main_loop_serial(struct plan7_s *hmm, int seed, int nsample,
-                 float lenmean, float lensd, int fixedlen,
-                 struct histogram_s **ret_hist, float *ret_max) {
+void
+main_loop_serial(
+  struct plan7_s *hmm, 
+  //int seed, 
+  int nsample,
+  float lenmean, 
+  float lensd, 
+  int fixedlen,
+  struct histogram_s **ret_hist, 
+  float *ret_max
+){
   struct histogram_s *hist;
   struct dpmatrix_s  *mx;
   float  randomseq[MAXABET];
@@ -400,7 +411,6 @@ main_loop_serial(struct plan7_s *hmm, int seed, int nsample,
    * We assume we've already set the alphabet (safe, because
    * HMM input sets the alphabet).
    */
-  sre_srandom(seed);
   P7Logoddsify(hmm, true);
   P7DefaultNullModel(randomseq, &p1);
   hist = AllocHistogram(-200, 200, 100);
@@ -419,19 +429,11 @@ main_loop_serial(struct plan7_s *hmm, int seed, int nsample,
     seq = RandomSequence(Alphabet, randomseq, Alphabet_size, sqlen);
     dsq = DigitizeSequence(seq, sqlen);
 
-#ifdef ALTIVEC
-    /* We only need the score here (not the trace), so we can just
-     * call the fast Altivec routine directly. The memory needs in this
-     * routine is only proportional to the model length (hmm->M), and
-     * preallocated, so we don't have to consider the low-memory alternative.
-     */
-    score = P7ViterbiNoTrace(dsq, sqlen, hmm, mx);
-#else
+
     if (P7ViterbiSpaceOK(sqlen, hmm->M, mx))
       score = P7Viterbi(dsq, sqlen, hmm, mx, NULL);
     else
       score = P7SmallViterbi(dsq, sqlen, hmm, mx, NULL);
-#endif
 
     AddToHistogram(hist, score);
     if (score > max) max = score;
@@ -481,7 +483,7 @@ main_loop_threaded(struct plan7_s *hmm, int seed, int nsample,
    * We assume we've already set the alphabet (safe, because
    * HMM input sets the alphabet).
    */
-  sre_srandom(seed);
+  srand48(seed);
   P7Logoddsify(hmm, true);
   P7DefaultNullModel(randomseq, &p1);
   hist = AllocHistogram(-200, 200, 100);

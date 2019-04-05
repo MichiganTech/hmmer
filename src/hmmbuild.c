@@ -13,10 +13,17 @@
 //#include "squid.h"    /* general sequence analysis library    */
 //#include "msa.h"                /* squid's multiple alignment i/o       */
 
+#include "getopt.h"
 #include "structs.h"    /* data structures, macros, #define's   */
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
 #include "lsjfuncs.h"    /* Steve Johnson's additions            */
+#include "vectorops.h"
+#include "stockholm.h"
+#include "sqio.h"
+#include "file.h"
+#include "alignio.h"
+#include "weight.h"
 
 /* ENTROPYLOSS_ defaults:
  * For proteins, hmmbuild's effective sequence number calculation
@@ -287,8 +294,8 @@ main(int argc, char **argv) {
      */
     if (msa->name != NULL) printf("Alignment:           %s\n",  msa->name);
     else                   printf("Alignment:           #%d\n", nali+1);
-    printf                       ("Number of sequences: %d\n",  msa->nseq);
-    printf                       ("Number of columns:   %d\n",  msa->alen);
+    printf                       ("Number of sequences: %ld\n",  msa->nseq);
+    printf                       ("Number of columns:   %ld\n",  msa->alen);
     puts("");
     fflush(stdout);
 
@@ -818,9 +825,9 @@ set_relative_weights(MSA *msa, struct p7config_s *cfg) {
       printf("[big alignment! doing PB]... ");
       PositionBasedWeights(msa->aseq, msa->nseq, msa->alen, msa->wgt);
     } else if (cfg->w_strategy == WGT_GSC)
-      GSCWeights(msa->aseq, msa->nseq, msa->alen, msa->wgt);
+      GSCWeights(msa->aseq, msa->nseq, msa->wgt);
     else if (cfg->w_strategy == WGT_BLOSUM)
-      BlosumWeights(msa->aseq, msa->nseq, msa->alen, cfg->widlevel, msa->wgt);
+      BlosumWeights(msa->aseq, msa->nseq, cfg->widlevel, msa->wgt);
     else if (cfg->w_strategy == WGT_PB)
       PositionBasedWeights(msa->aseq, msa->nseq, msa->alen, msa->wgt);
     else if (cfg->w_strategy ==  WGT_VORONOI)
@@ -937,7 +944,7 @@ set_effective_seqnumber(struct p7config_s *cfg, MSA *msa, struct plan7_s *hmm, s
     wgt = MallocOrDie(sizeof(float) * msa->nseq);
     printf("%-40s ... ", "Determining eff seq # by clustering");
     fflush(stdout);
-    BlosumWeights(msa->aseq, msa->nseq, msa->alen, cfg->eidlevel, wgt);
+    BlosumWeights(msa->aseq, msa->nseq, cfg->eidlevel, wgt);
     cfg->eff_nseq = FSum(wgt, msa->nseq);
     free(wgt);
   }
@@ -1269,7 +1276,7 @@ maximum_entropy(struct plan7_s *hmm, unsigned char **dsq, MSA *msa,
     avgs += sc[idx];
   }
   avgs /= (float) msa->nseq;
-  printf("%4d %6.1f %6.1f %6.1f %7.2f %7.2f %4d %5d %7.2f %8s\n",
+  printf("%4d %6.1f %6.1f %6.1f %7.2f %7.2f %4ld %5d %7.2f %8s\n",
          0, avgs, mins, maxs, 1.0, 1.0, msa->nseq, 0, relative_entropy, "-");
 
 

@@ -379,7 +379,7 @@ readUWGCG(
 int
 ReadSeq(
   SQFILE *V, 
-  int format, 
+  //int format, 
   char **ret_seq, 
   SQINFO *sqinfo);
 

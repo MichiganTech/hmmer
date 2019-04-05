@@ -117,7 +117,7 @@ main(int argc, char **argv) {
 
   nseq = 0;
   mx = CreatePlan7Matrix(1, hmm->M, 25, 0);
-  while (ReadSeq(sqfp, sqfp->format, &seq, &sqinfo)) {
+  while (ReadSeq(sqfp, &seq, &sqinfo)) {
     nseq++;
     dsq = DigitizeSequence(seq, sqinfo.len);
 

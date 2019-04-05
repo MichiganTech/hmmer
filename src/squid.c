@@ -72,12 +72,45 @@ Free3DArray(
 }
 
 
-
-bool
-FileExists(
-  char *filename
+void
+Warn(
+  char *format, ...
 ){
-  FILE *fp;
-  if ((fp = fopen(filename, "r"))) { fclose(fp); return true; }
-  return false;
+  va_list  argp;
+        /* format the error mesg */
+  fprintf(stderr, "WARNING: ");
+  va_start(argp, format);
+  vfprintf(stderr, format, argp);
+  va_end(argp);
+  fprintf(stderr, "\n");
+  fflush(stderr);
+}
+
+
+void
+Panic(
+  char *file, 
+  int line
+){
+  (void) fprintf(stderr, "\nPANIC [%s line %d] ", file, line);
+  (void) perror("Unusual error");
+  exit(EXIT_FAILURE);
+}
+
+
+void
+Die(
+  char *format, 
+  ...
+){
+  va_list  argp;
+        /* format the error mesg */
+  fprintf(stderr, "\nFATAL: ");
+  va_start(argp, format);
+  vfprintf(stderr, format, argp);
+  va_end(argp);
+  fprintf(stderr, "\n");
+  fflush(stderr);
+        /* exit  */
+  exit(1);
 }

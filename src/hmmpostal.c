@@ -24,6 +24,7 @@
 #include "funcs.h"    /* function declarations                */
 #include "globals.h"    /* alphabet global variables            */
 //#include "squid.h"    /* general sequence analysis library    */
+#include "alignio.h"
 
 static char banner[] = "hmmbuild - build a hidden Markov model from an alignment";
 
@@ -361,7 +362,7 @@ main(int argc, char **argv) {
       fflush(stdout);
       /* dummy weights array to feed BlosumWeights*/
       wgt = MallocOrDie(sizeof(float) * msa->nseq);
-      BlosumWeights(msa->aseq, msa->nseq, msa->alen, blosumlevel, wgt);
+      BlosumWeights(msa->aseq, msa->nseq, blosumlevel, wgt);
       eff_nseq = FSum(wgt, msa->nseq);
 
       free(wgt);
@@ -380,9 +381,9 @@ main(int argc, char **argv) {
       fflush(stdout);
 
       if (w_strategy == WGT_GSC)
-        GSCWeights(msa->aseq, msa->nseq, msa->alen, msa->wgt);
+        GSCWeights(msa->aseq, msa->nseq, msa->wgt);
       else if (w_strategy == WGT_BLOSUM)
-        BlosumWeights(msa->aseq, msa->nseq, msa->alen, blosumlevel, msa->wgt);
+        BlosumWeights(msa->aseq, msa->nseq, blosumlevel, msa->wgt);
       else if (w_strategy ==  WGT_VORONOI)
         VoronoiWeights(msa->aseq, msa->nseq, msa->alen, msa->wgt);
 

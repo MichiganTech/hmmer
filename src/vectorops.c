@@ -313,3 +313,35 @@ FChoose(
   }
   return (int) (drand48() * N);  /* bulletproof */
 }
+
+
+
+
+double
+DEntropy(
+  const double *p, 
+  int n)
+{
+  int    i;
+  double entropy;
+ 
+  entropy = 0.;
+  for(i = 0; i < n; i++)
+    if (p[i] > 0.) entropy += p[i] * log(p[i]);
+  return(-1.44269504 * entropy); /* converts to bits */
+}
+
+
+float
+FEntropy(
+  const float *p, 
+  int n)
+{
+  int    i;
+  float  entropy;
+
+  entropy = 0.;
+  for(i = 0; i < n; i++)
+    if (p[i] > 0.) entropy += p[i] * logf(p[i]);
+  return(-1.44269504 * entropy); /* converts to bits */
+}

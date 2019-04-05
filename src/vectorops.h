@@ -185,3 +185,25 @@ int
 FChoose(
   float *p, 
   int N);
+
+
+/* Function:  FEntropy(), DEntropy()
+ * Synopsis:  Return Shannon entropy of p-vector, in bits.           
+ *
+ * Purpose:   Returns the Shannon entropy of a probability vector <p>,
+ *            in bits ($\log_2$), defined as \citep{CoverThomas}:
+ *            
+ *            \[
+ *               H = - \sum_x p_x \log_2 p_x.
+ *            \]
+ */
+double
+DEntropy(
+  const double *p, 
+  int n);
+
+
+float
+FEntropy(
+  const float *p, 
+  int n);

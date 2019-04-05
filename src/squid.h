@@ -324,6 +324,42 @@ extern char *sqd_parse[10];
 
 
 
+
+/* Function: Warn()
+ * 
+ * Purpose:  Print an error message and return. The arguments
+ *           are formatted exactly like arguments to printf().
+ *           
+ * Return:   (void)
+ */          
+/* VARARGS0 */
+void
+Warn(
+  char *format, 
+  ...);
+
+
+/* Function: Panic()
+ * 
+ * Purpose:  Die from a lethal error that's not my problem,
+ *           but instead a failure of a StdC/POSIX call that
+ *           shouldn't fail. Call perror() to get the
+ *           errno flag, then die.
+ *           
+ *           Usually called by the PANIC macro which adds
+ *           the __FILE__ and __LINE__ information; see
+ *           structs.h.
+ *           
+ *           Inspired by code in Donald Lewine's book, _POSIX 
+ *           Programmer's Guide_.
+ */
+void
+Panic(
+  char *file, 
+  int line);
+
+
+
 /* PANIC is called for failures of Std C/POSIX functions,
  * instead of my own functions. Panic() calls perror() and exits
  * abnormally.
@@ -678,28 +714,6 @@ FreeSequence(
   SQINFO *sqinfo);
 
 
-/* Function: MakeDealignedString()
- * 
- * Purpose:  Given an aligned string of some type (either sequence or 
- *           secondary structure, for instance), dealign it relative
- *           to a given aseq. Return a ptr to the new string.
- *           
- * Args:     aseq  : template alignment 
- *           alen  : length of aseq
- *           ss:   : string to make dealigned copy of; same length as aseq
- *           ret_s : RETURN: dealigned copy of ss
- *           
- * Return:   1 on success, 0 on failure (and squid_errno is set)
- *           ret_s is alloc'ed here and must be freed by caller
- */
-int
-MakeDealignedString(
-  char *aseq, 
-  size_t alen, 
-  char *ss, 
-  char **ret_s);
-
-
 /* Function: addseq()
  * 
  * Purpose:  Add a line of sequence to the growing string in V.
@@ -919,27 +933,6 @@ Free3DArray(
   int dim2);
 
 
-/* Function: MakeAlignedString()
- * 
- * Purpose:  Given a raw string of some type (secondary structure, say),
- *           align it to a given aseq by putting gaps wherever the
- *           aseq has gaps. 
- *           
- * Args:     aseq:  template for alignment
- *           alen:  length of aseq
- *           ss:    raw string to align to aseq
- *           ret_s: RETURN: aligned ss
- *           
- * Return:   1 on success, 0 on failure (and squid_errno is set.)
- *           ret_ss is malloc'ed here and must be free'd by caller.
- */
-int
-MakeAlignedString(
-  char *aseq, 
-  size_t alen, 
-  char *ss, 
-  char **ret_s);
-
 /* Function: ParsePAMFile()
  * 
  * Purpose:  Given a pointer to an open file containing a PAM matrix,
@@ -993,23 +986,7 @@ void
 SqdClean();
 
 
-
-
-
-
-/* Function: FileExists()
- * 
- * Purpose:  Return TRUE if filename exists.
- *           Testing fopen() is the only possible platform-independent test
- *           I'm aware of.  
- */
-bool
-FileExists(
-  char *filename);
-
-
 /* Function: String2SeqfileFormat()
- * Date:     SRE, Sun Jun 27 15:25:54 1999 [TW 723 over Canadian Shield]
  *
  * Purpose:  Convert a string (e.g. from command line option arg)
  *           to a format code. Case insensitive. Return
@@ -1028,17 +1005,3 @@ String2SeqfileFormat(
 char *
 SeqfileFormat2String(
   int code);
-
-
-/* Function: DealignedLength()
- *
- * Purpose:  Count the number of non-gap symbols in seq.
- *           (i.e. find the length of the unaligned sequence)
- * 
- * Args:     aseq - aligned sequence to count symbols in, \0 terminated
- * 
- * Return:   raw length of seq.
- */
-int
-DealignedLength(
-  char *aseq);

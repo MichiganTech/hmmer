@@ -25,6 +25,8 @@
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
+#include "getopt.h"
+#include "file.h"
 
 
 static char banner[] = "hmmindex -- create SSI index for an HMM database";

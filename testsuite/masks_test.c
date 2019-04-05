@@ -128,7 +128,7 @@ main(int argc, char **argv) {
 
     if ((sqfp = SeqfileOpen(xnufile, SQFILE_UNKNOWN, NULL)) == NULL)
       Die("Failed to open sequence database file %s\n%s\n", xnufile, usage);
-    while (ReadSeq(sqfp, sqfp->format, &seq, &sqinfo)) {
+    while (ReadSeq(sqfp, &seq, &sqinfo)) {
       dsq = DigitizeSequence(seq, sqinfo.len);
       xnum = XNU(dsq, sqinfo.len);
       result = DedigitizeSequence(dsq, sqinfo.len);
