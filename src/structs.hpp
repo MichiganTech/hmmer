@@ -16,10 +16,7 @@
 
 #pragma once
 
-#include "config.h"
-
-//#include "squid.h"
-#include "ssi.h"
+#include "ssi.hpp"
 
 /* Miscellaneous math macros used in the package
  */

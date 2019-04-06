@@ -23,6 +23,6 @@ binary dissection:
 Time per model:
 	read:     1 ms	
 	config:   0 ms
-	logodds: 43 ms 
+	logodds: 43 ms
 	search: 179 ms
 

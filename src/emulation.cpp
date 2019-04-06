@@ -13,18 +13,15 @@
  * Interfaces between HMMER and other software packages.
  */
 
-#include "config.h"
-//#include "squidconf.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
-#include "squid.h"
-#include "structs.h"
-#include "funcs.h"
-
-#include "vectorops.h"
+#include "config.hpp"
+#include "squid.hpp"
+#include "structs.hpp"
+#include "vectorops.hpp"
 
 
 /* Function: WriteProfile()

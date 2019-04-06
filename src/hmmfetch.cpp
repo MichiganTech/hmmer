@@ -14,18 +14,15 @@
  * an SSI index (created with hmmindex).
  */
 
-#include "config.h"
-//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-//#include "squid.h"
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-#include "getopt.h"
+#include "config.hpp"
+#include "structs.hpp"
+#include "globals.hpp"
+#include "getopt.hpp"
 
 
 static char banner[] = "hmmfetch -- retrieve specific HMM from an HMM database";

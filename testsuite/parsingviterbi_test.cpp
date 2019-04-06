@@ -1,22 +1,18 @@
 /* parsingviterbi_test.c
- * Wed Mar  4 15:07:37 1998
  *
  * Test driver for P7ParsingViterbi(); alignment in linear memory.
  *
- * CVS $Id: parsingviterbi_test.c 913 2003-10-04 18:26:49Z eddy $
  */
 
-#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-//#include "squid.h"
+#include "config.hpp"
+#include "structs.hpp"
+#include "globals.hpp"
 
 static char banner[] = "\
 parsingviterbi_test : testing of Plan7 linear memory alignment code";

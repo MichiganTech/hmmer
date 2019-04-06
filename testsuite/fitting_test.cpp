@@ -1,7 +1,6 @@
 /* fitting_test.c
  */
 
-#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,11 +9,9 @@
 #include <time.h>
 #include <assert.h>
 
-#include "structs.h"
-#include "funcs.h"
-//#include "squid.h"
-
-#include "globals.h"
+#include "config.hpp"
+#include "structs.hpp"
+#include "globals.hpp"
 
 int
 main(int argc, char **argv) {

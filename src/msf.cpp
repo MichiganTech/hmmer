@@ -1,20 +1,18 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* msf.c
- * SRE, Sun Jul 11 16:17:32 1993
- * 
+ *
  * Import/export of GCG MSF multiple sequence alignment
  * formatted files. Designed using format specifications
  * kindly provided by Steve Smith of Genetics Computer Group.
- * 
- * RCS $Id: msf.c,v 1.4 2001/04/23 00:35:33 eddy Exp $
+ *
  */
 
 #include <stdlib.h>
@@ -22,9 +20,10 @@
 #include <ctype.h>
 #include  <time.h>
 
-#include "msf.h"
-#include "squid.h"
-#include "sqio.h"
+#include "msf.hpp"
+#include "squid.hpp"
+#include "sqio.hpp"
+#include "msf.hpp"
 
 
 
@@ -60,7 +59,7 @@ ReadMSF(
 
   /* Now we're in the free text comment section of the MSF file.
    * It ends when we see the "MSF: Type: Check: .." line.
-   * This line must be present. 
+   * This line must be present.
    */
   do
     {
@@ -70,17 +69,17 @@ ReadMSF(
     // alleged_alen     = atoi(sqd_parse[0]);
     switch (*(sqd_parse[1])) {
     case 'N' : alleged_type = kRNA;      break;
-    case 'P' : alleged_type = kAmino;    break;  
+    case 'P' : alleged_type = kAmino;    break; 
     case 'X' : alleged_type = kOtherSeq; break;
-    default  : alleged_type = kOtherSeq; 
+    default  : alleged_type = kOtherSeq;
     }
     // alleged_checksum = atoi(sqd_parse[3]);
     if (msa->type == kOtherSeq) msa->type = alleged_type;
     break;    /* we're done with comment section. */
   }
-      if (! IsBlankline(s)) 
+      if (! IsBlankline(s))
   MSAAddComment(msa, s);
-    } while ((s = MSAFileGetLine(afp)) != NULL); 
+    } while ((s = MSAFileGetLine(afp)) != NULL);
 
   /* Now we're in the name section.
    * GCG has a relatively poorly documented feature: only sequences that
@@ -91,13 +90,13 @@ ReadMSF(
    * easily because of the hash table for names in the MSA: we
    * only add names to the hash table when we see 'em in the name section.
    */
-  while ((s = MSAFileGetLine(afp)) != NULL) 
+  while ((s = MSAFileGetLine(afp)) != NULL)
     {
       while ((*s == ' ' || *s == '\t') && *s) s++; /* skip leading whitespace */
 
       if      (*s == '\n')   continue;                 /* skip blank lines */
       else if (*s == '!')    MSAAddComment(msa, s);
-      else if ((sp  = strstr(s, "Name:")) != NULL) 
+      else if ((sp  = strstr(s, "Name:")) != NULL)
   {
         /* We take the name and the weigh, and that's it */
     sp   += 5;
@@ -127,37 +126,37 @@ ReadMSF(
 
     }
 
-  /* And now we're in the sequence section. 
+  /* And now we're in the sequence section.
    * As discussed above, if we haven't seen a sequence name, then we
    * don't include the sequence in the alignment.
    * Also, watch out for coordinate-only lines.
    */
-  while ((s = MSAFileGetLine(afp)) != NULL) 
+  while ((s = MSAFileGetLine(afp)) != NULL)
     {
       sp  = s;
       if ((name = strtok(sp, " \t")) == NULL) continue;
       if ((seq  = strtok(sp, "\n")) == NULL) continue;
-      
+     
       /* The test for a coord line: digits starting both fields
        */
       if (isdigit(*name) && isdigit(*seq))
   continue;
-  
+ 
       /* It's not blank, and it's not a coord line: must be sequence
        */
       sqidx = GKIKeyIndex(msa->index, name);
       if (sqidx < 0) continue;  /* not a sequence we recognize */
-      
+     
       msa->sqlen[sqidx] = strlen(strcat(msa->aseq[sqidx], seq));
     }
-  
+ 
   /* We've left blanks in the aseqs; take them back out.
    */
   for (sqidx = 0; sqidx <  msa->nseq; sqidx++)
     {
       if (msa->aseq[sqidx] == NULL)
   Die("Didn't find a sequence for %s in MSF file %s\n", msa->sqname[sqidx], afp->fname);
-      
+     
       for (s = sp = msa->aseq[sqidx]; *s != '\0'; s++)
   {
     if (*s == ' ' || *s == '\t') {
@@ -169,7 +168,7 @@ ReadMSF(
   }
       *sp = '\0';
     }
-  
+ 
   MSAVerifyParse(msa);    /* verifies, and also sets alen and wgt. */
   return msa;
 }
@@ -177,7 +176,7 @@ ReadMSF(
 
 void
 WriteMSF(
-  FILE *fp, 
+  FILE *fp,
   MSA *msa
 ){
   time_t now;     /* current time as a time_t */
@@ -198,13 +197,13 @@ WriteMSF(
    *   alphanumeric characters, -, or _
    *   Some GCG and GCG-compatible software is sensitive to this.
    *   We silently convert all other characters to '_'.
-   *   
+   *  
    *   For sequences, GCG allows only ~ and . for gaps.
    *   Otherwise, everthing is interpreted as a residue;
    *   so squid's IUPAC-restricted chars are fine. ~ means
    *   an external gap. . means an internal gap.
-   *****************************************************************/ 
-   
+   *****************************************************************/
+  
         /* make copies that we can edit */
    gcg_aseq   = MallocOrDie(sizeof(char *) * msa->nseq);
    gcg_sqname = MallocOrDie(sizeof(char *) * msa->nseq);
@@ -231,7 +230,7 @@ WriteMSF(
         /* calculate max namelen used */
   namelen = 0;
   for (idx = 0; idx < msa->nseq; idx++)
-    if ((len = strlen(msa->sqname[idx])) > namelen) 
+    if ((len = strlen(msa->sqname[idx])) > namelen)
       namelen = len;
 
   /*****************************************************
@@ -244,10 +243,10 @@ WriteMSF(
   if      (msa->type == kRNA)   fprintf(fp, "!!NA_MULTIPLE_ALIGNMENT 1.0\n");
   else if (msa->type == kDNA)   fprintf(fp, "!!NA_MULTIPLE_ALIGNMENT 1.0\n");
   else if (msa->type == kAmino) fprintf(fp, "!!AA_MULTIPLE_ALIGNMENT 1.0\n");
-  else if (msa->type == kOtherSeq) 
-    Die("WriteMSF(): couldn't guess whether that alignment is RNA or protein.\n"); 
-  else    
-    Die("Invalid sequence type %d in WriteMSF()\n", msa->type); 
+  else if (msa->type == kOtherSeq)
+    Die("WriteMSF(): couldn't guess whether that alignment is RNA or protein.\n");
+  else   
+    Die("Invalid sequence type %d in WriteMSF()\n", msa->type);
 
         /* free text comments */
   if (msa->ncomment > 0)
@@ -260,7 +259,7 @@ WriteMSF(
   now = time(NULL);
   if (strftime(date, 64, "%B %d, %Y %H:%M", localtime(&now)) == 0)
     Die("What time is it on earth? strftime() failed in WriteMSF().\n");
-  fprintf(fp, " %s  MSF: %ld  Type: %c  %s  Check: %d  ..\n", 
+  fprintf(fp, " %s  MSF: %ld  Type: %c  %s  Check: %d  ..\n",
     msa->name != NULL ? msa->name : "squid.msf",
     msa->alen,
     msa->type == kRNA ? 'N' : 'P',
@@ -295,7 +294,7 @@ WriteMSF(
         /* Coordinate line */
       len = (pos + 50) > msa->alen ? msa->alen - pos : 50;
       if (len > 10)
-  fprintf(fp, "%*s  %-6d%*s%6d\n", namelen, "", 
+  fprintf(fp, "%*s  %-6d%*s%6d\n", namelen, "",
     pos+1,
     len + ((len-1)/10) - 12, "",
     pos + len);
@@ -326,9 +325,9 @@ WriteMSF(
 
 #ifdef TESTDRIVE_MSF
 /*****************************************************************
- * msf.c test driver: 
+ * msf.c test driver:
  * cc -DTESTDRIVE_MSF -g -O2 -Wall -o test msf.c msa.c gki.c sqerror.c file.c hsregex.c sqio.c alignio.c selex.c interleaved.c types.c -lm
- * 
+ *
  */
 int
 main(int argc, char **argv)
@@ -336,7 +335,7 @@ main(int argc, char **argv)
   MSAFILE *afp;
   MSA     *msa;
   char    *file;
-  
+ 
   file = argv[1];
 
   if ((afp = MSAFileOpen(file, MSAFILE_STOCKHOLM, NULL)) == NULL)
@@ -345,9 +344,9 @@ main(int argc, char **argv)
   while ((msa = ReadMSF(afp)) != NULL)
     {
       WriteMSF(stdout, msa);
-      MSAFree(msa); 
+      MSAFree(msa);
     }
-  
+ 
   MSAFileClose(afp);
   exit(0);
 }

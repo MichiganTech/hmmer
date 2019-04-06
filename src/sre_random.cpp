@@ -1,35 +1,12 @@
-/* drand48.c
- * 
- * Portable random number generator, and sampling routines.
- *
- * SRE, Tue Oct  1 15:24:11 2002 [St. Louis]
- * CVS $Id: drand48.c,v 1.1 2002/10/09 14:26:09 eddy Exp $
- */
+//Portable random number generator, and sampling routines.
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "sre_random.h"
+
+#include "sre_random.hpp"
 
 
-/* Function: sre_srandom()
- * 
- * Purpose:  Initialize with a random seed. Seed must be
- *           >= 0 to work; we silently enforce this.
- */
-// void
-// sre_srandom(int seed)
-// {
-//   if (seed < 0)  seed = -1 * seed;
-//   if (seed == 0) seed = 42;
-//   sre_randseed = seed;
-// }
-
-
-/* Function: drand48_positive()
- *
- * Purpose:  Assure 0 < x < 1 (positive uniform deviate)
- */
 double
 drand48_positive(
 ){
@@ -38,15 +15,7 @@ drand48_positive(
   return x;
 }
 
-/* Function: ExponentialRandom()
- *
- * Purpose:  Pick an exponentially distributed random variable
- *           0 > x >= infinity
- *           
- * Args:     (void)
- *
- * Returns:  x
- */
+
 double
 ExponentialRandom(
 ){
@@ -54,27 +23,14 @@ ExponentialRandom(
 
   do x = drand48(); while (x == 0.0);
   return -log(x);
-}    
+}   
 
-/* Function: Gaussrandom()
- * 
- * Pick a Gaussian-distributed random variable
- * with some mean and standard deviation, and
- * return it.
- * 
- * Based on RANLIB.c public domain implementation.
- * Thanks to the authors, Barry W. Brown and James Lovato,
- * University of Texas, M.D. Anderson Cancer Center, Houston TX.
- * Their implementation is from Ahrens and Dieter, "Extensions 
- * of Forsythe's method for random sampling from the normal
- * distribution", Math. Comput. 27:927-937 (1973).
- *
- * Impenetrability of the code is to be blamed on its FORTRAN/f2c lineage.
- * 
- */
+
 double
-Gaussrandom(double mean, double stddev)
-{
+Gaussrandom(
+  double mean,
+  double stddev
+){
   static double a[32] = {
     0.0,3.917609E-2,7.841241E-2,0.11777,0.1573107,0.1970991,0.2372021,0.2776904,    0.3186394,0.36013,0.4022501,0.4450965,0.4887764,0.5334097,0.5791322,
     0.626099,0.6744898,0.7245144,0.7764218,0.8305109,0.8871466,0.9467818,

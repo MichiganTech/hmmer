@@ -10,7 +10,7 @@ Design decisions that are possibly problematic:
 
 Missing functionality:
  - beautify alignment display in hmmpfam, hmmsearch
- - verify multiple alignment format i/o in squid: Phylip, ClustalW, PIMA, XFASTA 
+ - verify multiple alignment format i/o in squid: Phylip, ClustalW, PIMA, XFASTA
  - binary save files unsupported; code is out of date
  - don't have backwards compatibility with old HMM files
  - don't have cross compatibility with SAM/PFSCAN

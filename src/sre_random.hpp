@@ -1,30 +1,28 @@
-/* sre_random.h
- * Header file for sre_random.c
- */
+//Header file for sre_random.c
 
-double 
+double
 sre_random_positive();
 
 
-double 
+double
 ExponentialRandom();
 
 
-double 
+double
 Gaussrandom(
-	double mean, 
+	double mean,
 	double stddev);
 
 
-int    
+int   
 DChoose(
-	double *p, 
+	double *p,
 	int N);
 
 
-int    
+int   
 FChoose(
-	float *p, 
+	float *p,
 	int N);
 
 

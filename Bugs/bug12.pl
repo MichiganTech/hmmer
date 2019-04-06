@@ -34,7 +34,7 @@ if (! &hmmpfam_output_has_domain($output, "rrm", 404, 475)) { print("DETECTED! (
 print "not detected.\n";
 exit 0;
 
-sub 
+sub
 hmmpfam_output_has_domain {
     my $output       = shift;
     my $domain_name  = shift;

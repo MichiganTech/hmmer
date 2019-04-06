@@ -21,9 +21,8 @@
 //#include <pthread.h>
 
 //#include "structs.h"
-//#include "funcs.h"
 //#include "squid.h"
-#include "msa.h"
+#include "msa.hpp"
 
 
 /* Function: DetermineAlphabet()
@@ -38,7 +37,7 @@
  */
 void
 DetermineAlphabet(
-  char **rseqs, 
+  char **rseqs,
   int  nseq);
 
 
@@ -83,7 +82,7 @@ SymbolIndex(
  */
 unsigned char *
 DigitizeSequence(
-  char *seq, 
+  char *seq,
   int L);
 
 
@@ -93,7 +92,7 @@ DigitizeSequence(
  */
 char *
 DedigitizeSequence(
-  unsigned char *dsq, 
+  unsigned char *dsq,
   int L);
 
 
@@ -112,7 +111,7 @@ DedigitizeSequence(
  */
 void
 DigitizeAlignment(
-  MSA *msa, 
+  MSA *msa,
   unsigned char ***ret_dsqs);
 
 
@@ -130,8 +129,8 @@ DigitizeAlignment(
  */
 void
 P7CountSymbol(
-  float *counters, 
-  unsigned char symidx, 
+  float *counters,
+  unsigned char symidx,
   float wt);
 
 
@@ -142,5 +141,5 @@ P7CountSymbol(
  */
 void
 set_degenerate(
-  char iupac, 
+  char iupac,
   char *syms);

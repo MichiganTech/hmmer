@@ -1,23 +1,20 @@
 /* trace_test.c
- * Mon Feb  2 07:57:47 1998
  *
  * Test driver for Viterbi tracebacks.
  *
- * CVS $Id: trace_test.c 913 2003-10-04 18:26:49Z eddy $
  */
 
 
-#include "config.h"
+#include "config.hpp"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-//#include "squid.h"
+#include "structs.hpp"
+#include "globals.hpp"
+
 
 static char banner[] = "\
 trace_test : testing of Plan7 Viterbi traceback code";

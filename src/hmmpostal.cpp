@@ -13,18 +13,15 @@
  * Distributed under the GNU General Public License
  */
 
-#include "config.h"    /* compile-time configuration constants */
-//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "structs.h"    /* data structures, macros, #define's   */
-#include "funcs.h"    /* function declarations                */
-#include "globals.h"    /* alphabet global variables            */
-//#include "squid.h"    /* general sequence analysis library    */
-#include "alignio.h"
+#include "config.hpp"
+#include "structs.hpp"    /* data structures, macros, #define's   */
+#include "globals.hpp"    /* alphabet global variables            */
+#include "alignio.hpp"
 
 static char banner[] = "hmmbuild - build a hidden Markov model from an alignment";
 

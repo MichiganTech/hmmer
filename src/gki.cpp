@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -9,68 +9,67 @@
 
 /* gki.c
  * SRE, Sat May  1 14:49:08 1999
- * 
+ *
  * "generic key index" module: emulation of Perl hashes.
  * Maps keys (ASCII char strings) to array index. Dynamically
- * resizes the hash table. 
- * 
+ * resizes the hash table.
+ *
  * Limitations:
  *     - hash table can only grow; no provision for deleting keys
  *       or downsizing the hash table.
- *     - Maximum hash table size set at 100003. Performance 
+ *     - Maximum hash table size set at 100003. Performance
  *       will degrade for key sets much larger than this.
- *     - Assumes that integers are 32 bits (or greater). 
- * 
+ *     - Assumes that integers are 32 bits (or greater).
+ *
  * Defines a typedef'd structure:
  *     gki           - a key index hash table.
  * Provides functions:
  *     GKIInit()     - start a hash table.
- *     GKIStoreKey() - store a new key, get a unique index.                        
+ *     GKIStoreKey() - store a new key, get a unique index.                       
  *     GKIKeyIndex() - retrieve an existing key's index.
  *     GKIFree()     - free a hash table.
  *     GKIStatus()   - Debugging: prints internal status of a hash struct
- *            
+ *           
  *
  * Note that there are no dependencies on squid; the gki.c/gki.h
  * pair are base ANSI C and can be reused anywhere.
  *****************************************************************
- * 
- * API for storing/reading stuff: 
+ *
+ * API for storing/reading stuff:
  * moral equivalent of Perl's $foo{$key} = whatever, $bar{$key} = whatever:
  *       #include "gki.h"
- *     
+ *    
  *       gki  *hash;
  *       int   idx;
  *       char *key;
- *       
+ *      
  *       hash = GKIInit();
- * (Storing:) 
+ * (Storing:)
  *       (foreach key) {
- *          idx = GKIStoreKey(hash, key);       
+ *          idx = GKIStoreKey(hash, key);      
  *          (reallocate foo, bar as needed)
  *          foo[idx] = whatever;
  *          bar[idx] = whatever;
- *       }     
+ *       }    
  * (Reading:)
  *       (foreach key) {
  *          idx = GKIKeyIndex(hash, key);
  *          if (idx == -1) {no_such_key; }
  *          (do something with) foo[idx];
  *          (do something with) bar[idx];
- *       }   
+ *       }  
  *       GKIFree();
- *       
+ *      
  *****************************************************************
  *
  * Timings on wrasse for 45402 keys in /usr/dict/words using
- * Tests/test_gki: 
+ * Tests/test_gki:
  *      250 msec store      (6 usec/store)
  *      140 msec retrieve   (3 usec/retrieve)
  * and using the 13408 names of Pfam's GP120.full alignment:
  *       70 msec store      (5 usec/store)
- *       50 msec retrieve   (4 usec/retrieve)     
- * 
- * RCS $Id: gki.c,v 1.3 2000/12/21 23:42:59 eddy Exp $
+ *       50 msec retrieve   (4 usec/retrieve)    
+ *
  */
 
 
@@ -79,12 +78,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include "squid.h"
-#include "gki.h"
+#include "squid.hpp"
+#include "gki.hpp"
 
-/* 
+/*
  *   Best hash table sizes are prime numbers (see Knuth vol 3, Sorting
- * and Searching). 
+ * and Searching).
  *   gki_primes[] defines the ascending order of hash table sizes
  * that we use in upsizing the hash table dynamically.
  *   useful site for testing primes:
@@ -102,7 +101,7 @@ static int  gki_upsize(GKI *old);
 
 
 /* Function: GKIInit()
- * Purpose:  Initialize a hash table for key indexing.  
+ * Purpose:  Initialize a hash table for key indexing. 
  *           Simply a wrapper around a level 0 gki_alloc().
  *
  * Args:     (void)
@@ -157,8 +156,8 @@ GKIFree(GKI *hash)
  *           Does *not* check to see if the key's already
  *           in the table, so it's possible to store multiple
  *           copies of a key with different indices; probably
- *           not what you want, so if you're not sure the 
- *           key is unique, check the table first with 
+ *           not what you want, so if you're not sure the
+ *           key is unique, check the table first with
  *           GKIKeyIndex().
  *
  * Args:     hash  - GKI structure to store the key in
@@ -177,7 +176,7 @@ GKIStoreKey(GKI *hash, char *key)
   struct gki_elem *ptr;
 
   val = gki_hashvalue(hash, key);
-  
+ 
   ptr = hash->table[val];
   hash->table[val]      = MallocOrDie(sizeof(struct gki_elem));
   hash->table[val]->key = MallocOrDie(sizeof(char) * (strlen(key)+1));
@@ -191,16 +190,16 @@ GKIStoreKey(GKI *hash, char *key)
   if (hash->nkeys > 3*hash->nhash && hash->primelevel < GKI_NPRIMES-1)
     gki_upsize(hash);
 
-  return hash->nkeys-1; 
+  return hash->nkeys-1;
 }
 
 /* Function: GKIKeyIndex()
  * Purpose:  Look up a key in the hash table. Return
  *           its index (0..nkeys-1), else -1 if the key
  *           isn't in the hash (yet).
- *           
+ *          
  * Args:     hash  - the GKI hash table to search in
- *           key   - the key to look up        
+ *           key   - the key to look up       
  *
  * Returns:  -1 if key is not found;
  *           index of key if it is found (range 0..nkeys-1).
@@ -208,12 +207,12 @@ GKIStoreKey(GKI *hash, char *key)
  */
 size_t
 GKIKeyIndex(
-  GKI *hash, 
+  GKI *hash,
   char *key
 ){
   struct gki_elem *ptr;
   int val;
-  
+ 
   val = gki_hashvalue(hash, key);
   for (ptr = hash->table[val]; ptr != NULL; ptr = ptr->nxt)
     if (strcmp(key, ptr->key) == 0) return ptr->idx;
@@ -228,7 +227,7 @@ GKIKeyIndex(
  *
  * Args:     hash - the GKI hash table to look at
  *
- * Returns:  (void) 
+ * Returns:  (void)
  *           Prints diagnostics on stdout.
  *           hash table is unchanged.
  */
@@ -259,7 +258,7 @@ GKIStatus(GKI *hash)
   printf("Unoccupied slots:  %d\n", nempty);
   printf("Most in one slot:  %d\n", maxkeys);
   printf("Least in one slot: %d\n", minkeys);
-  
+ 
 }
 
 
@@ -273,7 +272,7 @@ GKIStatus(GKI *hash)
  *                        the size of the table; see gki_primes[]
  *                        array.
  *
- * Returns:  An allocated hash table structure. 
+ * Returns:  An allocated hash table structure.
  *           Caller frees with GKIFree().
  */
 static GKI *
@@ -282,7 +281,7 @@ gki_alloc(int primelevel)
   GKI *hash;
   int  i;
 
-  if (primelevel < 0 || primelevel >= GKI_NPRIMES) 
+  if (primelevel < 0 || primelevel >= GKI_NPRIMES)
     Die("bad primelevel in gki_alloc()");
   hash = MallocOrDie(sizeof(GKI));
 
@@ -293,7 +292,7 @@ gki_alloc(int primelevel)
     hash->table[i] = NULL;
   hash->nkeys = 0;
   return hash;
-}  
+} 
 
 
 /* Function: gki_hashvalue()
@@ -306,10 +305,10 @@ gki_alloc(int primelevel)
  *           Algorithms in C).
  *           Slightly optimized: does two characters at a time
  *           before doing the modulo; this gives us a significant
- *           speedup.  
+ *           speedup. 
  *
  * Args:     hash - the gki structure (we need to know the hash table size)
- *           key  - a string to calculate the hash value for       
+ *           key  - a string to calculate the hash value for      
  *
  * Returns:  a hash value, in the range 0..hash->nhash-1.
  *           hash table is unmodified.
@@ -321,7 +320,7 @@ gki_hashvalue(GKI *hash, char *key)
 
   for (; *key != '\0'; key++)
     {
-      val = GKI_ALPHABETSIZE*val + *key; 
+      val = GKI_ALPHABETSIZE*val + *key;
       if (*(++key) == '\0') { val = val % hash->nhash; break; }
       val = (GKI_ALPHABETSIZE*val + *key) % hash->nhash;
     }
@@ -353,7 +352,7 @@ gki_upsize(GKI *old)
 
   /* Read the old, store in the new, while *not changing*
    * any key indices. Because of the way the lists are
-   * treated as LIFO stacks, all the lists are reversed 
+   * treated as LIFO stacks, all the lists are reversed
    * in the new structure.
    */
   for (i = 0; i < old->nhash; i++)

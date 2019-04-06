@@ -17,21 +17,18 @@
 
 #pragma once
 
-#include "config.h"
-#include "structs.h"
-//#include "squid.h"
-//#include "msa.h"
+#include "structs.hpp"
 
-float 
+float
 Eweight(
-  struct plan7_s *hmm,  
+  struct plan7_s *hmm, 
   struct p7prior_s *pri,
-  float numb_seqs, 
+  float numb_seqs,
   float entwgt);
 
 
-void 
+void
 ModelContent(
-	float *ent1, 
-	float *ent2, 
+	float *ent1,
+	float *ent2,
 	int M);

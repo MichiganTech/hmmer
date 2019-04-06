@@ -1,6 +1,6 @@
-#include "squid.h"
-
 #pragma once
+
+#include "squid.hpp"
 
 /****************************************************
  * Support for a portable, flexible Getopt()
@@ -16,7 +16,7 @@ enum arg_type{
 
 
 /* Structure: opt_s
- * 
+ *
  * Structure for declaring options to a main().
  */
 struct opt_s {
@@ -28,18 +28,18 @@ struct opt_s {
 
 int
 Getopt(
-  int argc, 
-  char **argv, 
-  struct opt_s *opt, 
-  int nopts, 
-  char *usage, 
-  int *ret_optind, 
-  char **ret_optname, 
+  int argc,
+  char **argv,
+  struct opt_s *opt,
+  int nopts,
+  char *usage,
+  int *ret_optind,
+  char **ret_optname,
   char **ret_optarg);
 
 
 
-#ifdef GETOPT_TESTDRIVER 
+#ifdef GETOPT_TESTDRIVER
 /* cc -DGETOPT_TESTDRIVER -L ~/lib/squid.linux/ getopt.c -lsquid
  */
 struct opt_s OPTIONS[] = {

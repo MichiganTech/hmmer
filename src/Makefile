@@ -1,7 +1,7 @@
 
 
 MYLIBS	 =
-MYLIBDIR = 
+MYLIBDIR =
 MYINCDIR =
 
 HMMLIB = libhmmer$(PROGSUFFIX).so

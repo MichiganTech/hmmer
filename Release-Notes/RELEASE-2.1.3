@@ -67,14 +67,14 @@ The following features were added:
 
 The following changes may affect HMMER-compatible software:
 
-   -  The output format for the headers of hmmsearch and hmmpfam 
+   -  The output format for the headers of hmmsearch and hmmpfam
       were changed. The accessions and descriptions of query
-      HMMs or sequences, respectively, are reported on separate 
+      HMMs or sequences, respectively, are reported on separate
       lines. An option ("--compat") is provided for reverting
       to the previous format, if you don't want to rewrite your
       parser(s) right away.
 
-   - hmmpfam now calculates E-values based on the actual 
+   - hmmpfam now calculates E-values based on the actual
      number of HMMs in the database that is searched, unless
      overridden with the -Z option from the command line.
      It used to use Z=59021 semi-arbitrarily to make results
@@ -93,7 +93,7 @@ The following minor bugs were fixed:
      and once for its accession. hmmindex now creates
      two indices: a "primary key" index (.gsi) with a one to
      one relationship between name and HMM, and a "secondary key"
-     index (.sgsi) with accessions. hmmpfam-pvm steps only through the 
+     index (.sgsi) with accessions. hmmpfam-pvm steps only through the
      primary key index.
 
    - a rare floating exception bug in ExtremeValueP() was fixed;
@@ -110,8 +110,8 @@ consequences of the bug at all in HMMER):
 
   - Banner() was printing a line to stdout instead of its
     file handle... but Banner is always called w/ stdout as
-    its filehandle in the current implementation. 
-    [M. Regelson, Paracel] 
+    its filehandle in the current implementation.
+    [M. Regelson, Paracel]
 
   - .gz file reading is only supported on POSIX OS's. A compile
     time define, SRE_STRICT_ANSI, may be defined to allow compiling
@@ -124,7 +124,7 @@ The following projects are incomplete in this snapshot:
 
   - CPU times can now be reported for serial, threaded,
     and PVM executions; this is only supported by hmmcalibrate
-    right now. 
+    right now.
 
   - Mixture Dirichlet priors now include some ongoing work
     in collaboration with Michael Asman and Erik Sonnhammer

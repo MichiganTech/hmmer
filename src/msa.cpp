@@ -1,19 +1,17 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* msa.c
- * SRE, Mon May 17 10:48:47 1999
- * 
+ *
  * SQUID's interface for multiple sequence alignment
  * manipulation: access to the MSA object.
- * 
- * RCS $Id: msa.c,v 1.18 2002/10/12 04:40:35 eddy Exp $
+ *
  */
 
 #include <limits.h>
@@ -22,101 +20,101 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "a2m.h"
-#include "clustal.h"
-#include "eps.h"
-#include "selex.h"
-#include "phylip.h"
-#include "msf.h"
-#include "stockholm.h"
+#include "a2m.hpp"
+#include "clustal.hpp"
+#include "eps.hpp"
+#include "selex.hpp"
+#include "phylip.hpp"
+#include "msf.hpp"
+#include "stockholm.hpp"
 
-#include "alignio.h"
-#include "file.h"
-#include "squid.h"
-#include "msa.h"	/* multiple sequence alignment object support */
-#include "ssi.h"	/* SSI sequence file indexing code */
-#include "vectorops.h"
-#include "aligneval.h"
+#include "alignio.hpp"
+#include "file.hpp"
+#include "squid.hpp"
+#include "msa.hpp"	/* multiple sequence alignment object support */
+#include "ssi.hpp"	/* SSI sequence file indexing code */
+#include "vectorops.hpp"
+#include "aligneval.hpp"
 
 
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* gki.c
- * 
+ *
  * "generic key index" module: emulation of Perl hashes.
  * Maps keys (ASCII char strings) to array index. Dynamically
- * resizes the hash table. 
- * 
+ * resizes the hash table.
+ *
  * Limitations:
  *     - hash table can only grow; no provision for deleting keys
  *       or downsizing the hash table.
- *     - Maximum hash table size set at 100003. Performance 
+ *     - Maximum hash table size set at 100003. Performance
  *       will degrade for key sets much larger than this.
- *     - Assumes that integers are 32 bits (or greater). 
- * 
+ *     - Assumes that integers are 32 bits (or greater).
+ *
  * Defines a typedef'd structure:
  *     gki           - a key index hash table.
  * Provides functions:
  *     GKIInit()     - start a hash table.
- *     GKIStoreKey() - store a new key, get a unique index.                        
+ *     GKIStoreKey() - store a new key, get a unique index.                       
  *     GKIKeyIndex() - retrieve an existing key's index.
  *     GKIFree()     - free a hash table.
  *     GKIStatus()   - Debugging: prints internal status of a hash struct
- *            
+ *           
  *
  * Note that there are no dependencies on squid; the gki.c/gki.h
  * pair are base ANSI C and can be reused anywhere.
  *****************************************************************
- * 
- * API for storing/reading stuff: 
+ *
+ * API for storing/reading stuff:
  * moral equivalent of Perl's $foo{$key} = whatever, $bar{$key} = whatever:
  *       #include "gki.h"
- *     
+ *    
  *       gki  *hash;
  *       int   idx;
  *       char *key;
- *       
+ *      
  *       hash = GKIInit();
- * (Storing:) 
+ * (Storing:)
  *       (foreach key) {
- *          idx = GKIStoreKey(hash, key);       
+ *          idx = GKIStoreKey(hash, key);      
  *          (reallocate foo, bar as needed)
  *          foo[idx] = whatever;
  *          bar[idx] = whatever;
- *       }     
+ *       }    
  * (Reading:)
  *       (foreach key) {
  *          idx = GKIKeyIndex(hash, key);
  *          if (idx == -1) {no_such_key; }
  *          (do something with) foo[idx];
  *          (do something with) bar[idx];
- *       }   
+ *       }  
  *       GKIFree();
- *       
+ *      
  *****************************************************************
  *
  * Timings on wrasse for 45402 keys in /usr/dict/words using
- * Tests/test_gki: 
+ * Tests/test_gki:
  *      250 msec store      (6 usec/store)
  *      140 msec retrieve   (3 usec/retrieve)
  * and using the 13408 names of Pfam's GP120.full alignment:
  *       70 msec store      (5 usec/store)
- *       50 msec retrieve   (4 usec/retrieve)     
- * 
+ *       50 msec retrieve   (4 usec/retrieve)    
+ *
  */
 
 
 
-/* 
+/*
  *   Best hash table sizes are prime numbers (see Knuth vol 3, Sorting
- * and Searching). 
+ * and Searching).
  *   gki_primes[] defines the ascending order of hash table sizes
  * that we use in upsizing the hash table dynamically.
  *   useful site for testing primes:
@@ -134,7 +132,7 @@ gki_alloc(
 
 size_t
 gki_hashvalue(
-  GKI *hash, 
+  GKI *hash,
   char *key);
 
 size_t
@@ -143,7 +141,7 @@ gki_upsize(
 
 
 /* Function: GKIInit()
- * Purpose:  Initialize a hash table for key indexing.  
+ * Purpose:  Initialize a hash table for key indexing. 
  *           Simply a wrapper around a level 0 gki_alloc().
  *
  * Args:     (void)
@@ -198,8 +196,8 @@ GKIFree(GKI *hash)
  *           Does *not* check to see if the key's already
  *           in the table, so it's possible to store multiple
  *           copies of a key with different indices; probably
- *           not what you want, so if you're not sure the 
- *           key is unique, check the table first with 
+ *           not what you want, so if you're not sure the
+ *           key is unique, check the table first with
  *           GKIKeyIndex().
  *
  * Args:     hash  - GKI structure to store the key in
@@ -213,14 +211,14 @@ GKIFree(GKI *hash)
  */
 size_t
 GKIStoreKey(
-  GKI *hash, 
+  GKI *hash,
   char *key
 ){
   int val;
   struct gki_elem *ptr;
 
   val = gki_hashvalue(hash, key);
-  
+ 
   ptr = hash->table[val];
   hash->table[val]      = MallocOrDie(sizeof(struct gki_elem));
   hash->table[val]->key = MallocOrDie(sizeof(char) * (strlen(key)+1));
@@ -234,7 +232,7 @@ GKIStoreKey(
   if (hash->nkeys > 3*hash->nhash && hash->primelevel < GKI_NPRIMES-1)
     gki_upsize(hash);
 
-  return hash->nkeys-1; 
+  return hash->nkeys-1;
 }
 
 
@@ -242,9 +240,9 @@ GKIStoreKey(
  * Purpose:  Look up a key in the hash table. Return
  *           its index (0..nkeys-1), else -1 if the key
  *           isn't in the hash (yet).
- *           
+ *          
  * Args:     hash  - the GKI hash table to search in
- *           key   - the key to look up        
+ *           key   - the key to look up       
  *
  * Returns:  -1 if key is not found;
  *           index of key if it is found (range 0..nkeys-1).
@@ -252,12 +250,12 @@ GKIStoreKey(
  */
 size_t
 GKIKeyIndex(
-  GKI *hash, 
+  GKI *hash,
   char *key
 ){
   struct gki_elem *ptr;
   int val;
-  
+ 
   val = gki_hashvalue(hash, key);
   for (ptr = hash->table[val]; ptr != NULL; ptr = ptr->nxt)
     if (strcmp(key, ptr->key) == 0) return ptr->idx;
@@ -270,7 +268,7 @@ GKIKeyIndex(
  *
  * Args:     hash - the GKI hash table to look at
  *
- * Returns:  (void) 
+ * Returns:  (void)
  *           Prints diagnostics on stdout.
  *           hash table is unchanged.
  */
@@ -302,7 +300,7 @@ GKIStatus(
   printf("Unoccupied slots:  %d\n", nempty);
   printf("Most in one slot:  %d\n", maxkeys);
   printf("Least in one slot: %d\n", minkeys);
-  
+ 
 }
 
 
@@ -314,7 +312,7 @@ GKIStatus(
  *                        the size of the table; see gki_primes[]
  *                        array.
  *
- * Returns:  An allocated hash table structure. 
+ * Returns:  An allocated hash table structure.
  *           Caller frees with GKIFree().
  */
 GKI*
@@ -324,7 +322,7 @@ gki_alloc(
   GKI *hash;
   int  i;
 
-  if (primelevel < 0 || primelevel >= GKI_NPRIMES) 
+  if (primelevel < 0 || primelevel >= GKI_NPRIMES)
     Die("bad primelevel in gki_alloc()");
   hash = MallocOrDie(sizeof(GKI));
 
@@ -335,7 +333,7 @@ gki_alloc(
     hash->table[i] = NULL;
   hash->nkeys = 0;
   return hash;
-}  
+} 
 
 
 /* Function: gki_hashvalue()
@@ -346,24 +344,24 @@ gki_alloc(
  *           Algorithms in C).
  *           Slightly optimized: does two characters at a time
  *           before doing the modulo; this gives us a significant
- *           speedup.  
+ *           speedup. 
  *
  * Args:     hash - the gki structure (we need to know the hash table size)
- *           key  - a string to calculate the hash value for       
+ *           key  - a string to calculate the hash value for      
  *
  * Returns:  a hash value, in the range 0..hash->nhash-1.
  *           hash table is unmodified.
  */
 size_t
 gki_hashvalue(
-  GKI *hash, 
+  GKI *hash,
   char *key
 ){
   int val = 0;
 
   for (; *key != '\0'; key++)
     {
-      val = GKI_ALPHABETSIZE*val + *key; 
+      val = GKI_ALPHABETSIZE*val + *key;
       if (*(++key) == '\0') { val = val % hash->nhash; break; }
       val = (GKI_ALPHABETSIZE*val + *key) % hash->nhash;
     }
@@ -394,7 +392,7 @@ gki_upsize(
 
   /* Read the old, store in the new, while *not changing*
    * any key indices. Because of the way the lists are
-   * treated as LIFO stacks, all the lists are reversed 
+   * treated as LIFO stacks, all the lists are reversed
    * in the new structure.
    */
   for (i = 0; i < old->nhash; i++)
@@ -429,36 +427,36 @@ gki_upsize(
 /* Function: MSAAlloc()
  * Purpose:  Allocate an MSA structure, return a pointer
  *           to it.
- *           
+ *          
  *           Designed to be used in three ways:
  *           1) We know exactly the dimensions of the alignment:
  *              both nseq and alen.
  *                    msa = MSAAlloc(nseq, alen);
- *                    
+ *                   
  *           2) We know the number of sequences but not alen.
- *              (We add sequences later.) 
+ *              (We add sequences later.)
  *                    msa = MSAAlloc(nseq, 0);
- *              
+ *             
  *           3) We even don't know the number of sequences, so
  *              we'll have to dynamically expand allocations.
  *              We provide a blocksize for the allocation expansion,
  *              and expand when needed.
  *                    msa = MSAAlloc(10, 0);
- *                    if (msa->nseq == msa->nseqalloc) MSAExpand(msa);   
+ *                    if (msa->nseq == msa->nseqalloc) MSAExpand(msa);  
  *
  * Args:     nseq - number of sequences, or nseq allocation blocksize
- *           alen - length of alignment in columns, or 0      
+ *           alen - length of alignment in columns, or 0     
  *
  * Returns:  pointer to new MSA object, w/ all values initialized.
  *           Note that msa->nseq is initialized to 0, though space
  *           is allocated.
- *           
+ *          
  * Diagnostics: "always works". Die()'s on memory allocation failure.
- *             
+ *            
  */
 MSA *
 MSAAlloc(
-  int nseq, 
+  int nseq,
   int alen
 ){
   MSA *msa;
@@ -478,7 +476,7 @@ MSAAlloc(
 
       if (alen != 0) msa->aseq[i] = MallocOrDie(sizeof(char) * (alen+1));
       else           msa->aseq[i] = NULL;
-    }      
+    }     
 
   msa->alen      = alen;
   msa->nseq      = 0;
@@ -534,7 +532,7 @@ MSAAlloc(
   msa->ngr            = 0;
 
   /* Done. Return the alloced, initialized structure
-   */ 
+   */
   return msa;
 }
 
@@ -547,7 +545,7 @@ MSAAlloc(
  * Args:     msa - the MSA object
  *
  * Returns:  (void)
- *           
+ *          
  */
 void
 MSAExpand(
@@ -581,19 +579,19 @@ MSAExpand(
       if (msa->sqacc  != NULL) msa->sqacc[i]  = NULL;
       if (msa->sqdesc != NULL) msa->sqdesc[i] = NULL;
 
-      if (msa->alen != 0) 
+      if (msa->alen != 0)
       	msa->aseq[i] = ReallocOrDie(msa->aseq[i], sizeof(char) * (msa->alen+1));
       else msa->aseq[i] = NULL;
         msa->sqlen[i] = 0;
 
       if (msa->ss != NULL) {
-        if (msa->alen != 0) 
+        if (msa->alen != 0)
           msa->ss[i] = ReallocOrDie(msa->ss[i], sizeof(char) * (msa->alen+1));
         else msa->ss[i] = NULL;
           msa->sslen[i] = 0;
       }
-      if (msa->sa != NULL) { 
-        if (msa->alen != 0) 
+      if (msa->sa != NULL) {
+        if (msa->alen != 0)
           msa->sa[i] = ReallocOrDie(msa->ss[i], sizeof(char) * (msa->alen+1));
         else
           msa->sa[i] = NULL;
@@ -660,7 +658,7 @@ MSAFree(MSA *msa)
   if (msa->rf      != NULL) free(msa->rf);
   if (msa->sslen   != NULL) free(msa->sslen);
   if (msa->salen   != NULL) free(msa->salen);
-  
+ 
   Free2DArray((void **) msa->comment, msa->ncomment);
   Free2DArray((void **) msa->gf_tag,  msa->ngf);
   Free2DArray((void **) msa->gf,      msa->ngf);
@@ -686,14 +684,14 @@ MSAFree(MSA *msa)
  *
  * Args:     msa      - multiple alignment to add accession to
  *           seqidx   - index of sequence to attach accession to
- *           acc      - accession 
+ *           acc      - accession
  *
  * Returns:  void
  */
 void
 MSASetSeqAccession(
-  MSA *msa, 
-  int seqidx, 
+  MSA *msa,
+  int seqidx,
   char *acc
 ){
 
@@ -717,8 +715,8 @@ MSASetSeqAccession(
  */
 void
 MSASetSeqDescription(
-  MSA *msa, 
-  int seqidx, 
+  MSA *msa,
+  int seqidx,
   char *desc
 ){
 
@@ -742,7 +740,7 @@ MSASetSeqDescription(
  */
 void
 MSAAddComment(
-  MSA *msa, 
+  MSA *msa,
   char *s
 ){
   /* If this is our first recorded comment, we need to malloc();
@@ -765,10 +763,10 @@ MSAAddComment(
 
 /* Function: MSAAddGF()
  * Purpose:  Add an unparsed #=GF markup line to the MSA
- *           structure, allocating as necessary. 
+ *           structure, allocating as necessary.
  *
  * Args:     msa   - a multiple alignment
- *           tag   - markup tag (e.g. "AU")       
+ *           tag   - markup tag (e.g. "AU")      
  *           value - free text markup (e.g. "Alex Bateman")
  *
  * Returns:  (void)
@@ -777,7 +775,7 @@ void
 MSAAddGF(MSA *msa, char *tag, char *value)
 {
   /* If this is our first recorded unparsed #=GF line, we need to malloc();
-   * if we've filled availabl space If we already have a hash index, and the GF 
+   * if we've filled availabl space If we already have a hash index, and the GF
    * Note the arbitrary lumpsize of 10 lines per allocation...
    */
   if (msa->gf_tag == NULL) {
@@ -802,12 +800,12 @@ MSAAddGF(MSA *msa, char *tag, char *value)
 /* Function: MSAAddGS()
  * Purpose:  Add an unparsed #=GS markup line to the MSA
  *           structure, allocating as necessary.
- *           
+ *          
  *           It's possible that we could get more than one
  *           of the same type of GS tag per sequence; for
  *           example, "DR PDB;" structure links in Pfam.
  *           Hack: handle these by appending to the string,
- *           in a \n separated fashion. 
+ *           in a \n separated fashion.
  *
  * Args:     msa    - multiple alignment structure
  *           tag    - markup tag (e.g. "AC")
@@ -836,7 +834,7 @@ MSAAddGS(MSA *msa, char *tag, int sqidx, char *value)
     	msa->gs[0][i] = NULL;
   }else {
 		/* new tag? */
-    tagidx  = GKIKeyIndex(msa->gs_idx, tag); 
+    tagidx  = GKIKeyIndex(msa->gs_idx, tag);
     if (tagidx < 0) {		/* it's a new tag name; realloc */
     	tagidx = GKIStoreKey(msa->gs_idx, tag);
 			/* since we alloc in blocks of 1, we always realloc upon seeing a new tag. */
@@ -854,13 +852,13 @@ MSAAddGS(MSA *msa, char *tag, int sqidx, char *value)
     msa->gs_tag[tagidx] = strdup(tag);
     msa->ngs++;
   }
-  
+ 
   if (msa->gs[tagidx][sqidx] == NULL){ /* first annotation of this seq with this tag? */
     msa->gs[tagidx][sqidx] = strdup(value);
   }else{
 		/* >1 annotation of this seq with this tag; append */
     //int len;
-    char *tmp = realloc(&(msa->gs[tagidx][sqidx]), 
+    char *tmp = realloc(&(msa->gs[tagidx][sqidx]),
          strlen(msa->gs[tagidx][sqidx]) + strlen("\n") + strlen(value) + 1);
     if(NULL == tmp)
       Die("failed to sre_strcat()");
@@ -869,12 +867,12 @@ MSAAddGS(MSA *msa, char *tag, int sqidx, char *value)
     msa->gs[tagidx][sqidx] = strcat(strcat(tmp, "\n"), value);
   }
   return;
-} 
+}
 
 /* Function: MSAAppendGC()
  * Purpose:  Add an unparsed #=GC markup line to the MSA
- *           structure, allocating as necessary. 
- *           
+ *           structure, allocating as necessary.
+ *          
  *           When called multiple times for the same tag,
  *           appends value strings together -- used when
  *           parsing multiblock alignment files, for
@@ -882,7 +880,7 @@ MSAAddGS(MSA *msa, char *tag, int sqidx, char *value)
  *
  * Args:     msa   - multiple alignment structure
  *           tag   - markup tag (e.g. "CS")
- *           value - markup, one char per aligned column      
+ *           value - markup, one char per aligned column     
  *
  * Returns:  (void)
  */
@@ -906,11 +904,11 @@ MSAAppendGC(MSA *msa, char *tag, char *value)
     }
   else
     {			/* new tag? */
-      tagidx  = GKIKeyIndex(msa->gc_idx, tag); 
+      tagidx  = GKIKeyIndex(msa->gc_idx, tag);
       if (tagidx < 0) {		/* it's a new tag name; realloc */
 	tagidx = GKIStoreKey(msa->gc_idx, tag);
 				/* since we alloc in blocks of 1,
-				   we always realloc upon seeing 
+				   we always realloc upon seeing
 				   a new tag. */
 	assert(tagidx == msa->ngc);
 	msa->gc_tag = ReallocOrDie(msa->gc_tag, (msa->ngc+1) * sizeof(char **));
@@ -934,10 +932,10 @@ MSAAppendGC(MSA *msa, char *tag, char *value)
 /* Function: MSAGetGC()
  * Purpose:  Given a tagname for a miscellaneous #=GC column
  *           annotation, return a pointer to the annotation
- *           string. 
+ *           string.
  *
  * Args:     msa  - alignment and its annotation
- *           tag  - name of the annotation       
+ *           tag  - name of the annotation      
  *
  * Returns:  ptr to the annotation string. Caller does *not*
  *           free; is managed by msa object still.
@@ -956,7 +954,7 @@ MSAGetGC(MSA *msa, char *tag)
 /* Function: MSAAppendGR()
  * Purpose:  Add an unparsed #=GR markup line to the
  *           MSA structure, allocating as necessary.
- *           
+ *          
  *           When called multiple times for the same tag,
  *           appends value strings together -- used when
  *           parsing multiblock alignment files, for
@@ -965,7 +963,7 @@ MSAGetGC(MSA *msa, char *tag)
  * Args:     msa    - multiple alignment structure
  *           tag    - markup tag (e.g. "SS")
  *           sqidx  - index of seq to assoc markup with (0..nseq-1)
- *           value  - markup, one char per aligned column      
+ *           value  - markup, one char per aligned column     
  *
  * Returns:  (void)
  */
@@ -984,36 +982,36 @@ MSAAppendGR(MSA *msa, char *tag, int sqidx, char *value)
       msa->gr_tag = MallocOrDie(sizeof(char *));
       msa->gr     = MallocOrDie(sizeof(char **));
       msa->gr[0]  = MallocOrDie(sizeof(char *) * msa->nseqalloc);
-      for (i = 0; i < msa->nseqalloc; i++) 
+      for (i = 0; i < msa->nseqalloc; i++)
 	msa->gr[0][i] = NULL;
       msa->gr_idx = GKIInit();
       tagidx      = GKIStoreKey(msa->gr_idx, tag);
       assert(tagidx == 0);
     }
-  else 
+  else
     {
 				/* new tag? */
-      tagidx  = GKIKeyIndex(msa->gr_idx, tag); 
+      tagidx  = GKIKeyIndex(msa->gr_idx, tag);
       if (tagidx < 0) {		/* it's a new tag name; realloc */
 	tagidx = GKIStoreKey(msa->gr_idx, tag);
 				/* since we alloc in blocks of 1,
-				   we always realloc upon seeing 
+				   we always realloc upon seeing
 				   a new tag. */
 	assert(tagidx == msa->ngr);
 	msa->gr_tag       = ReallocOrDie(msa->gr_tag, (msa->ngr+1) * sizeof(char *));
 	msa->gr           = ReallocOrDie(msa->gr, (msa->ngr+1) * sizeof(char **));
 	msa->gr[msa->ngr] = MallocOrDie(sizeof(char *) * msa->nseqalloc);
-	for (i = 0; i < msa->nseqalloc; i++) 
+	for (i = 0; i < msa->nseqalloc; i++)
 	  msa->gr[msa->ngr][i] = NULL;
       }
     }
-  
+ 
   if (tagidx == msa->ngr) {
     msa->gr_tag[tagidx] = strdup(tag);
     msa->ngr++;
   }
 
-  char *tmp = realloc(&(msa->gr[tagidx][sqidx]), 
+  char *tmp = realloc(&(msa->gr[tagidx][sqidx]),
                         strlen(msa->gr[tagidx][sqidx]) + strlen(value) + 1);
   if(NULL == tmp)
     Die("Allocation failure");
@@ -1030,7 +1028,7 @@ MSAAppendGR(MSA *msa, char *tag, int sqidx, char *value)
  *           information is consistent. Some fields that are
  *           only use during parsing may be freed (sqlen, for
  *           example).
- *           
+ *          
  *           Some fields in msa may be modified (msa->alen is set,
  *           for example).
  *
@@ -1043,7 +1041,7 @@ MSAAppendGR(MSA *msa, char *tag, int sqidx, char *value)
  * Returns:  (void)
  *           Will Die() here with diagnostics on error.
  *
- * Example:  
+ * Example: 
  */
 void
 MSAVerifyParse(MSA *msa)
@@ -1062,12 +1060,12 @@ MSAVerifyParse(MSA *msa)
   for (idx = 0; idx < msa->nseq; idx++)
     {
 				/* aseq is required. */
-      if (msa->aseq[idx] == NULL) 
+      if (msa->aseq[idx] == NULL)
 	Die("Parse error: No sequence for %s in alignment %s", msa->sqname[idx],
 	    msa->name != NULL ? msa->name : "");
 				/* either all weights must be set, or none of them */
       if ((msa->flags & MSA_SET_WGT) && msa->wgt[idx] == -1.0)
-	Die("Parse error: some weights are set, but %s doesn't have one in alignment %s", 
+	Die("Parse error: some weights are set, but %s doesn't have one in alignment %s",
 	    msa->sqname[idx],
 	    msa->name != NULL ? msa->name : "");
 				/* all aseq must be same length. */
@@ -1076,31 +1074,31 @@ MSAVerifyParse(MSA *msa)
 	    msa->sqname[idx], msa->sqlen[idx], msa->alen,
 	    msa->name != NULL ? msa->name : "");
 				/* if SS is present, must have length right */
-      if (msa->ss != NULL && msa->ss[idx] != NULL && msa->sslen[idx] != msa->alen) 
+      if (msa->ss != NULL && msa->ss[idx] != NULL && msa->sslen[idx] != msa->alen)
 	Die("Parse error: #=GR SS annotation for %s: length %d, expected %d in alignment %s",
 	    msa->sqname[idx], msa->sslen[idx], msa->alen,
 	    msa->name != NULL ? msa->name : "");
 				/* if SA is present, must have length right */
-      if (msa->sa != NULL && msa->sa[idx] != NULL && msa->salen[idx] != msa->alen) 
+      if (msa->sa != NULL && msa->sa[idx] != NULL && msa->salen[idx] != msa->alen)
 	Die("Parse error: #=GR SA annotation for %s: length %d, expected %d in alignment %s",
 	    msa->sqname[idx], msa->salen[idx], msa->alen,
 	    msa->name != NULL ? msa->name : "");
     }
 
 			/* if cons SS is present, must have length right */
-  if (msa->ss_cons != NULL && strlen(msa->ss_cons) != msa->alen) 
+  if (msa->ss_cons != NULL && strlen(msa->ss_cons) != msa->alen)
     Die("Parse error: #=GC SS_cons annotation: length %d, expected %d in alignment %s",
 	strlen(msa->ss_cons), msa->alen,
 	msa->name != NULL ? msa->name : "");
 
 			/* if cons SA is present, must have length right */
-  if (msa->sa_cons != NULL && strlen(msa->sa_cons) != msa->alen) 
+  if (msa->sa_cons != NULL && strlen(msa->sa_cons) != msa->alen)
     Die("Parse error: #=GC SA_cons annotation: length %d, expected %d in alignment %s",
 	strlen(msa->sa_cons), msa->alen,
 	msa->name != NULL ? msa->name : "");
 
 				/* if RF is present, must have length right */
-  if (msa->rf != NULL && strlen(msa->rf) != msa->alen) 
+  if (msa->rf != NULL && strlen(msa->rf) != msa->alen)
     Die("Parse error: #=GC RF annotation: length %d, expected %d in alignment %s",
 	strlen(msa->rf), msa->alen,
 	msa->name != NULL ? msa->name : "");
@@ -1125,7 +1123,7 @@ MSAVerifyParse(MSA *msa)
  *           for reading one alignment, or sequentially
  *           in the (rare) case of multiple MSA databases
  *           (e.g. Stockholm format).
- *           
+ *          
  * Args:     filename - name of file to open
  *                      if "-", read stdin
  *                      if it ends in ".gz", read from pipe to gunzip -dc
@@ -1133,7 +1131,7 @@ MSAVerifyParse(MSA *msa)
  *           env      - environment variable for path (e.g. BLASTDB)
  *
  * Returns:  opened MSAFILE * on success.
- *           NULL on failure: 
+ *           NULL on failure:
  *             usually, because the file doesn't exist;
  *             for gzip'ed files, may also mean that gzip isn't in the path.
  */
@@ -1141,12 +1139,12 @@ MSAFILE *
 MSAFileOpen(char *filename, int format, char *env)
 {
   MSAFILE *afp;
-  
+ 
   afp        = MallocOrDie(sizeof(MSAFILE));
   if (strcmp(filename, "-") == 0)
     {
       afp->f         = stdin;
-      afp->do_stdin  = true; 
+      afp->do_stdin  = true;
       afp->do_gzip   = false;
       afp->fname     = strdup("[STDIN]");
       afp->ssi       = NULL;	/* can't index stdin because we can't seek*/
@@ -1165,7 +1163,7 @@ MSAFileOpen(char *filename, int format, char *env)
       if (! FileExists(filename))
 	Die("%s: file does not exist", filename);
       if (strlen(filename) + strlen("gzip -dc ") >= 256)
-	Die("filename > 255 char in MSAFileOpen()"); 
+	Die("filename > 255 char in MSAFileOpen()");
       sprintf(cmd, "gzip -dc %s", filename);
       if ((afp->f = popen(cmd, "r")) == NULL)
 	return NULL;
@@ -1237,14 +1235,14 @@ MSAFileOpen(char *filename, int format, char *env)
 /* Function: MSAFilePositionByKey()
  *           MSAFilePositionByIndex()
  *           MSAFileRewind()
- * 
+ *
  * Purpose:  Family of functions for repositioning in
  *           open MSA files; analogous to a similarly
  *           named function series in HMMER's hmmio.c.
  *
  * Args:     afp    - open alignment file
  *           offset - disk offset in bytes
- *           key    - key to look up in SSI indices 
+ *           key    - key to look up in SSI indices
  *           idx    - index of alignment.
  *
  * Returns:  0 on failure.
@@ -1252,14 +1250,14 @@ MSAFileOpen(char *filename, int format, char *env)
  *           If called on a non-fseek()'able file (e.g. a gzip'ed
  *           or pipe'd alignment), returns 0 as a failure flag.
  */
-int 
+int
 MSAFileRewind(MSAFILE *afp)
 {
   if (afp->do_gzip || afp->do_stdin) return 0;
   rewind(afp->f);
   return 1;
 }
-int 
+int
 MSAFilePositionByKey(MSAFILE *afp, char *key)
 {
   int       fh;			/* filehandle is ignored       */
@@ -1289,7 +1287,7 @@ MSAFilePositionByIndex(MSAFILE *afp, int idx)
  *
  * Args:     afp     - open alignment file
  *
- * Returns:  next alignment, or NULL if out of alignments 
+ * Returns:  next alignment, or NULL if out of alignments
  */
 MSA *
 MSAFileRead(MSAFILE *afp)
@@ -1338,10 +1336,10 @@ MSAFileGetLine(MSAFILE *afp)
   return afp->buf;
 }
 
-void 
+void
 MSAFileWrite(
-  MSA *msa, 
-  int outfmt, 
+  MSA *msa,
+  int outfmt,
   int do_oneline
 ){
   switch (outfmt) {
@@ -1362,7 +1360,7 @@ MSAFileWrite(
 /* Function: MSAGetSeqidx()
  * Purpose:  From a sequence name, return seqidx appropriate
  *           for an MSA structure.
- *           
+ *          
  *           1) try to guess the index. (pass -1 if you can't guess)
  *           2) Look up name in msa's hashtable.
  *           3) If it's a new name, store in msa's hashtable;
@@ -1380,7 +1378,7 @@ MSAGetSeqidx(MSA *msa, char *name, int guess)
 {
   int seqidx;
 				/* can we guess? */
-  if (guess >= 0 && guess < msa->nseq && strcmp(name, msa->sqname[guess]) == 0) 
+  if (guess >= 0 && guess < msa->nseq && strcmp(name, msa->sqname[guess]) == 0)
     return guess;
 				/* else, a lookup in the index */
   if ((seqidx = GKIKeyIndex(msa->index, name)) >= 0)
@@ -1420,10 +1418,10 @@ MSAFromAINFO(char **aseq, AINFO *ainfo)
       msa->sqlen[i]  = msa->alen;
       GKIStoreKey(msa->index, msa->sqname[i]);
 
-      if (ainfo->sqinfo[i].flags & SQINFO_ACC) 
+      if (ainfo->sqinfo[i].flags & SQINFO_ACC)
 	MSASetSeqAccession(msa, i, ainfo->sqinfo[i].acc);
 
-      if (ainfo->sqinfo[i].flags & SQINFO_DESC) 
+      if (ainfo->sqinfo[i].flags & SQINFO_DESC)
 	MSASetSeqDescription(msa, i, ainfo->sqinfo[i].desc);
 
       if (ainfo->sqinfo[i].flags & SQINFO_SS) {
@@ -1485,7 +1483,7 @@ MSAFromAINFO(char **aseq, AINFO *ainfo)
  *           cannot be used on a pipe or gzip'ed file. Works by
  *           calling SeqfileFormat() from sqio.c, then making sure
  *           that the format is indeed an alignment. If the format
- *           comes back as FASTA, it assumes that the format as A2M 
+ *           comes back as FASTA, it assumes that the format as A2M
  *           (e.g. aligned FASTA).
  *
  * Args:     fname   - file to evaluate
@@ -1501,7 +1499,7 @@ MSAFileFormat(MSAFILE *afp)
 
   if (fmt == SQFILE_FASTA) fmt = MSAFILE_A2M;
 
-  if (fmt != MSAFILE_UNKNOWN && ! IsAlignmentFormat(fmt)) 
+  if (fmt != MSAFILE_UNKNOWN && ! IsAlignmentFormat(fmt))
     Die("File %s does not appear to be an alignment file;\n\
 rather, it appears to be an unaligned file in %s format.\n\
 I'm expecting an alignment file in this context.\n",
@@ -1606,11 +1604,11 @@ MSAShorterAlignment(MSA *msa, int *useme)
 	      msa->aseq[idx][mpos] = msa->aseq[idx][apos];
 	      if (msa->ss != NULL && msa->ss[idx] != NULL) msa->ss[idx][mpos] = msa->ss[idx][apos];
 	      if (msa->sa != NULL && msa->sa[idx] != NULL) msa->sa[idx][mpos] = msa->sa[idx][apos];
-	      
+	     
 	      for (i = 0; i < msa->ngr; i++)
 		if (msa->gr[i][idx] != NULL) msa->gr[i][idx][mpos] = msa->gr[i][idx][apos];
 	    }
-	  
+	 
 	  if (msa->ss_cons != NULL) msa->ss_cons[mpos] = msa->ss_cons[apos];
 	  if (msa->sa_cons != NULL) msa->sa_cons[mpos] = msa->sa_cons[apos];
 	  if (msa->rf      != NULL) msa->rf[mpos]      = msa->rf[apos];
@@ -1628,7 +1626,7 @@ MSAShorterAlignment(MSA *msa, int *useme)
       msa->aseq[idx][mpos] = '\0';
       if (msa->ss != NULL && msa->ss[idx] != NULL) msa->ss[idx][mpos] = '\0';
       if (msa->sa != NULL && msa->sa[idx] != NULL) msa->sa[idx][mpos] = '\0';
-	      
+	     
       for (i = 0; i < msa->ngr; i++)
 	if (msa->gr[i][idx] != NULL) msa->gr[i][idx][mpos] = '\0';
     }
@@ -1647,26 +1645,26 @@ MSAShorterAlignment(MSA *msa, int *useme)
 /* Function: MSASmallerAlignment()
  * Purpose:  Given an array "useme" of true/false flags for
  *           each sequence in an alignment, construct
- *           and return a new alignment containing only 
+ *           and return a new alignment containing only
  *           those sequences that are flagged useme=true.
- *           
+ *          
  *           Used by routines such as MSAFilterAlignment()
  *           and MSASampleAlignment().
- *           
+ *          
  * Limitations:
  *           Does not copy unparsed Stockholm markup.
  *
  *           Does not make assumptions about meaning of wgt;
  *           if you want the new wgt vector renormalized, do
- *           it yourself with FNorm(new->wgt, new->nseq). 
+ *           it yourself with FNorm(new->wgt, new->nseq).
  *
  * Args:     msa     -- the original (larger) alignment
- *           useme   -- [0..nseq-1] array of true/false flags; true means include 
+ *           useme   -- [0..nseq-1] array of true/false flags; true means include
  *                      this seq in new alignment
- *           ret_new -- RETURN: new alignment          
+ *           ret_new -- RETURN: new alignment         
  *
  * Returns:  void
- *           ret_new is allocated here; free with MSAFree() 
+ *           ret_new is allocated here; free with MSAFree()
  */
 void
 MSASmallerAlignment(MSA *msa, int *useme, MSA **ret_new)
@@ -1680,7 +1678,7 @@ MSASmallerAlignment(MSA *msa, int *useme, MSA **ret_new)
   for (oidx = 0; oidx < msa->nseq; oidx++)
     if (useme[oidx]) nnew++;
   if (nnew == 0) { *ret_new = NULL; return; }
-  
+ 
   new  = MSAAlloc(nnew, 0);
   nidx = 0;
   for (oidx = 0; oidx < msa->nseq; oidx++)
@@ -1708,7 +1706,7 @@ MSASmallerAlignment(MSA *msa, int *useme, MSA **ret_new)
       }
 
   new->nseq    = nnew;
-  new->alen    = msa->alen; 
+  new->alen    = msa->alen;
   new->flags   = msa->flags;
   new->type    = msa->type;
   new->name    = strdup(msa->name);
@@ -1732,7 +1730,7 @@ MSASmallerAlignment(MSA *msa, int *useme, MSA **ret_new)
 
 /*****************************************************************
  * Retrieval routines
- * 
+ *
  * Access to MSA structure data is possible through these routines.
  * I'm not doing this because of object oriented design, though
  * it might work in my favor someday.
@@ -1776,7 +1774,7 @@ MSAGetSeqSA(MSA *msa, int idx)
 
 /*****************************************************************
  * Information routines
- * 
+ *
  * Access information about the MSA.
  *****************************************************************/
 
@@ -1793,9 +1791,9 @@ MSAAverageSequenceLength(MSA *msa)
 {
   int   i;
   float avg;
-  
+ 
   avg = 0.;
-  for (i = 0; i < msa->nseq; i++) 
+  for (i = 0; i < msa->nseq; i++)
     avg += (float) DealignedLength(msa->aseq[i]);
 
   if (msa->nseq == 0) return 0.;

@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -12,21 +12,21 @@
  * almost identical to bord.c, from fd
  * also now contains routines for constructing difference matrices
  * from alignments
- * 
- * "branch ordering": Input a symmetric or upper-right-diagonal 
- * NxN difference matrix (usually constructed by pairwise alignment 
- * and similarity calculations for N sequences). Use the simple 
+ *
+ * "branch ordering": Input a symmetric or upper-right-diagonal
+ * NxN difference matrix (usually constructed by pairwise alignment
+ * and similarity calculations for N sequences). Use the simple
  * cluster analysis part of the Fitch/Margoliash tree-building algorithm
  * (as described by Fitch and Margoliash 1967 as well as Feng
  * and Doolittle 1987) to calculate the topology of an "evolutionary
  * tree" consistent with the difference matrix. Returns an array
  * which represents the tree.
- * 
+ *
  * The input difference matrix is just an NxN matrix of floats.
  * A good match is a small difference score (the algorithm is going
  * to search for minima among the difference scores). The original difference
  * matrix remains unchanged by the calculations.
- * 
+ *
  * The output requires some explanation. A phylogenetic
  * tree is a binary tree, with N "leaves" and N-1 "nodes". The
  * topology of the tree may be completely described by N-1 structures
@@ -37,11 +37,11 @@
  * number of one of the sequences. If the index is in the range
  * (N..2N-2), it is another "node" -- (index-N) is the index
  * of the node in the returned array.
- * 
+ *
  * If both indices of a member of the returned array point to
  * nodes, the tree is "compound": composed of more than one
  * cluster of related sequences.
- * 
+ *
  * The higher-numbered elements of the returned array were the
  * first constructed, and hence represent the distal tips
  * of the tree -- the most similar sequences. The root
@@ -49,7 +49,7 @@
  ******************************************************************
  *
  * Algorithm
- * 
+ *
  * INITIALIZATIONS:
  *  - copy the difference matrix (otherwise the caller's copy would
  *       get destroyed by the operations of this algorithm). If
@@ -66,44 +66,44 @@
  *  - for N' = N down to N' = 2  (N-1 steps):
  *    - in the half-diagonal N'xN' matrix, find the indices i,j at which
  *      there's the minimum difference score
- *      
+ *     
  *     Store the results:
- *    - at position N'-2 of the result array, store coords[i] and 
+ *    - at position N'-2 of the result array, store coords[i] and
  *         coords[j].
- *    
+ *   
  *     Move i,j rows, cols to the outside edges of the matrix:
  *    - swap row i and row N'-2
- *    - swap row j and row N'-1   
+ *    - swap row j and row N'-1  
  *    - swap column i and column N'-2
  *    - swap column j and column N'-1
  *    - swap indices i, N'-2 in the index array
  *    - swap indices j, N'-1 in the index array
- *    
+ *   
  *     Build a average difference score for differences to i,j:
- *    - for all columns, find avg difference between rows i and j and store in row i: 
+ *    - for all columns, find avg difference between rows i and j and store in row i:
  *       row[i][col] = (row[i][col] + row[j][col]) / 2.0
  *    - copy the contents of row i to column i (it's a symmetric
  *       matrix, no need to recalculate)
  *    - store an index N'+N-2 at position N'-2 of the index array: means
  *       that this row/column is now a node rather than a leaf, and
  *       contains minimum values
- *       
+ *      
  *     Continue:
  *    - go to the next N'
- *    
+ *   
  * GARBAGE COLLECTION & RETURN.
- * 
+ *
  **********************************************************************
  *
  * References:
- * 
+ *
  * Feng D-F and R.F. Doolittle. "Progressive sequence alignment as a
- *    prerequisite to correct phylogenetic trees." J. Mol. Evol. 
+ *    prerequisite to correct phylogenetic trees." J. Mol. Evol.
  *    25:351-360, 1987.
- *    
+ *   
  * Fitch W.M. and Margoliash E. "Construction of phylogenetic trees."
  *    Science 155:279-284, 1967.
- *    
+ *   
  **********************************************************************
  */
 
@@ -111,21 +111,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <stdbool.h>
 
-#include "squid.h"
-//#include "sqfuncs.h"
-#include "cluster.h"
-#include "sre_math.h"
-#include "aligneval.h"
-#include "stack.h"
+#include "squid.hpp"
+#include "cluster.hpp"
+#include "sre_math.hpp"
+#include "aligneval.hpp"
+#include "stack.hpp"
 
 
 int
 Cluster(
-  float **dmx, 
-  int N, 
-  enum clust_strategy mode, 
+  float **dmx,
+  int N,
+  enum clust_strategy mode,
   struct phylo_s **ret_tree
 ){
   struct phylo_s *tree;         /* (0..N-2) phylogenetic tree          */
@@ -166,7 +164,7 @@ Cluster(
   /*********************************
    * Process the difference matrix
    *********************************/
-  
+ 
 				/* N-prime, for an NxN down to a 2x2 diffmx */
   j= 0;				/* just to silence gcc uninit warnings */
   for (Np = N; Np >= 2; Np--)
@@ -200,24 +198,24 @@ Cluster(
       if (coord[j] >= N) tree[Np-2].rblen -= diff[coord[j]-N];
 
 				/* number seqs included at node */
-      if (coord[i] < N) 
+      if (coord[i] < N)
 	{
 	  tree[Np-2].incnum ++;
 	  tree[Np-2].is_in[coord[i]] = 1;
 	}
-      else 
+      else
 	{
 	  tree[Np-2].incnum += tree[coord[i]-N].incnum;
 	  for (idx = 0; idx < N; idx++)
 	    tree[Np-2].is_in[idx] |= tree[coord[i]-N].is_in[idx];
 	}
-      
-      if (coord[j] < N) 
+     
+      if (coord[j] < N)
 	{
 	  tree[Np-2].incnum ++;
 	  tree[Np-2].is_in[coord[j]] = 1;
 	}
-      else 
+      else
 	{
 	  tree[Np-2].incnum += tree[coord[j]-N].incnum;
 	  for (idx = 0; idx < N; idx++)
@@ -238,7 +236,7 @@ Cluster(
 				/* swap row i, row N'-2 */
 	  trow = mx[Np-2]; mx[Np-2] = mx[i]; mx[i] = trow;
 				/* swap col i, col N'-2 */
-	  for (row = 0; row < Np; row++) 
+	  for (row = 0; row < Np; row++)
 	    {
 	      tcol = mx[row][Np-2];
 	      mx[row][Np-2] = mx[row][i];
@@ -253,7 +251,7 @@ Cluster(
 				/* swap row j, row N'-1 */
 	  trow = mx[Np-1]; mx[Np-1] = mx[j]; mx[j] = trow;
 				/* swap col j, col N'-1 */
-	  for (row = 0; row < Np; row++) 
+	  for (row = 0; row < Np; row++)
 	    {
 	      tcol = mx[row][Np-1];
 	      mx[row][Np-1] = mx[row][j];
@@ -274,7 +272,7 @@ Cluster(
 	  case CLUSTER_MEAN:  mx[i][col] =(mx[i][col]+ mx[j][col]) / 2.0; break;
 	  case CLUSTER_MIN:   mx[i][col] = MIN(mx[i][col], mx[j][col]);   break;
 	  case CLUSTER_MAX:   mx[i][col] = MAX(mx[i][col], mx[j][col]);   break;
-	  default:            mx[i][col] =(mx[i][col]+ mx[j][col]) / 2.0; break; 
+	  default:            mx[i][col] =(mx[i][col]+ mx[j][col]) / 2.0; break;
 	  }
 	}
 				/* copy those rows to columns */
@@ -320,7 +318,7 @@ AllocPhylo(
 
 void
 FreePhylo(
-  struct phylo_s *tree, 
+  struct phylo_s *tree,
   int N
 ){
   int idx;
@@ -333,8 +331,8 @@ FreePhylo(
 
 void
 MakeDiffMx(
-  char **aseqs, 
-  int num, 
+  char **aseqs,
+  int num,
   float ***ret_dmx
 ){
   float **dmx;                  /* RETURN: distance matrix           */
@@ -358,8 +356,8 @@ MakeDiffMx(
 
 void
 MakeIdentityMx(
-  char **aseqs, 
-  int num, 
+  char **aseqs,
+  int num,
   float ***ret_imx
 ){
   float **imx;          /* RETURN: identity matrix           */
@@ -382,25 +380,25 @@ MakeIdentityMx(
 
 void
 PrintNewHampshireTree(
-  FILE *fp, 
-  AINFO *ainfo, 
-  struct phylo_s *tree, 
+  FILE *fp,
+  AINFO *ainfo,
+  struct phylo_s *tree,
   int N
-){                 
+){                
   struct intstack_s *stack;
   int    code;
   float *blen;
-  int    docomma; 
+  int    docomma;
 
   blen  = (float *) MallocOrDie (sizeof(float) * (2*N-1));
   stack = InitIntStack();
   PushIntStack(stack, N);	/* push root on stack */
   docomma = false;
-  
+ 
   /* node index code:
    *     0..N-1   = leaves; indexes of sequences.
    *     N..2N-2  = interior nodes; node-N = index of node in tree structure.
-   *                code N is the root. 
+   *                code N is the root.
    *     2N..3N-2 = special flags for closing interior nodes; node-2N = index in tree
    */
   while (PopIntStack(stack, &code))
@@ -445,8 +443,8 @@ PrintNewHampshireTree(
 
 void
 PrintPhylo(
-  FILE *fp, 
-  AINFO *ainfo, 
+  FILE *fp,
+  AINFO *ainfo,
   struct phylo_s *tree,
   int N
 ){
@@ -456,11 +454,11 @@ PrintPhylo(
     {
       fprintf(fp, "Interior node %d (code %d)\n", idx, idx+N);
       fprintf(fp, "\tParent: %d (code %d)\n", tree[idx].parent-N, tree[idx].parent);
-      fprintf(fp, "\tLeft:   %d (%s) %f\n", 
+      fprintf(fp, "\tLeft:   %d (%s) %f\n",
 	      tree[idx].left < N ? tree[idx].left-N : tree[idx].left,
 	      tree[idx].left < N ? ainfo->sqinfo[tree[idx].left].name : "interior",
 	      tree[idx].lblen);
-      fprintf(fp, "\tRight:   %d (%s) %f\n", 
+      fprintf(fp, "\tRight:   %d (%s) %f\n",
 	      tree[idx].right < N ? tree[idx].right-N : tree[idx].right,
 	      tree[idx].right < N ? ainfo->sqinfo[tree[idx].right].name : "interior",
 	      tree[idx].rblen);

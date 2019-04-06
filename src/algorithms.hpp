@@ -22,25 +22,22 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "config.h"
-//#include "squidconf.h"
-#include "structs.h"
-#include "funcs.h"
-//#include "squid.h"
-#include "vectorops.h"
+#include "config.hpp"
+#include "structs.hpp"
+#include "vectorops.hpp"
 
 
 float get_wee_midpt(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   unsigned char *dsq,
-  int k1, 
-  char t1, 
+  int k1,
+  char t1,
   int s1,
-  int k3, 
-  char t3, 
+  int k3,
+  char t3,
   int s3,
-  int *ret_k2, 
-  char *ret_t2, 
+  int *ret_k2,
+  char *ret_t2,
   int *ret_s2);
 
 
@@ -78,12 +75,12 @@ float get_wee_midpt(
  */
 void
 ResizePlan7Matrix(
-  struct dpmatrix_s *mx, 
-  int N, 
+  struct dpmatrix_s *mx,
+  int N,
   int M,
-  int ***xmx, 
-  int ***mmx, 
-  int ***imx, 
+  int ***xmx,
+  int ***mmx,
+  int ***imx,
   int ***dmx);
 
 
@@ -108,11 +105,11 @@ ResizePlan7Matrix(
  */
 struct dpmatrix_s*
 AllocPlan7Matrix(
-  int rows, 
-  int M, 
-  int ***xmx, 
-  int ***mmx, 
-  int ***imx, 
+  int rows,
+  int M,
+  int ***xmx,
+  int ***mmx,
+  int ***imx,
   int ***dmx);
 
 
@@ -143,8 +140,8 @@ FreePlan7Matrix(
 
 struct dpshadow_s*
 AllocShadowMatrix(
-  int rows, 
-  int M, 
+  int rows,
+  int M,
   char ***xtb,
   char ***mtb,
   char ***itb,
@@ -192,8 +189,8 @@ FreeShadowMatrix(
  */
 int
 P7ViterbiSpaceOK(
-  int L, 
-  int M, 
+  int L,
+  int M,
   struct dpmatrix_s *mx);
 
 
@@ -214,7 +211,7 @@ P7ViterbiSpaceOK(
  */
 int
 P7ViterbiSize(
-  int L, 
+  int L,
   int M);
 
 
@@ -233,9 +230,9 @@ P7ViterbiSize(
  */
 float
 P7Forward(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
   struct dpmatrix_s **ret_mx);
 
 
@@ -256,10 +253,10 @@ P7Forward(
  */
 void
 P7ViterbiTrace(
-  struct plan7_s *hmm, 
-  unsigned char *dsq, 
+  struct plan7_s *hmm,
+  unsigned char *dsq,
   int N,
-  struct dpmatrix_s *mx, 
+  struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
@@ -288,10 +285,10 @@ P7ViterbiTrace(
  */
 float
 P7SmallViterbi(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
-  struct dpmatrix_s *mx, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
+  struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
@@ -324,9 +321,9 @@ P7SmallViterbi(
  */
 float
 P7ParsingViterbi(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
   struct p7trace_s **ret_tr);
 
 
@@ -359,9 +356,9 @@ P7ParsingViterbi(
  */
 float
 P7WeeViterbi(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
   struct p7trace_s **ret_tr);
 
 
@@ -394,16 +391,16 @@ P7WeeViterbi(
 //               int *ret_k2, char *ret_t2, int *ret_s2) {
 float
 get_wee_midpt(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   unsigned char *dsq,
-  int k1, 
-  char t1, 
+  int k1,
+  char t1,
   int s1,
-  int k3, 
-  char t3, 
+  int k3,
+  char t3,
   int s3,
-  int *ret_k2, 
-  char *ret_t2, 
+  int *ret_k2,
+  char *ret_t2,
   int *ret_s2);
 
 
@@ -443,7 +440,7 @@ get_wee_midpt(
  */
 struct p7trace_s *
 P7ViterbiAlignAlignment(
-  MSA *msa, 
+  MSA *msa,
   struct plan7_s *hmm);
 
 
@@ -459,8 +456,8 @@ P7ViterbiAlignAlignment(
  */
 struct p7trace_s *
 ShadowTrace(
-  struct dpshadow_s *tb, 
-  struct plan7_s *hmm, 
+  struct dpshadow_s *tb,
+  struct plan7_s *hmm,
   int L);
 
 
@@ -598,10 +595,10 @@ PostprocessSignificantHit(
  */
 float
 P7Viterbi(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
-  struct dpmatrix_s *mx, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
+  struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
@@ -627,24 +624,24 @@ AltivecMessage();
  ################################################################*/
 void
 AllocPlan7Body(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   int M);
 
 
 struct dpmatrix_s*
 CreatePlan7Matrix(
-  int N, 
-  int M, 
-  int padN, 
+  int N,
+  int M,
+  int padN,
   int padM
 );
 
 
 float
 P7Viterbi(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
   struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
@@ -667,7 +664,7 @@ P7Viterbi(
  */
 float
 P7ViterbiNoTrace(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
   struct dpmatrix_s *mx);

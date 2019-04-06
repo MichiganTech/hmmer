@@ -23,30 +23,19 @@
 #include <float.h>
 #include <ctype.h>
 
-#include "structs.h"
-#include "config.h"
-#include "funcs.h"
-//#include "squid.h"
-//#include "msa.h"
+#include "matricies.hpp"
 
 #define accuracy 0.99
 #define MARGIN   0.0001
 
 
-/*  Function: AssignMatrixNotLog()
- *
- *  Purpose:  assign a matrix to P_emit_ij based on a time and a Qij
- *
- *  Args:     Qij   - rate matrix
- *        matrix_n  - width or height of matrix
- *        time   - time to use as exponentiation factor for Qij
- *        P_emit_ij - conditional matrix
- *
- *  Return:  (void)
- */
-
 void
-AssignMatrixNotLog (double *Qij, int matrix_n, double time, double *P_emit_ij) {
+AssignMatrixNotLog (
+  double *Qij,
+  int matrix_n,
+  double time,
+  double *P_emit_ij
+){
   double *temp_matrix; /*   temporary matrix to pass Qij to Cal_M_Exp   */
 
   temp_matrix = (double *) MallocOrDie(sizeof(double) * matrix_n * matrix_n);
@@ -60,12 +49,18 @@ AssignMatrixNotLog (double *Qij, int matrix_n, double time, double *P_emit_ij) {
 
 
 void
-ReadAAMatrices (double **ret_Sij, double **ret_pi, char *matrixfile, int environ, int L) {
+ReadAAMatrices (
+  double **ret_Sij,
+  double **ret_pi,
+  char *matrixfile,
+  int environ,
+  int L
+){
   int size;     /* number of elements in symmetric matrix       */
   int i, j;      /* count through elements in Sij and pi       */
   int n;     /* count through environ           */
   char TempString[20];   /* temp holder for read in string         */
-//  float read_element;   /* temp holder for matrix element         */
+  //  float read_element;   /* temp holder for matrix element         */
   FILE *fp;    /* file pointer             */
   double *Sij;     /* symmetric matrix             */
   double *pi;     /* amino acid frequencies           */
@@ -122,19 +117,14 @@ ReadAAMatrices (double **ret_Sij, double **ret_pi, char *matrixfile, int environ
 }
 
 
-/*  Function: SymToRateMatrices ()
- *
- *  Purpose:  Convert a symmetric to a rate matrix
- *
- *  Args:     ret_Qij - pointer to a rate matrix
- *        S       - symmetric matrix
- *          p       - residue frequencies
- *        L        - number of elements in a row or col of the matrix
- *
- *  Return:  (void)
- */
 void
-SymToRateMatrices(double *Qij, double *Sij, double *pi, int L, int environ) {
+SymToRateMatrices(
+  double *Qij,
+  double *Sij,
+  double *pi,
+  int L,
+  int environ
+){
   int i, j;      /* matrix counters             */
   int n;     /* count through environments           */
   int size;     /* size of matrix             */
@@ -156,19 +146,14 @@ SymToRateMatrices(double *Qij, double *Sij, double *pi, int L, int environ) {
   return;
 }
 
-/*  Function: NormRateMatrices ()
- *
- *  Purpose:  normalize matrices such that columns sum to  1.
- *
- *  Args:     Qij     - pointer to a rate matrix
- *          pi      - residue frequencies
- *        L        - number of elements in a row or col of the matrix
- *        environ - number of different classes being modeled
- *
- *  Return:  (void)
- */
+
 void
-NormRateMatrices(double *Qij, double *pi, int L, int environ) {
+NormRateMatrices(
+  double *Qij,
+  double *pi,
+  int L,
+  int environ
+){
   int i,j;    /* count through matrices             */
   int n;   /* count through environ             */
   int size;   /* size of matrix               */
@@ -190,11 +175,11 @@ NormRateMatrices(double *Qij, double *pi, int L, int environ) {
 }
 
 
-/* Function: Check_Accuracy()
-   from Elena Rivas' matrix functions package
-   */
 int
-Check_Accuracy(double *vec, int L) {
+Check_Accuracy(
+  double *vec,
+  int L
+){
   int    i;
   int    issig;
 
@@ -212,17 +197,11 @@ Check_Accuracy(double *vec, int L) {
   return issig;
 }
 
-/* Function: Cal_Id()
- * Purpose:  Creates a Id(LxL) matrix
- *
- * Args:    L - dimension
- *
- * Returns: Id(LxL) = \delta_{ij}
- *          Id is allocated here, freed by caller.
- *
- */
-double *
-Cal_Id(int L) {
+
+double*
+Cal_Id(
+  int L
+){
   double *Id;
   int     i, j;
 
@@ -236,20 +215,12 @@ Cal_Id(int L) {
 }
 
 
-
-/* Function: Cal_M_Exp()
- * Purpose:  Given a matrix M, calculate exp{r*M}
- *
- *            exp{rM} = \sum_{n=0}^{\infty} [ r^n * M^n / n!   ]
- *
- * Args:     M  - LL joint prob matrix (prealloc)
- *
- * Returns:  Q(LxL) = exp{rM(LxL)}
- *           Q is alocated here, freed by caller.
- *
- */
 double *
-Cal_M_Exp(double *M, int L, double r) {
+Cal_M_Exp(
+  double *M,
+  int L,
+  double r
+){
   double *Qr;        /* Qr = exp{r*M} matrix */
   double *taylorQr;  /* next term for Qr in the taylor expansion */
   double *Mpower;    /* holds at a given n (M_I)^n */
@@ -299,18 +270,14 @@ Cal_M_Exp(double *M, int L, double r) {
 }
 
 
-/* Function: Cal_M_N_Prod()
- *
- * Purpose:  given M (LixLk) and N (LkxLj) calculate Mprod(LixLk) = M * N.
- *
- * Args:     M  - LixLk (prealloc)
- *           N  - LkxLj (prealloc)
- *
- * Returns:  Mprod(LixLj) = M(LixLk) * N(LkxLj)
- *           Mprod is alocated here, freed by caller.
- */
 double *
-Cal_M_N_Prod(double *M, double *N, int Li, int Lk, int Lj) {
+Cal_M_N_Prod(
+  double *M,
+  double *N,
+  int Li,
+  int Lk,
+  int Lj
+){
   int     i, j, k;
   double  prod;
   double *Mprod;
@@ -331,11 +298,13 @@ Cal_M_N_Prod(double *M, double *N, int Li, int Lk, int Lj) {
   return Mprod;
 }
 
-/* Function: Comp_M_N_Prod()
-   from Elena Rivas' matrix functions package
-   */
+
 void
-Comp_M_N_Prod(double *M, double *N, int L) {
+Comp_M_N_Prod(
+  double *M,
+  double *N,
+  int L
+){
   double *Mprod;
 
   Mprod = Cal_M_N_Prod(M, N, L, L, L);
@@ -347,11 +316,12 @@ Comp_M_N_Prod(double *M, double *N, int L) {
 }
 
 
-/* Function: CopyMatrix()
-   from Elena Rivas' matrix functions package
-   */
 void
-CopyMatrix (double *copyQ, double *Q, int N) {
+CopyMatrix (
+  double *copyQ,
+  double *Q,
+  int N
+){
   int col, row;
 
   for (row = 0; row < N; row++)
@@ -362,7 +332,10 @@ CopyMatrix (double *copyQ, double *Q, int N) {
 
 
 void
-AssignWagMatrix (double **ret_Sij, double **ret_pi) {
+AssignWagMatrix (
+  double **ret_Sij,
+  double **ret_pi
+){
   int size;     /* number of elements in symmetric matrix       */
   int i, j;      /* count through elements in Sij and pi       */
   int k;     /* count through wag[]            */

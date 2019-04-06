@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -9,7 +9,9 @@
 
 
 #include <stdlib.h>
-#include "squid.h"
+
+#include "squid.hpp"
+#include "stack.hpp"
 
 
 struct intstack_s *
@@ -24,9 +26,9 @@ InitIntStack(
 }
 
 
-void 
+void
 PushIntStack(
-  struct intstack_s *stack, 
+  struct intstack_s *stack,
   int data
 ){
   struct intstack_s *new;
@@ -42,7 +44,7 @@ PushIntStack(
 
 int
 PopIntStack(
-  struct intstack_s  *stack, 
+  struct intstack_s  *stack,
   int *ret_data
 ){
   struct intstack_s *old;
@@ -53,7 +55,7 @@ PopIntStack(
   stack->nxt = old->nxt;
 
   *ret_data = old->data;
-  free(old); 
+  free(old);
   return 1;
 }
 
@@ -67,13 +69,12 @@ ReverseIntStack(
 
   old        = stack->nxt;
   stack->nxt = NULL;
-  while (old != NULL)
-    {
-      new        = old;		/* remove one from top of old stack */
-      old        = old->nxt;
-      new->nxt   = stack->nxt;  /* push it onto new stack */
-      stack->nxt = new;
-    }
+  while (old != NULL){
+    new        = old;		/* remove one from top of old stack */
+    old        = old->nxt;
+    new->nxt   = stack->nxt;  /* push it onto new stack */
+    stack->nxt = new;
+  }
 }
 
 

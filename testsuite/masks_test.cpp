@@ -1,20 +1,16 @@
 /* masks_test.c
- * SRE, Tue Nov 18 11:10:20 1997 [St. Louis]
  *
  * Test driver for sequence masking routines in masks.c
  *
- * CVS $Id: masks_test.c 913 2003-10-04 18:26:49Z eddy $
  */
 
-#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-//#include "squid.h"
+#include "config.hpp"
+#include "structs.hpp"
+#include "globals.hpp"
 
 static char banner[] = "\
 masks_test : testing of repeat masking code in masks.c";

@@ -1,126 +1,174 @@
 /* vectorops.c
  * Operations on vectors of floats or doubles.
- * 
+ *
  * DSet(), FSet()       - set all items in vector to value.
  * DScale(), FScale()   - multiply all items in vector by scale
  * DSum(), FSum()       - return sum of values in vector
  * DAdd(), FAdd()       - add vec2 to vec1.
- * DCopy(), FCopy()     - set vec1 to be same as vec2. 
+ * DCopy(), FCopy()     - set vec1 to be same as vec2.
  * DDot(), FDot()       - return dot product of two vectors.
  * DMax(), FMax()       - return value of maximum element in vector
- * DMin(), FMin()       - return value of minimum element in vector 
+ * DMin(), FMin()       - return value of minimum element in vector
  * DArgMax(), FArgMax() - return index of maximum element in vector
  * DArgMin(), FArgMin() - return index of minimum element in vector
- * 
+ *
  * DNorm(), FNorm()     - normalize a probability vector of length n.
- * DLog(), FLog()       - convert to log probabilities 
+ * DLog(), FLog()       - convert to log probabilities
  * DExp(), FExp()       - convert log p's back to probabilities
  * DLogSum(), FLogSum() - given vector of log p's; return log of summed p's.
- *                        
- * SRE, Tue Oct  1 15:23:25 2002 [St. Louis]
- * CVS $Id: vectorops.c,v 1.1 2002/10/09 14:26:09 eddy Exp $                       
- */                      
-  
+ *                       
+ */                     
+ 
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
-#include "vectorops.h"
+
+#include "vectorops.hpp"
+
 
 void
-DSet(double *vec, int n, double value)
-{
-  int x; 
+DSet(
+  double *vec,
+  int n,
+  double value
+){
+  int x;
   for (x = 0; x < n; x++) vec[x] = value;
 }
 
+
 void
-FSet(float *vec, int n, float value)
-{
-  int x; 
+FSet(
+  float *vec,
+  int n,
+  float value
+){
+  int x;
   for (x = 0; x < n; x++) vec[x] = value;
 }
 
+
 void
-DScale(double *vec, int n, double scale)
-{
+DScale(
+  double *vec,
+  int n,
+  double scale
+){
   int x;
   for (x = 0; x < n; x++) vec[x] *= scale;
 }
 
+
 void
-FScale(float *vec, int n, float scale)
-{
+FScale(
+  float *vec,
+  int n,
+  float scale
+){
   int x;
   for (x = 0; x < n; x++) vec[x] *= scale;
 }
 
-double 
-DSum(double *vec, int n)
-{
+
+double
+DSum(
+  double *vec,
+  int n
+){
   double sum = 0.;
   int    x;
   for (x = 0; x < n; x++) sum += vec[x];
   return sum;
 }
 
-float 
-FSum(float *vec, int n)
-{
+
+float
+FSum(
+  float *vec,
+  int n
+){
   float sum = 0.;
   int   x;
   for (x = 0; x < n; x++) sum += vec[x];
   return sum;
 }
 
+
 void
-DAdd(double *vec1, double *vec2, int n)
-{
+DAdd(
+  double *vec1,
+  double *vec2,
+  int n
+){
   int x;
   for (x = 0; x < n; x++) vec1[x] += vec2[x];
 }
 
+
 void
-FAdd(float *vec1, float *vec2, int n)
-{
+FAdd(
+  float *vec1,
+  float *vec2,
+  int n
+){
   int x;
   for (x = 0; x < n; x++) vec1[x] += vec2[x];
 }
 
+
 void
-DCopy(double *vec1, double *vec2, int n)
-{
+DCopy(
+  double *vec1,
+  double *vec2,
+  int n
+){
   int x;
   for (x = 0; x < n; x++) vec1[x] = vec2[x];
 }
 
+
 void
-FCopy(float *vec1, float *vec2, int n)
-{
+FCopy(
+  float *vec1,
+  float *vec2,
+  int n
+){
   int x;
   for (x = 0; x < n; x++) vec1[x] = vec2[x];
 }
+
 
 double
-DDot(double *vec1, double *vec2, int n)
-{
+DDot(
+  double *vec1,
+  double *vec2,
+  int n
+){
   double result = 0.;
   int x;
   for (x = 0; x < n; x++) result += vec1[x] * vec2[x];
   return result;
 }
 
+
 float
-FDot(float *vec1, float *vec2, int n)
-{
+FDot(
+  float *vec1,
+  float *vec2,
+  int n
+){
   float result = 0.;
   int x;
   for (x = 0; x < n; x++) result += vec1[x] * vec2[x];
   return result;
 }
 
+
 double
-DMax(double *vec, int n)
-{
+DMax(
+  double *vec,
+  int n
+){
   int i;
   double best;
 
@@ -130,9 +178,12 @@ DMax(double *vec, int n)
   return best;
 }
 
+
 float
-FMax(float *vec, int n)
-{
+FMax(
+  float *vec,
+  int n
+){
   int   i;
   float best;
 
@@ -143,8 +194,10 @@ FMax(float *vec, int n)
 }
 
 double
-DMin(double *vec, int n)
-{
+DMin(
+  double *vec,
+  int n
+){
   int i;
   double best;
 
@@ -154,9 +207,12 @@ DMin(double *vec, int n)
   return best;
 }
 
+
 float
-FMin(float *vec, int n)
-{
+FMin(
+  float *vec,
+  int n
+){
   int   i;
   float best;
 
@@ -166,9 +222,12 @@ FMin(float *vec, int n)
   return best;
 }
 
+
 double
-DArgMax(double *vec, int n)
-{
+DArgMax(
+  double *vec,
+  int n
+){
   int i;
   int best = 0;
 
@@ -176,10 +235,13 @@ DArgMax(double *vec, int n)
     if (vec[i] > vec[best]) best = i;
   return best;
 }
+
 
 float
-FArgMax(float *vec, int n)
-{
+FArgMax(
+  float *vec,
+  int n
+){
   int i;
   int best = 0;
 
@@ -188,9 +250,12 @@ FArgMax(float *vec, int n)
   return best;
 }
 
+
 double
-DArgMin(double *vec, int n)
-{
+DArgMin(
+  double *vec,
+  int n
+){
   int i;
   int best = 0;
   for (i = 1; i < n; i++)
@@ -198,9 +263,12 @@ DArgMin(double *vec, int n)
   return best;
 }
 
+
 float
-FArgMin(float *vec, int n)
-{
+FArgMin(
+  float *vec,
+  int n
+){
   int   i;
   int   best = 0;
 
@@ -209,9 +277,12 @@ FArgMin(float *vec, int n)
   return best;
 }
 
+
 void
-DNorm(double *vec, int n)
-{
+DNorm(
+  double *vec,
+  int n
+){
   int    x;
   double sum;
 
@@ -220,9 +291,12 @@ DNorm(double *vec, int n)
   else            for (x = 0; x < n; x++) vec[x] = 1. / (double) n;
 }
 
+
 void
-FNorm(float *vec, int n)
-{
+FNorm(
+  float *vec,
+  int n
+){
   int    x;
   float  sum;
 
@@ -231,44 +305,59 @@ FNorm(float *vec, int n)
   else            for (x = 0; x < n; x++) vec[x] = 1. / (float) n;
 }
 
+
 void
-DLog(double *vec, int n)
-{
+DLog(
+  double *vec,
+  int n
+){
   int x;
-  for (x = 0; x < n; x++) 
+  for (x = 0; x < n; x++)
     if (vec[x] > 0.) vec[x] = log(vec[x]);
     else vec[x] = -DBL_MAX;
 }
 
+
 void
-FLog(float *vec, int n)
-{
+FLog(
+  float *vec,
+  int n
+){
   int x;
-  for (x = 0; x < n; x++) 
+  for (x = 0; x < n; x++)
     if (vec[x] > 0.) vec[x] = log(vec[x]);
     else vec[x] = -FLT_MAX;
 }
 
+
 void
-DExp(double *vec, int n)
-{
+DExp(
+  double *vec,
+  int n
+){
   int x;
   for (x = 0; x < n; x++) vec[x] = exp(vec[x]);
 }
 
+
 void
-FExp(float *vec, int n)
-{
+FExp(
+  float *vec,
+  int n
+){
   int x;
   for (x = 0; x < n; x++) vec[x] = exp(vec[x]);
 }
+
 
 float
-DLogSum(double *vec, int n)
-{
+DLogSum(
+  double *vec,
+  int n
+){
   int x;
   double max, sum;
-  
+ 
   max = DMax(vec, n);
   sum = 0.0;
   for (x = 0; x < n; x++)
@@ -278,12 +367,15 @@ DLogSum(double *vec, int n)
   return sum;
 }
 
+
 float
-FLogSum(float *vec, int n)
-{
+FLogSum(
+  float *vec,
+  int n
+){
   int x;
   float max, sum;
-  
+ 
   max = FMax(vec, n);
   sum = 0.0;
   for (x = 0; x < n; x++)
@@ -294,10 +386,9 @@ FLogSum(float *vec, int n)
 }
 
 
-
 int
 FChoose(
-  float *p, 
+  float *p,
   int N
 ){
   float roll;   /* random fraction */
@@ -315,16 +406,14 @@ FChoose(
 }
 
 
-
-
 double
 DEntropy(
-  const double *p, 
-  int n)
-{
+  const double *p,
+  int n
+){
   int    i;
   double entropy;
- 
+
   entropy = 0.;
   for(i = 0; i < n; i++)
     if (p[i] > 0.) entropy += p[i] * log(p[i]);
@@ -334,9 +423,9 @@ DEntropy(
 
 float
 FEntropy(
-  const float *p, 
-  int n)
-{
+  const float *p,
+  int n
+){
   int    i;
   float  entropy;
 

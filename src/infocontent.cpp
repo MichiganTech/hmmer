@@ -22,27 +22,16 @@
 #include <float.h>
 #include <ctype.h>
 
-#include "structs.h"
-#include "config.h"
-#include "funcs.h"
-//#include "squid.h"
-//#include "msa.h"
+#include "infocontent.hpp"
+#include "config.hpp"
 
 
-/* Function: AdjustAveInfoContent()
- *
- * Purpose:  evolve match emissions to specified average info content
- *           over the length of the sequence
- *
- * Args:     hmm   - HMM with match emissions to evolve
- *       desired   - desired ave information content for match emissions
- *           matrixfile - file containing rate matrix(ces)
- *        and corresponding amino acid freqs
- *
- * Return:   (void)
- */
 void
-AdjustAveInfoContent (struct plan7_s *hmm, float desired, char *matrixfile) {
+AdjustAveInfoContent (
+  struct plan7_s *hmm,
+  float desired,
+  char *matrixfile
+){
   float time;          /* current time used to evolve emissions       */
   float time_above;    /* last time giving an info content > that desired   */
   float time_below;    /* last time giving an info content < that desired   */
@@ -161,17 +150,9 @@ AdjustAveInfoContent (struct plan7_s *hmm, float desired, char *matrixfile) {
 }
 
 
-/* Function: CalculateBackgroundEntropy()
- *
- * Purpose: determine the background entropy of an alignment based on some
- *          expected amino acid frequency
- *
- * Args:  none
- *
- * Return: (entropy)
- */
 float
-CalculateBackgroundEntropy () {
+CalculateBackgroundEntropy (
+){
   float entropy = 0.;   /* entropy               */
   float i_priors[20];   /* amino acid residue priors           */
   int i;     /* counter for i_priors           */
@@ -205,18 +186,11 @@ CalculateBackgroundEntropy () {
 }
 
 
-/* Function: CalculateEmitsEntropy()
- *
- * Purpose: determine entropy of match emits
- *
- * Args:  emits - 20 x L array holding match emits for each node of model
- *    L - length of the hmm
- *
- *
- * Return: (entropy)
- */
 float
-CalculateEmitsEntropy(double *emits, int L) {
+CalculateEmitsEntropy(
+  double *emits,
+  int L
+){
   float entropy = 0.;   /* entropy               */
   int k;     /* counter for model nodes           */
   int i;     /* counter for residues           */
@@ -232,17 +206,11 @@ CalculateEmitsEntropy(double *emits, int L) {
 }
 
 
-/* Function: NormalizeEmits()
- *
- * Purpose: normalize emission probabilities of an hmm
- *
- * Args:  emits - 20 x L array holding match emits for each node of model
- *    L - length of the hmm
- *
- * Return: (void)
- */
 void
-NormalizeEmits (double *emits, int L) {
+NormalizeEmits (
+  double *emits,
+  int L
+){
   int k;     /* counter for model nodes           */
   int i;     /* counter for residues           */
 
@@ -256,20 +224,12 @@ NormalizeEmits (double *emits, int L) {
 }
 
 
-/* Function: EvolveEmits()
- *
- * Purpose: evolve emission probabilities of an hmm
- *
- * Args:  emits - 20 x L array holding match emits for each node of model
- *    L - length of the hmm
- *        P - conditional matrices representing the evolutionary model(s)
- *    nmodels - number of evolutionary models
- *
- * Return: (void)
- */
-
 void
-EvolveEmits (double *emits, double *P, int L) {
+EvolveEmits(
+  double *emits,
+  double *P,
+  int L
+){
   int k;     /* counter for model nodes           */
   int i;     /* counter for residues           */
   int j;     /* second counter for residues           */

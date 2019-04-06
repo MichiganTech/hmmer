@@ -4,206 +4,206 @@
 
 #pragma once
 
-void 
+void
 DSet(
-  double *vec, 
-  int n, 
+  double *vec,
+  int n,
   double value);
 
 
-void 
+void
 FSet(
-  float *vec, 
-  int n, 
+  float *vec,
+  int n,
   float value);
 
 
-void 
+void
 DScale(
-  double *vec, 
+  double *vec,
   int n,
   double scale);
 
 
-void 
+void
 FScale(
-  float *vec, 
-  int n, 
+  float *vec,
+  int n,
   float scale);
 
 
-double 
+double
 DSum(
-  double *vec, 
+  double *vec,
   int n);
 
 
-float 
+float
 FSum(
-  float *vec, 
+  float *vec,
   int n);
 
 
-void 
+void
 DAdd(
-  double *vec1, 
-  double *vec2, 
+  double *vec1,
+  double *vec2,
   int n);
 
 
-void 
+void
 FAdd(
-  float *vec1, 
-  float *vec2, 
+  float *vec1,
+  float *vec2,
   int n);
 
 
-void 
+void
 DCopy(
-  double *vec1, 
-  double *vec2, 
+  double *vec1,
+  double *vec2,
   int n);
 
 
-void 
+void
 FCopy(
-  float *vec1, 
-  float *vec2, 
+  float *vec1,
+  float *vec2,
   int n);
 
 
-double 
+double
 DDot(
-  double *vec1, 
-  double *vec2, 
+  double *vec1,
+  double *vec2,
   int n);
 
 
-float 
+float
 FDot(
-  float *vec1, 
-  float *vec2, 
+  float *vec1,
+  float *vec2,
   int n);
 
 
-double 
+double
 DMax(
-  double *vec, 
+  double *vec,
   int n);
 
 
-float 
+float
 FMax(
-  float *vec, 
+  float *vec,
   int n);
 
 
-double 
+double
 DMin(
-  double *vec, 
+  double *vec,
   int n);
 
 
-float 
+float
 FMin(
-  float *vec, 
+  float *vec,
   int n);
 
 
-double 
+double
 DArgMax(
-  double *vec, 
+  double *vec,
   int n);
 
 
-float 
+float
 FArgMax(
-  float *vec, 
+  float *vec,
   int n);
 
 
-double 
+double
 DArgMin(
-  double *vec, 
+  double *vec,
   int n);
 
 
-float 
+float
 FArgMin(
-  float *vec, 
+  float *vec,
   int n);
 
 
-void 
+void
 DNorm(
-  double *vec, 
+  double *vec,
   int n);
 
 
-void 
+void
 FNorm(
-  float *vec, 
+  float *vec,
   int n);
 
 
-void 
+void
 DLog(
-  double *vec, 
+  double *vec,
   int n);
 
 
-void 
+void
 FLog(
-  float *vec, 
+  float *vec,
   int n);
 
 
-void 
+void
 DExp(
-  double *vec, 
+  double *vec,
   int n);
 
 
-void 
+void
 FExp(
-  float *vec, 
+  float *vec,
   int n);
 
 
-float 
+float
 DLogSum(
-  double *vec, 
+  double *vec,
   int n);
 
 
-float 
+float
 FLogSum(
-  float *vec, 
+  float *vec,
   int n);
 
 int
 FChoose(
-  float *p, 
+  float *p,
   int N);
 
 
 /* Function:  FEntropy(), DEntropy()
- * Synopsis:  Return Shannon entropy of p-vector, in bits.           
+ * Synopsis:  Return Shannon entropy of p-vector, in bits.          
  *
  * Purpose:   Returns the Shannon entropy of a probability vector <p>,
  *            in bits ($\log_2$), defined as \citep{CoverThomas}:
- *            
+ *           
  *            \[
  *               H = - \sum_x p_x \log_2 p_x.
  *            \]
  */
 double
 DEntropy(
-  const double *p, 
+  const double *p,
   int n);
 
 
 float
 FEntropy(
-  const float *p, 
+  const float *p,
   int n);

@@ -11,7 +11,7 @@ Profile hidden Markov models (profile HMMs) can be used to do
 sensitive database searching using statistical descriptions of a
 sequence family's consensus. A useful counterpart to HMMER is the Pfam
 database of preconstructed profile HMMs of over a thousand known
-protein domain families. 
+protein domain families.
 
 The design goal for Pfam/HMMER analysis is to be able to
 automatically, sensitively, and consistently classify and annotate
@@ -58,9 +58,9 @@ release:
 
   - PVM.
     The three computationally intensive programs (hmmcalibrate,
-    hmmpfam, and hmmsearch) are now also parallelized for 
+    hmmpfam, and hmmsearch) are now also parallelized for
     heterogenous processor clusters using PVM (Parallel Virtual
-    Machine). The Pfam/HMMER server at St. Louis is running on 
+    Machine). The Pfam/HMMER server at St. Louis is running on
     a 16 processor Beowulf-class Linux cluster.
 
   - Bug fixes.
@@ -87,11 +87,11 @@ time, though I expect some to be found.  However, there is still
 missing functionality, including:
 
 	- Only protein models have been tested. DNA models are untested,
-          and there is reason to believe that the new E-value statistics 
+          and there is reason to believe that the new E-value statistics
           will be wrong for DNA models.
 	- no training/multiple alignment program [hmmtrain]
 	- other missing utility programs [hmmconfig, hmminfo, hmmview]
-	- no way to align predetermined alignments to a model 
+	- no way to align predetermined alignments to a model
 	    [a feature requested by both TIGR and the Pfam Consortium]
 	- no built-in cross compatibility with SAM and PFSCAN
 	- alignment algorithms are in an unoptimized "research" form;

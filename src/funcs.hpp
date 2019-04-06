@@ -9,9 +9,9 @@
  ************************************************************/
 
 /* funcs.h
- *
- * Declarations of external functions in HMMER.
- */
+//
+// Declarations of external functions in HMMER.
+///
 
 #pragma once
 
@@ -20,12 +20,11 @@
 #include "squid.h"
 #include "msa.h"
 
-/* alphabet.c
- * Configuration of global alphabet information
- */
+//alphabet.c
+//Configuration of global alphabet information
 void
 DetermineAlphabet(
-  char **rseqs, 
+  char **rseqs,
   int  nseq);
 
 
@@ -34,250 +33,250 @@ SetAlphabet(
   int type);
 
 
-unsigned char  
+unsigned char 
 SymbolIndex(
   char sym);
 
 
-unsigned char* 
+unsigned char*
 DigitizeSequence(
-  char *seq, 
+  char *seq,
   int L);
 
 
-char*          
+char*         
 DedigitizeSequence(
-  unsigned char *dsq, 
+  unsigned char *dsq,
   int L);
 
 
-void           
+void          
 DigitizeAlignment(
-  MSA *msa, 
+  MSA *msa,
   unsigned char ***ret_dsqs);
 
 
-void           
+void          
 P7CountSymbol(
-  float *counters, 
-  unsigned char sym, 
+  float *counters,
+  unsigned char sym,
   float wt);
 
 
-void           
+void          
 DefaultGeneticCode(
   int *aacode);
 
 
-void           
+void          
 DefaultCodonBias(
   float *codebias);
 
 
-/* from core_algorithms.c
- * Clean research/demonstration versions of basic algorithms.
- */
+//from core_algorithms.c
+//Clean research/demonstration versions of basic algorithms.
+
 
 
 /* Function: CreatePlan7Matrix()
- *
- * Purpose:  Create a dynamic programming matrix for standard Forward,
- *           Backward, or Viterbi, with scores kept as scaled log-odds
- *           integers. Keeps 2D arrays compact in RAM in an attempt
- *           to maximize cache hits.
- *
- *           The mx structure can be dynamically grown, if a new
- *           HMM or seq exceeds the currently allocated size. Dynamic
- *           growing is more efficient than an alloc/free of a whole
- *           matrix for every new target. The ResizePlan7Matrix()
- *           call does this reallocation, if needed. Here, in the
- *           creation step, we set up some pads - to inform the resizing
- *           call how much to overallocate when it realloc's. If a pad
- *           is zero, we will not resize in that dimension.
- *
- * Args:     N     - N+1 rows are allocated, for sequence.
- *           M     - size of model in nodes
- *           padN  - over-realloc in seq/row dimension, or 0
- *           padM  - over-realloc in HMM/column dimension, or 0
- *
- * Return:   mx
- *           mx is allocated here. Caller frees with FreePlan7Matrix(mx).
- */
+//
+// Purpose:  Create a dynamic programming matrix for standard Forward,
+//           Backward, or Viterbi, with scores kept as scaled log-odds
+//           integers. Keeps 2D arrays compact in RAM in an attempt
+//           to maximize cache hits.
+//
+//           The mx structure can be dynamically grown, if a new
+//           HMM or seq exceeds the currently allocated size. Dynamic
+//           growing is more efficient than an alloc/free of a whole
+//           matrix for every new target. The ResizePlan7Matrix()
+//           call does this reallocation, if needed. Here, in the
+//           creation step, we set up some pads - to inform the resizing
+//           call how much to overallocate when it realloc's. If a pad
+//           is zero, we will not resize in that dimension.
+//
+// Args:     N     - N+1 rows are allocated, for sequence.
+//           M     - size of model in nodes
+//           padN  - over-realloc in seq/row dimension, or 0
+//           padM  - over-realloc in HMM/column dimension, or 0
+//
+// Return:   mx
+//           mx is allocated here. Caller frees with FreePlan7Matrix(mx).
+///
 struct dpmatrix_s*
 CreatePlan7Matrix(
-  int N, 
-  int M, 
-  int padN, 
+  int N,
+  int M,
+  int padN,
   int padM);
 
 
-void   
+void  
 ResizePlan7Matrix(
-  struct dpmatrix_s *mx, 
-  int N, 
+  struct dpmatrix_s *mx,
+  int N,
   int M,
-  int ***xmx, 
-  int ***mmx, 
-  int ***imx, 
+  int ***xmx,
+  int ***mmx,
+  int ***imx,
   int ***dmx);
 
 
 struct dpmatrix_s*
 AllocPlan7Matrix(
-  int rows, 
+  int rows,
   int M,
-  int ***xmx, 
-  int ***mmx, 
-  int ***imx, 
+  int ***xmx,
+  int ***mmx,
+  int ***imx,
   int ***dmx);
 
 
 struct dpshadow_s*
 AllocShadowMatrix(
-  int rows, 
-  int M, 
+  int rows,
+  int M,
   char ***xtb,
   char ***mtb,
-  char ***itb, 
+  char ***itb,
   char ***dtb);
 
 
-void  
+void 
 FreePlan7Matrix(
   struct dpmatrix_s *mx);
 
 
-void  
+void 
 FreeShadowMatrix(
   struct dpshadow_s *tb);
 
 
-int   
+int  
 P7ViterbiSpaceOK(
-  int L, 
-  int M, 
+  int L,
+  int M,
   struct dpmatrix_s *mx);
 
 
-int   
+int  
 P7ViterbiSize(
-  int L, 
+  int L,
   int M);
 
 
-int   
+int  
 P7SmallViterbiSize(
-  int L, 
+  int L,
   int M);
 
 
-int   
+int  
 P7WeeViterbiSize(
-  int L, 
+  int L,
   int M);
 
 
-float 
+float
 P7Forward(
-  unsigned char *dsq, 
-  int L, 
+  unsigned char *dsq,
+  int L,
   struct plan7_s *hmm,
   struct dpmatrix_s **ret_mx);
 
 
-float 
+float
 P7Viterbi(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
   struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
-float 
+float
 P7ViterbiNoTrace(
-  unsigned char *dsq, 
-  int L, 
+  unsigned char *dsq,
+  int L,
   struct plan7_s *hmm,
   struct dpmatrix_s *mx);
 
 
-void  
+void 
 P7ViterbiTrace(
-  struct plan7_s *hmm, 
-  unsigned char *dsq, 
+  struct plan7_s *hmm,
+  unsigned char *dsq,
   int L,
-  struct dpmatrix_s *mx, 
+  struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
-float 
+float
 P7SmallViterbi(
-  unsigned char *dsq, 
-  int L, 
+  unsigned char *dsq,
+  int L,
   struct plan7_s *hmm,
-  struct dpmatrix_s *mx, 
+  struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
-float 
+float
 P7ParsingViterbi(
-  unsigned char *dsq, 
-  int L, 
+  unsigned char *dsq,
+  int L,
   struct plan7_s *hmm,
   struct p7trace_s **ret_tr);
 
 
-float 
+float
 P7WeeViterbi(
-  unsigned char *dsq, 
-  int L, 
+  unsigned char *dsq,
+  int L,
   struct plan7_s *hmm,
   struct p7trace_s **ret_tr);
 
 
-float 
+float
 Plan7ESTViterbi(
-  unsigned char *dsq, 
-  int L, 
+  unsigned char *dsq,
+  int L,
   struct plan7_s *hmm,
   struct dpmatrix_s **ret_mx);
 
 
 struct p7trace_s*
 P7ViterbiAlignAlignment(
-  MSA *msa, 
+  MSA *msa,
   struct plan7_s *hmm);
 
 
 struct p7trace_s*
 ShadowTrace(
-  struct dpshadow_s *tb, 
-  struct plan7_s *hmm, 
+  struct dpshadow_s *tb,
+  struct plan7_s *hmm,
   int L);
 
 
-float  
+float 
 PostprocessSignificantHit(
-  struct tophit_s *ghit, 
+  struct tophit_s *ghit,
   struct tophit_s *dhit,
-  struct p7trace_s   *tr, 
-  struct plan7_s *hmm, 
+  struct p7trace_s   *tr,
+  struct plan7_s *hmm,
   unsigned char *dsq,
-  int L, 
-  char *seqname, 
-  char *seqacc, 
+  int L,
+  char *seqname,
+  char *seqacc,
   char *seqdesc,
-  int do_forward, 
-  float sc_override, 
+  int do_forward,
+  float sc_override,
   int do_null2,
-  struct threshold_s *thresh, 
+  struct threshold_s *thresh,
   int hmmpfam_mode);
 
 
 /* from debug.c
- * Debugging output of various sorts.
- */
+// Debugging output of various sorts.
+///
 char*
 Statetype(
   char st);
@@ -288,514 +287,514 @@ AlphabetType2String(
   int type);
 
 
-void 
+void
 P7PrintTrace(
-  FILE *fp, 
+  FILE *fp,
   struct p7trace_s *tr,
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   unsigned char *dsq);
 
 
-void 
+void
 P7PrintPrior(
-  FILE *fp, 
+  FILE *fp,
   struct p7prior_s *pri);
 
 
-int  
+int 
 TraceCompare(
-  struct p7trace_s *t1, 
+  struct p7trace_s *t1,
   struct p7trace_s *t2);
 
 
-int  
+int 
 TraceVerify(
-  struct p7trace_s *tr, 
-  int M, 
+  struct p7trace_s *tr,
+  int M,
   int N);
 
 
 /*
- * from display.c
- * Ian Holmes' functions for displaying HMMER2 data structures, especially
- * for posterior probabilities in alignments.
- */
-void 
+// from display.c
+// Ian Holmes' functions for displaying HMMER2 data structures, especially
+// for posterior probabilities in alignments.
+///
+void
 DisplayPlan7Matrix(
-  unsigned char *dsq, 
-  int L, 
+  unsigned char *dsq,
+  int L,
   struct plan7_s *hmm,
   struct dpmatrix_s *mx);
 
 
-void 
+void
 DisplayPlan7Posteriors(
-  int L, 
+  int L,
   struct plan7_s *hmm,
-  struct dpmatrix_s *forward, 
+  struct dpmatrix_s *forward,
   struct dpmatrix_s *backward,
-  struct p7trace_s *viterbi, 
+  struct p7trace_s *viterbi,
   struct p7trace_s *optacc);
 
 
-void 
+void
 DisplayPlan7PostAlign(
-  int L, 
+  int L,
   struct plan7_s *hmm,
-  struct dpmatrix_s *forward, 
+  struct dpmatrix_s *forward,
   struct dpmatrix_s *backward,
-  struct p7trace_s **alignment, 
+  struct p7trace_s **alignment,
   int A);
 
 
 /* from emit.c
- * Generation of sequences/traces from an HMM
- */
-void 
+// Generation of sequences/traces from an HMM
+///
+void
 EmitSequence(
-  struct plan7_s *hmm, 
-  unsigned char **ret_dsq, 
+  struct plan7_s *hmm,
+  unsigned char **ret_dsq,
   int *ret_L,
   struct p7trace_s **ret_tr);
 
 
-void 
+void
 EmitConsensusSequence(
-  struct plan7_s *hmm, 
-  char **ret_seq, 
+  struct plan7_s *hmm,
+  char **ret_seq,
   unsigned char **ret_dsq,
-  int *ret_L, 
+  int *ret_L,
   struct p7trace_s **ret_tr);
 
 
-void 
+void
 StateOccupancy(
-  struct plan7_s *hmm, 
-  float **ret_mp, 
-  float **ret_ip, 
+  struct plan7_s *hmm,
+  float **ret_mp,
+  float **ret_ip,
   float **ret_dp);
 
 
 /* from emulation.c
- * Interfaces between HMMER and other software packages
- */
-void 
+// Interfaces between HMMER and other software packages
+///
+void
 WriteProfile(
-  FILE *fp, 
-  struct plan7_s *hmm, 
+  FILE *fp,
+  struct plan7_s *hmm,
   int do_xsw);
 
 
 /* from evolution.c
- * Phylogenetic extrapolation of profile HMMs.
- */
-int 
+// Phylogenetic extrapolation of profile HMMs.
+///
+int
 EvolveOneTransitionVector(
-  float *qs, 
-  float ts, 
-  int n, 
-  float *q0, 
+  float *qs,
+  float ts,
+  int n,
+  float *q0,
   float *qz,
-  float t, 
+  float t,
   float *q);
 
 
 /* from histogram.c
- * accumulation of scores
- */
+// accumulation of scores
+///
 struct histogram_s*
 AllocHistogram(
-  int min, 
-  int max, 
+  int min,
+  int max,
   int lumpsize);
 
 
-void 
+void
 FreeHistogram(
   struct histogram_s *h);
 
 
-void 
+void
 UnfitHistogram(
   struct histogram_s *h);
 
 
-void 
+void
 AddToHistogram(
-  struct histogram_s *h, 
+  struct histogram_s *h,
   float sc);
 
 
-void 
+void
 PrintASCIIHistogram(
-  FILE *fp, 
+  FILE *fp,
   struct histogram_s *h);
 
 
-void 
+void
 PrintXMGRHistogram(
-  FILE *fp, 
+  FILE *fp,
   struct histogram_s *h);
 
 
-void 
+void
 PrintXMGRDistribution(
-  FILE *fp, 
+  FILE *fp,
   struct histogram_s *h);
 
 
-void 
+void
 PrintXMGRRegressionLine(
-  FILE *fp, 
+  FILE *fp,
   struct histogram_s *h);
 
 
-void 
+void
 EVDBasicFit(
   struct histogram_s *h);
 
 
-int  
+int 
 ExtremeValueFitHistogram(
-  struct histogram_s *h, 
+  struct histogram_s *h,
   int censor,
   float high_hint);
 
 
-void 
+void
 ExtremeValueSetHistogram(
-  struct histogram_s *h, 
-  float mu, 
+  struct histogram_s *h,
+  float mu,
   float lambda,
-  float low, 
-  float high, 
+  float low,
+  float high,
   int ndegrees);
 
 
-int  
+int 
 GaussianFitHistogram(
   struct histogram_s *h);
 
 
-void 
+void
 GaussianSetHistogram(
-  struct histogram_s *h, 
-  float mean, 
+  struct histogram_s *h,
+  float mean,
   float sd);
 
 
-double 
+double
 EVDDensity(
-  float x, 
-  float mu, 
+  float x,
+  float mu,
   float lambda);
 
 
-double 
+double
 EVDDistribution(
-  float x, 
-  float mu, 
+  float x,
+  float mu,
   float lambda);
 
 
-double 
+double
 ExtremeValueP (
-  float x, 
-  float mu, 
+  float x,
+  float mu,
   float lambda);
 
 
-double 
+double
 ExtremeValueP2(
-  float x, 
-  float mu, 
-  float lambda, 
+  float x,
+  float mu,
+  float lambda,
   int N);
 
 
-double 
+double
 ExtremeValueE (
-  float x, 
-  float mu, 
-  float lambda, 
+  float x,
+  float mu,
+  float lambda,
   int N);
 
 
-float  
+float 
 EVDrandom(
-  float mu, 
+  float mu,
   float lambda);
 
 
-int    
+int   
 EVDMaxLikelyFit(
-  float *x, 
-  int *y, 
+  float *x,
+  int *y,
   int n,
-  float *ret_mu, 
+  float *ret_mu,
   float *ret_lambda);
 
 
-int    
+int   
 EVDCensoredFit(
-  float *x, 
-  int *y, 
-  int n, 
-  int z, 
+  float *x,
+  int *y,
+  int n,
+  int z,
   float c,
   float *ret_mu, float *ret_lambda);
 
 
-void   
+void  
 Lawless416(
-  float *x, 
-  int *y, 
-  int n, 
+  float *x,
+  int *y,
+  int n,
   float lambda,
-  float *ret_f, 
+  float *ret_f,
   float *ret_df);
 
 
-void   
+void  
 Lawless422(
-  float *x, 
-  int *y, 
-  int n, 
-  int z, 
+  float *x,
+  int *y,
+  int n,
+  int z,
   float c,
-  float lambda, 
-  float *ret_f, 
+  float lambda,
+  float *ret_f,
   float *ret_df);
 
 
 /* from hmmio.c
- * Input/output (saving/reading) of models
- */
+// Input/output (saving/reading) of models
+///
 HMMFILE*
 HMMFileOpen(
-  char *hmmfile, 
+  char *hmmfile,
   char *env);
 
 
-int      
+int     
 HMMFileRead(
-  HMMFILE *hmmfp, 
+  HMMFILE *hmmfp,
   struct plan7_s **ret_hmm);
 
 
-void     
+void    
 HMMFileClose(
   HMMFILE *hmmfp);
 
 
-int      
+int     
 HMMFileFormat(
   HMMFILE *hmmfp);
 
 
-void     
+void    
 HMMFileRewind(
   HMMFILE *hmmfp);
 
 
-int      
+int     
 HMMFilePositionByName(
-  HMMFILE *hmmfp, 
+  HMMFILE *hmmfp,
   char *name);
 
 
-int      
+int     
 HMMFilePositionByIndex(
-  HMMFILE *hmmfp, 
+  HMMFILE *hmmfp,
   int idx);
 
 
-void     
+void    
 WriteAscHMM(
-  FILE *fp, 
+  FILE *fp,
   struct plan7_s *hmm);
 
 
-void     
+void    
 WriteBinHMM(
-  FILE *fp, 
+  FILE *fp,
   struct plan7_s *hmm);
 
 
 /* from infocontent.c
- * Evolving to specified information content
- */
-void  
+// Evolving to specified information content
+///
+void 
 AdjustAveInfoContent (
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   float desired,
   char *matrixfile);
 
 
-void  
+void 
 EvolveEmits (
-  double *temp_emits, 
-  double *P, 
+  double *temp_emits,
+  double *P,
   int L);
 
 
-float 
+float
 CalculateBackgroundEntropy ();
 
 
-float 
+float
 CalculateEmitsEntropy (
-  double *emits, 
+  double *emits,
   int L);
 
 
-void  
+void 
 NormalizeEmits (
-  double *temp_emits, 
+  double *temp_emits,
   int L);
 
 
-void  
+void 
 PrintAveInfoContent (
   struct plan7_s *hmm);
 
 
 /* masks.c
- * Repetitive sequence masking.
- */
-int   
+// Repetitive sequence masking.
+///
+int  
 XNU(
-  unsigned char *dsq, 
+  unsigned char *dsq,
   int len);
 
 
-float 
+float
 TraceScoreCorrection(
-  struct plan7_s *hmm, 
-  struct p7trace_s *tr, 
+  struct plan7_s *hmm,
+  struct p7trace_s *tr,
   unsigned char *dsq);
 
 
 /* mathsupport.c
- * Much of this code deals with Dirichlet prior mathematics.
- */
-int   
+// Much of this code deals with Dirichlet prior mathematics.
+///
+int  
 Prob2Score(
-  float p, 
+  float p,
   float null);
 
 
-float 
+float
 Score2Prob(
-  int sc, 
+  int sc,
   float null);
 
 
-float 
+float
 Scorify(
   int sc);
 
 
-double 
+double
 PValue(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   float sc);
 
 
-float 
+float
 LogSum(
-  float p1, 
+  float p1,
   float p2);
 
 
-int   
+int  
 ILogsum(
-  int p1, 
+  int p1,
   int p2);
 
 
-void  
+void 
 LogNorm(
-  float *vec, 
+  float *vec,
   int n);
 
 
-float 
+float
 Logp_cvec(
-  float *cvec, 
-  int n, 
+  float *cvec,
+  int n,
   float *alpha);
 
 
-float 
+float
 P_PvecGivenDirichlet(
-  float *p, 
-  int n, 
+  float *p,
+  int n,
   float *alpha);
 
 
 /* from matrices.c
- * for matrix manipulation
- */
-void   
+// for matrix manipulation
+///
+void  
 ReadAAMatrices(
-  double **ret_Sij, 
+  double **ret_Sij,
   double **ret_pi,
-  char *matrixfile, 
-  int environ, 
+  char *matrixfile,
+  int environ,
+  int L);
+
+
+void 
+AssignWagMatrix(
+  double **Sij,
+  double **pi);
+
+
+void  
+ReadMatrices (
+  double **ret_Sij,
+  double **ret_pi,
+  char *matrixfile,
+  int environ,
   int L);
 
 
 void  
-AssignWagMatrix(
-  double **Sij, 
-  double **pi);
-
-
-void   
-ReadMatrices (
-  double **ret_Sij, 
-  double **ret_pi,
-  char *matrixfile, 
-  int environ, 
-  int L);
-
-
-void   
 PrintMatrices(
-  double *prob, 
-  int L, 
+  double *prob,
+  int L,
   int environ);
 
 
-void   
+void  
 UnlogAndPrintMatrices(
-  double *prob, 
-  int L, 
+  double *prob,
+  int L,
   int environ);
 
 
-void   
+void  
 SymToRateMatrices(
-  double *Qij, 
-  double *Sij, 
-  double *pi, 
+  double *Qij,
+  double *Sij,
+  double *pi,
+  int L,
+  int environ);
+
+
+void  
+NormRateMatrices(
+  double *Qij,
+  double *pi,
   int L,
   int environ);
 
 
 void   
-NormRateMatrices(
-  double *Qij, 
-  double *pi, 
-  int L, 
-  int environ);
-
-
-void    
 AssignMatrixNotLog (
-  double *Qij, 
-  int matrix_n, 
+  double *Qij,
+  int matrix_n,
   double time,
   double *Pij);
 
@@ -807,326 +806,318 @@ Cal_Id(
 
 double*
 Cal_M_Exp(
-  double *M, 
-  int L, 
+  double *M,
+  int L,
   double power);
 
 
-void    
+void   
 Comp_M_Exp(
-  double *M, 
-  int L, 
+  double *M,
+  int L,
   double power);
 
 
-void    
+void   
 Comp_M_N_Prod(
-  double *M, 
-  double *N, 
+  double *M,
+  double *N,
   int L);
 
 
-void    
+void   
 CheckSingleProb(
-  double *psingle, 
+  double *psingle,
   int size);
 
 
-void    
+void   
 CopyMatrix (
-  double *copyQ, 
-  double *Q, 
+  double *copyQ,
+  double *Q,
   int N);
 
 
-int     
+int    
 Check_Accuracy(
-  double *vec, 
+  double *vec,
   int L);
 
 
-void  
+void 
 LogifyMatrix(
-  double *M, 
+  double *M,
   int L);
 
 
-/* from misc.c
- * Miscellaneous functions with no home
- */
-void  
+// from misc.c
+// Miscellaneous functions with no home
+void
 HMMERBanner(
-  FILE *fp, 
+  FILE *fp,
   char *banner);
 
 
 char*
 Getword(
-  FILE *fp, 
+  FILE *fp,
   int type);
 
 
 char*
 Getline(
-  char *s, 
-  int n, 
+  char *s,
+  int n,
   FILE *fp);
 
 
-int   
+int  
 SetAutocuts(
-  struct threshold_s *thresh, 
+  struct threshold_s *thresh,
   struct plan7_s *hmm);
 
 
-/* from modelmakers.c
- * Model construction algorithms
- */
-void 
+//from modelmakers.c
+//Model construction algorithms
+void
 P7Handmodelmaker(
-  MSA *msa, 
-  unsigned char **dsq, 
+  MSA *msa,
+  unsigned char **dsq,
   char *isfrag,
   struct plan7_s **ret_hmm,
   struct p7trace_s ***ret_tr);
 
 
-void 
+void
 P7Fastmodelmaker(
-  MSA *msa, 
-  unsigned char **dsq, 
+  MSA *msa,
+  unsigned char **dsq,
   char *isfrag,
-  float symfrac, 
+  float symfrac,
   struct plan7_s **ret_hmm,
   struct p7trace_s ***ret_tr);
 
 
-/* from plan7.c
- * Plan7 HMM structure support
- */
-struct 
+//from plan7.c
+//Plan7 HMM structure support
+struct
 plan7_s*
 AllocPlan7(
   int M);
 
 
-struct 
+struct
 plan7_s*
 AllocPlan7Shell();
 
 
-void 
+void
 AllocPlan7Body(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   int M);
 
 
-void 
+void
 FreePlan7(
   struct plan7_s *hmm);
 
 
-void 
+void
 ZeroPlan7(
   struct plan7_s *hmm);
 
 
-void 
+void
 Plan7SetName(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   char *name);
 
 
-void 
+void
 Plan7SetAccession(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   char *acc);
 
 
-void 
+void
 Plan7SetDescription(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   char *desc);
 
 
-void 
+void
 Plan7ComlogAppend(
-  struct plan7_s *hmm, 
-  int argc, 
+  struct plan7_s *hmm,
+  int argc,
   char **argv);
 
 
-void 
+void
 Plan7SetCtime(
   struct plan7_s *hmm);
 
 
-void 
+void
 Plan7SetNullModel(
-  struct plan7_s *hmm, 
-  float null[MAXABET], 
+  struct plan7_s *hmm,
+  float null[MAXABET],
   float p1);
 
 
-void 
+void
 P7Logoddsify(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   int viterbi_mode);
 
 
-void 
+void
 Plan7Rescale(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   float scale);
 
 
-void 
+void
 Plan7Renormalize(
   struct plan7_s *hmm);
 
 
-void 
+void
 Plan7RenormalizeExits(
   struct plan7_s *hmm);
 
 
-void 
+void
 Plan7NakedConfig(
   struct plan7_s *hmm);
 
 
-void 
+void
 Plan7GlobalConfig(
   struct plan7_s *hmm);
 
 
-void 
+void
 Plan7LSConfig(
   struct plan7_s *hmm);
 
 
-void 
+void
 Plan7SWConfig(
-  struct plan7_s *hmm, 
-  float pentry, 
+  struct plan7_s *hmm,
+  float pentry,
   float pexit);
 
 
-void 
+void
 Plan7FSConfig(
-  struct plan7_s *hmm, 
-  float pentry, 
+  struct plan7_s *hmm,
+  float pentry,
   float pexit);
 
 
-void 
+void
 PrintPlan7Stats(
-  FILE *fp, 
-  struct plan7_s *hmm, 
+  FILE *fp,
+  struct plan7_s *hmm,
   unsigned char **dsq,
-  int nseq, 
+  int nseq,
   struct p7trace_s **tr);
 
 
-int  
+int 
 DegenerateSymbolScore(
-  float *p, 
-  float *null, 
+  float *p,
+  float *null,
   int ambig);
 
 
-void 
+void
 Plan9toPlan7(
-  struct plan9_s *hmm, 
+  struct plan9_s *hmm,
   struct plan7_s **ret_plan7);
 
 
-/*
- * from plan9.c
- * Backwards compatibility for the Plan 9 data structures of HMMER 1.x
- */
+//from plan9.c
+//Backwards compatibility for the Plan 9 data structures of HMMER 1.x
 struct plan9_s*
 P9AllocHMM(
   int M);
 
 
-void 
+void
 P9ZeroHMM(
   struct plan9_s *hmm);
 
 
-int  
+int 
 P9FreeHMM(
   struct plan9_s *hmm);
 
 
-void 
+void
 P9Renormalize(
   struct plan9_s *hmm);
 
 
-void 
+void
 P9DefaultNullModel(
   float *null);
 
 
-/*
- * from postprob.c
- * Functions for working with posterior probabilities within alignments
- */
-float 
+//from postprob.c
+//Functions for working with posterior probabilities within alignments
+float
 P7OptimalAccuracy(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm, 
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm,
   struct p7trace_s **ret_tr);
 
 
-float 
+float
 P7Backward(
-  unsigned char *dsq, 
-  int L, 
-  struct plan7_s *hmm,  
+  unsigned char *dsq,
+  int L,
+  struct plan7_s *hmm, 
   struct dpmatrix_s **ret_mx);
 
 
-void  
+void 
 P7EmitterPosterior(
-  int L, 
-  struct plan7_s *hmm, 
+  int L,
+  struct plan7_s *hmm,
   struct dpmatrix_s *forward,
-  struct dpmatrix_s *backward, 
+  struct dpmatrix_s *backward,
   struct dpmatrix_s *mx);
 
 
-float 
+float
 P7FillOptimalAccuracy(
-  int L, 
-  int M, 
+  int L,
+  int M,
   struct dpmatrix_s *posterior,
-  struct dpmatrix_s *mx, 
+  struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
-void  
+void 
 P7OptimalAccuracyTrace(
-  int L, 
-  int M, 
+  int L,
+  int M,
   struct dpmatrix_s *posterior,
-  struct dpmatrix_s *mx, 
+  struct dpmatrix_s *mx,
   struct p7trace_s **ret_tr);
 
 
 char*
 PostalCode(
-  int L, 
-  struct dpmatrix_s *mx, 
+  int L,
+  struct dpmatrix_s *mx,
   struct p7trace_s *tr);
 
 
-/* from prior.c
- * Dirichlet priors
- */
+//from prior.c
+//Dirichlet priors
 struct p7prior_s*
 P7AllocPrior();
 
@@ -1144,75 +1135,73 @@ P7ReadPrior(
   char *prifile);
 
 
-void 
+void
 P7FreePrior(
   struct p7prior_s *pri);
 
 
-void 
+void
 PAMPrior(
-  char *pamfile, 
-  struct p7prior_s *pri, 
+  char *pamfile,
+  struct p7prior_s *pri,
   float pamwgt);
 
 
-void 
+void
 P7DefaultNullModel(
-  float *null, 
+  float *null,
   float *ret_p1);
 
 
-void 
+void
 P7ReadNullModel(
-  char *rndfile, 
-  float *null, 
+  char *rndfile,
+  float *null,
   float *ret_p1);
 
 
-void 
+void
 P7PriorifyHMM(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   struct p7prior_s *pri);
 
 
-void 
+void
 P7PriorifyTransitionVector(
-  float *t, 
+  float *t,
   struct p7prior_s *prior,
   float tq[MAXDCHLET]);
 
 
-void 
+void
 P7PriorifyEmissionVector(
-  float *vec, 
+  float *vec,
   struct p7prior_s *pri,
-  int num, 
+  int num,
   float eq[MAXDCHLET],
   float e[MAXDCHLET][MAXABET],
   float *ret_mix);
 
 
-/* from threads.c
- * POSIX threads implementation
- */
-int   
+//from threads.c
+//POSIX threads implementation
+int  
 ThreadNumber();
 
 
-/* from tophits.c
- * Support for keeping/sorting top scoring hit/alignment lists
- */
+//from tophits.c
+//Support for keeping/sorting top scoring hit/alignment lists
 struct tophit_s*
 AllocTophits(
   int lumpsize);
 
 
-void   
+void  
 GrowTophits(
   struct tophit_s *h);
 
 
-void   
+void  
 FreeTophits(
   struct tophit_s *h);
 
@@ -1221,194 +1210,193 @@ struct fancyali_s*
 AllocFancyAli();
 
 
-void   
+void  
 FreeFancyAli(
   struct fancyali_s *ali);
 
 
 void
 RegisterHit(
-  struct tophit_s *h, 
+  struct tophit_s *h,
   double sortkey,
-  double pvalue, 
+  double pvalue,
   float score,
-  double motherp, 
+  double motherp,
   float mothersc,
-  char *name, 
-  char *acc, 
+  char *name,
+  char *acc,
   char *desc,
-  int sqfrom, 
-  int sqto, 
+  int sqfrom,
+  int sqto,
   int sqlen,
-  int hmmfrom, 
-  int hmmto, 
+  int hmmfrom,
+  int hmmto,
   int hmmlen,
-  int domidx, 
+  int domidx,
   int ndom,
   struct fancyali_s *ali);
 
 
-void 
+void
 GetRankedHit(
-  struct tophit_s *h, 
+  struct tophit_s *h,
   int rank,
-  double *r_pvalue, 
+  double *r_pvalue,
   float *r_score,
-  double *r_motherp, 
+  double *r_motherp,
   float *r_mothersc,
-  char **r_name, 
-  char **r_acc, 
+  char **r_name,
+  char **r_acc,
   char **r_desc,
-  int *r_sqfrom, 
-  int *r_sqto, 
+  int *r_sqfrom,
+  int *r_sqto,
   int *r_sqlen,
-  int *r_hmmfrom, 
-  int *r_hmmto, 
+  int *r_hmmfrom,
+  int *r_hmmto,
   int *r_hmmlen,
-  int *r_domidx, 
+  int *r_domidx,
   int *r_ndom,
   struct fancyali_s **r_ali);
 
 
-int    
+int   
 TophitsMaxName(
   struct tophit_s *h);
 
 
-void   
+void  
 FullSortTophits(
   struct tophit_s *h);
 
 
-void   
+void  
 TophitsReport(
-  struct tophit_s *h, 
-  double E, 
+  struct tophit_s *h,
+  double E,
   int nseq);
 
 
-/* from trace.c
- * Support for traceback (state path) structure
- */
-void  
+//from trace.c
+//Support for traceback (state path) structure
+void 
 P7AllocTrace(
-  int tlen, 
+  int tlen,
   struct p7trace_s **ret_tr);
 
 
-void  
+void 
 P7ReallocTrace(
-  struct p7trace_s *tr, 
+  struct p7trace_s *tr,
   int tlen);
 
 
-void  
+void 
 P7FreeTrace(
   struct p7trace_s *tr);
 
 
-void  
+void 
 TraceSet(
-  struct p7trace_s *tr, 
-  int tpos, 
-  char type, 
-  int idx, 
+  struct p7trace_s *tr,
+  int tpos,
+  char type,
+  int idx,
   int pos);
 
 
 struct p7trace_s**
 MergeTraceArrays(
-  struct p7trace_s **t1, 
-  int n1, 
-  struct p7trace_s **t2, 
+  struct p7trace_s **t1,
+  int n1,
+  struct p7trace_s **t2,
   int n2);
 
 
-void  
+void 
 P7ReverseTrace(
   struct p7trace_s *tr);
 
 
-void  
+void 
 P7TraceCount(
-  struct plan7_s *hmm, 
-  unsigned char *dsq, 
+  struct plan7_s *hmm,
+  unsigned char *dsq,
   float wt,
   struct p7trace_s *tr);
 
 
-float 
+float
 P7TraceScore(
-  struct plan7_s *hmm, 
-  unsigned char *dsq, 
+  struct plan7_s *hmm,
+  unsigned char *dsq,
   struct p7trace_s *tr);
 
 
 MSA*
 P7Traces2Alignment(
-  unsigned char **dsq, 
-  SQINFO *sqinfo, 
+  unsigned char **dsq,
+  SQINFO *sqinfo,
   float *wgt,
-  int nseq, 
+  int nseq,
   int M,
-  struct p7trace_s **tr, 
+  struct p7trace_s **tr,
   int matchonly);
 
 
-int  
+int 
 TransitionScoreLookup(
-  struct plan7_s *hmm, 
+  struct plan7_s *hmm,
   char st1,
   int k1,
-  char st2, 
+  char st2,
   int k2);
 
 
 struct fancyali_s*
 CreateFancyAli(
-  struct p7trace_s *tr, 
+  struct p7trace_s *tr,
   struct plan7_s *hmm,
-  unsigned char *dsq, 
+  unsigned char *dsq,
   char *name);
 
 
-void 
+void
 PrintFancyAli(
-  FILE *fp, 
+  FILE *fp,
   struct fancyali_s *ali);
 
 
-void 
+void
 TraceDecompose(
-  struct p7trace_s *otr, 
+  struct p7trace_s *otr,
   struct p7trace_s ***ret_tr,
   int *ret_ntr);
 
 
-int  
+int 
 TraceDomainNumber(
   struct p7trace_s *tr);
 
 
-void 
+void
 TraceSimpleBounds(
-  struct p7trace_s *tr, 
-  int *ret_i1, 
+  struct p7trace_s *tr,
+  int *ret_i1,
   int *ret_i2,
-  int *ret_k1,  
+  int *ret_k1, 
   int *ret_k2);
 
 
 struct p7trace_s*
 MasterTraceFromMap(
-  int *map, 
-  int M, 
+  int *map,
+  int M,
   int alen);
 
 
-void 
+void
 ImposeMasterTrace(
-  char **aseq, 
-  int nseq, 
+  char **aseq,
+  int nseq,
   struct p7trace_s *mtr,
   struct p7trace_s ***ret_tr);

@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -25,38 +25,37 @@
  *
  *****************************************************************
  * Basic API for single sequence reading:
- * 
+ *
  * SQFILE *sqfp;
  * char   *seqfile;
  * int     format;        - see squid.h for formats; example: SQFILE_FASTA
  * char   *seq;
  * SQINFO  sqinfo;
- * 
+ *
  * if ((sqfp = SeqfileOpen(seqfile, format, "BLASTDB")) == NULL)
  *   Die("Failed to open sequence database file %s\n%s\n", seqfile, usage);
  * while (ReadSeq(sqfp, sqfp->format, &seq, &sqinfo)) {
  *   do_stuff;
  *   FreeSequence(seq, &sqinfo);
  * }
- * SeqfileClose(sqfp);  
- * 
- *****************************************************************  
+ * SeqfileClose(sqfp); 
+ *
+ ***************************************************************** 
  */
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-
 #include <unistd.h>	
 
-#include "alignio.h"
-#include "file.h"
-#include "sqio.h"
-#include "squid.h"
-#include "msa.h"
-#include "ssi.h"
+#include "alignio.hpp"
+#include "file.hpp"
+#include "msa.hpp"
+#include "sqio.hpp"
+#include "squid.hpp"
+#include "ssi.hpp"
 
 
 #define kStartLength  500
@@ -68,8 +67,8 @@ static char *protonly    = "EFIPQZ";
 
 SQFILE*
 SeqfileOpen(
-  char *filename, 
-  int format, 
+  char *filename,
+  int format,
   char *env
 ){
   return seqfile_open(filename, format, env, -1);
@@ -78,9 +77,9 @@ SeqfileOpen(
 
 SQFILE*
 SeqfileOpenForIndexing(
-  char *filename, 
-  int format, 
-  char *env, 
+  char *filename,
+  int format,
+  char *env,
   int ssimode
 ){
   return seqfile_open(filename, format, env, ssimode);
@@ -89,9 +88,9 @@ SeqfileOpenForIndexing(
 
 SQFILE*
 seqfile_open(
-  char *filename, 
-  int format, 
-  char *env, 
+  char *filename,
+  int format,
+  char *env,
   int ssimode
 ){
   SQFILE *dbfp;
@@ -110,14 +109,14 @@ seqfile_open(
    * Three possibilities:
    *    1. normal file open
    *    2. filename = "-";    read from stdin
-   *    3. filename = "*.gz"; read thru pipe from gzip 
+   *    3. filename = "*.gz"; read thru pipe from gzip
    * If we're reading from stdin or a pipe, we can't reliably
-   * back up, so we can't do two-pass parsers like the interleaved alignment   
+   * back up, so we can't do two-pass parsers like the interleaved alignment  
    * formats.
    */
   if (strcmp(filename, "-") == 0){
       dbfp->f         = stdin;
-      dbfp->do_stdin  = true; 
+      dbfp->do_stdin  = true;
       dbfp->do_gzip   = false;
       dbfp->fname     = strdup("[STDIN]");
     }
@@ -135,7 +134,7 @@ seqfile_open(
 	Die("%s: file does not exist", filename);
 
       if (strlen(filename) + strlen("gzip -dc ") >= 256)
-	Die("filename > 255 char in SeqfileOpen()"); 
+	Die("filename > 255 char in SeqfileOpen()");
       sprintf(cmd, "gzip -dc %s", filename);
       if ((dbfp->f = popen(cmd, "r")) == NULL)
 	return NULL;
@@ -154,7 +153,7 @@ seqfile_open(
       dbfp->do_gzip  = false;
       dbfp->fname    = strdup(filename);
     }
-  
+ 
 
   /* Invoke autodetection if we haven't already been told what
    * to expect.
@@ -203,14 +202,14 @@ seqfile_open(
 
   /* Load the first line.
    */
-  SeqfileGetLine(dbfp); 
+  SeqfileGetLine(dbfp);
   return dbfp;
 }
 
 
 void
 SeqfilePosition(
-  SQFILE *sqfp, 
+  SQFILE *sqfp,
   SSIOFFSET *offset
 ){
   if (sqfp->do_stdin || sqfp->do_gzip || IsAlignmentFormat(sqfp->format))
@@ -236,8 +235,8 @@ SeqfileRewind(
 
 void
 SeqfileLineParameters(
-  SQFILE *V, 
-  int *ret_bpl, 
+  SQFILE *V,
+  int *ret_bpl,
   int *ret_rpl
 ){
   if (V->rpl > 0 && V->maxrpl == V->rpl &&
@@ -267,7 +266,7 @@ SeqfileClose(
   }
 #ifndef SRE_STRICT_ANSI	/* gunzip functionality only on POSIX systems */
   if (sqfp->do_gzip)         pclose(sqfp->f);
-#endif  
+#endif 
   else if (! sqfp->do_stdin) fclose(sqfp->f);
   if (sqfp->buf   != NULL) free(sqfp->buf);
   if (sqfp->fname != NULL) free(sqfp->fname);
@@ -275,11 +274,11 @@ SeqfileClose(
 }
 
 
-void 
+void
 SeqfileGetLine(
   SQFILE *V
 ){
-  if (V->ssimode >= 0) 
+  if (V->ssimode >= 0)
     if (0 != SSIGetFilePosition(V->f, V->ssimode, &(V->ssioffset)))
       Die("SSIGetFilePosition() failed");
   if (getline(&(V->buf), &(V->buflen), V->f) == NULL)
@@ -290,7 +289,7 @@ SeqfileGetLine(
 
 void
 FreeSequence(
-  char *seq, 
+  char *seq,
   SQINFO *sqinfo
 ){
   if (seq != NULL) free(seq);
@@ -301,8 +300,8 @@ FreeSequence(
 
 int
 SetSeqinfoString(
-  SQINFO *sqinfo, 
-  char *sptr, 
+  SQINFO *sqinfo,
+  char *sptr,
   int flag
 ){
   int len;
@@ -319,7 +318,7 @@ SetSeqinfoString(
   switch (flag) {
   case SQINFO_NAME:
     if (*sptr != '-')
-      { 
+      {
 	strncpy(sqinfo->name, sptr, SQINFO_NAMELEN-1);
 	sqinfo->name[SQINFO_NAMELEN-1] = '\0';
 	sqinfo->flags   |= SQINFO_NAME;
@@ -328,7 +327,7 @@ SetSeqinfoString(
 
   case SQINFO_ID:
     if (*sptr != '-')
-      { 
+      {
 	strncpy(sqinfo->id, sptr, SQINFO_NAMELEN-1);
 	sqinfo->id[SQINFO_NAMELEN-1] = '\0';
 	sqinfo->flags |= SQINFO_ID;
@@ -337,7 +336,7 @@ SetSeqinfoString(
 
   case SQINFO_ACC:
     if (*sptr != '-')
-      { 
+      {
 	strncpy(sqinfo->acc, sptr, SQINFO_NAMELEN-1);
 	sqinfo->acc[SQINFO_NAMELEN-1] = '\0';
 	sqinfo->flags   |= SQINFO_ACC;
@@ -346,7 +345,7 @@ SetSeqinfoString(
 
   case SQINFO_DESC:
     if (*sptr != '-')
-      { 
+      {
 	if (sqinfo->flags & SQINFO_DESC) /* append? */
 	  {
 	    len = strlen(sqinfo->desc);
@@ -390,7 +389,7 @@ SetSeqinfoString(
 
 void
 SeqinfoCopy(
-  SQINFO *sq1, 
+  SQINFO *sq1,
   SQINFO *sq2)
 {
   sq1->flags = sq2->flags;
@@ -434,7 +433,7 @@ ToRNA(
 
 void
 ToIUPAC(
-  char *seq, 
+  char *seq,
   int is_aseq
 ){
   if (is_aseq) {
@@ -447,9 +446,9 @@ ToIUPAC(
 }
 
 
-void 
+void
 addseq(
-  char *s, 
+  char *s,
   struct ReadSeqVars *V
 ){
   char *s0;
@@ -470,7 +469,7 @@ addseq(
 
       sq = V->seq + V->seqlen;
       while (*s != 0) {
-	if (! isdigit((int) *s) && ! isspace((int) *s)) { 
+	if (! isdigit((int) *s) && ! isspace((int) *s)) {
 	  *sq = *s;
 	  sq++;
 	}
@@ -492,7 +491,7 @@ addseq(
       bpl = s - s0;
 
       /* Keep track of the global rpl, bpl for the file.
-       * This is overly complicated because we have to 
+       * This is overly complicated because we have to
        * allow the last line of each record (e.g. the last addseq() call
        * on each sequence) to have a different length - and sometimes
        * we'll have one-line sequence records, too.  Thus we only
@@ -507,17 +506,17 @@ addseq(
        */
       if (V->rpl != 0) {		/* 0 means we already know rpl is invalid       */
 	if (V->lastrpl > 0) {	/* we're on something that's not the first line */
-	  if (V->rpl > 0 && V->lastrpl != V->rpl)  V->rpl = 0; 
+	  if (V->rpl > 0 && V->lastrpl != V->rpl)  V->rpl = 0;
 	  else if (V->rpl == -1)                   V->rpl = V->lastrpl;
-	}      
+	}     
 	V->lastrpl = rpl;
 	if (rpl > V->maxrpl) V->maxrpl = rpl; /* make sure we check max length of final lines */
       }
       if (V->bpl != 0) {		/* 0 means we already know bpl is invalid       */
 	if (V->lastbpl > 0) {	/* we're on something that's not the first line */
-	  if (V->bpl > 0 && V->lastbpl != V->bpl)  V->bpl = 0; 
+	  if (V->bpl > 0 && V->lastbpl != V->bpl)  V->bpl = 0;
 	  else if (V->bpl == -1)                   V->bpl = V->lastbpl;
-	}      
+	}     
 	V->lastbpl = bpl;
 	if (bpl > V->maxbpl) V->maxbpl = bpl; /* make sure we check max length of final lines */
       }
@@ -525,10 +524,10 @@ addseq(
 
 }
 
-void 
+void
 readLoop(
-  int addfirst, 
-  int (*endTest)(char *,int *), 
+  int addfirst,
+  int (*endTest)(char *,int *),
   struct ReadSeqVars *V
 ){
   int addend = 0;
@@ -557,11 +556,11 @@ readLoop(
 
 int
 endPIR(
-  char *s, 
+  char *s,
   int  *addend
 ){
   *addend = 0;
-  if ((strncmp(s, "///", 3) == 0) || 
+  if ((strncmp(s, "///", 3) == 0) ||
       (strncmp(s, "ENTRY", 5) == 0))
     return 1;
   else
@@ -614,9 +613,9 @@ readPIR(
 }
 
 
-int 
+int
 endIG(
-  char *s, 
+  char *s,
   int  *addend
 ){
   *addend = 1; /* 1 or 2 occur in line w/ bases */
@@ -624,7 +623,7 @@ endIG(
 }
 
 
-void 
+void
 readIG(
   struct ReadSeqVars *V
 ){
@@ -641,15 +640,15 @@ readIG(
 
       readLoop(0, endIG, V);
     }
-  
+ 
   while (!(feof(V->f) || ((*V->buf != '\0') && (*V->buf == ';'))))
     SeqfileGetLine(V);
 }
 
 
-int 
+int
 endStrider(
-  char *s, 
+  char *s,
   int *addend
 ){
   *addend = 0;
@@ -657,13 +656,13 @@ endStrider(
 }
 
 
-void 
+void
 readStrider(
   struct ReadSeqVars *V
-){ 
+){
   char *nm;
-  
-  while ((!feof(V->f)) && (*V->buf == ';')) 
+ 
+  while ((!feof(V->f)) && (*V->buf == ';'))
     {
       if (strncmp(V->buf,"; DNA sequence", 14) == 0)
 	{
@@ -678,14 +677,14 @@ readStrider(
 
   /* load next line
    */
-  while ((!feof(V->f)) && (*V->buf != ';')) 
+  while ((!feof(V->f)) && (*V->buf != ';'))
     SeqfileGetLine(V);
 }
 
 
-int 
+int
 endGB(
-  char *s, 
+  char *s,
   int *addend
 ){
   *addend = 0;
@@ -693,7 +692,7 @@ endGB(
 }
 
 
-void 
+void
 readGenBank(
   struct ReadSeqVars *V
 ){
@@ -704,7 +703,7 @@ readGenBank(
    *     LOCUS     -> sqinfo.name
    *     ACCESSION -> sqinfo.acc   [primary accession only]
    *     VERSION   -> sqinfo.id
-   * We don't currently store the GI number, or secondary accessions.    
+   * We don't currently store the GI number, or secondary accessions.   
    */
   while (strncmp(V->buf, "LOCUS", 5) != 0) {
     SeqfileGetLine(V);
@@ -766,7 +765,7 @@ readGenBank(
 
 int
 endGCGdata(
-  char *s, 
+  char *s,
   int *addend
 ){
   *addend = 0;
@@ -780,17 +779,17 @@ readGCGdata(
 ){
   int   binary = false;		/* whether data are binary or not */
   int   blen = 0;		/* length of binary sequence */
-  
+ 
 				/* first line contains ">>>>" followed by name */
   if (Strparse(">>>>([^ ]+) .+2BIT +Len: ([0-9]+)", V->buf, 2))
     {
       binary = true;
       SetSeqinfoString(V->sqinfo, sqd_parse[1], SQINFO_NAME);
       blen = atoi(sqd_parse[2]);
-    } 
+    }
   else if (Strparse(">>>>([^ ]+) .+ASCII +Len: [0-9]+", V->buf, 1))
     SetSeqinfoString(V->sqinfo, sqd_parse[1], SQINFO_NAME);
-  else 
+  else
     Die("bogus GCGdata format? %s", V->buf);
 
 				/* second line contains free text description */
@@ -812,7 +811,7 @@ readGCGdata(
     GCGBinaryToSequence(V->seq, blen);
   }
   else readLoop(0, endGCGdata, V);
-  
+ 
   while (!(feof(V->f) || ((*V->buf != 0) && (*V->buf == '>'))))
     SeqfileGetLine(V);
 }
@@ -820,7 +819,7 @@ readGCGdata(
 
 int
 endPearson(
-  char *s, 
+  char *s,
   int *addend
 ){
   *addend = 0;
@@ -828,7 +827,7 @@ endPearson(
 }
 
 
-void 
+void
 readPearson(
   struct ReadSeqVars *V
 ){
@@ -836,11 +835,11 @@ readPearson(
 
   if (V->ssimode >= 0) V->r_off = V->ssioffset;
 
-  if (*V->buf != '>') 
+  if (*V->buf != '>')
     Die("\
 File %s does not appear to be in FASTA format at line %d.\n\
 You may want to specify the file format on the command line.\n\
-Usually this is done with an option --informat <fmt>.\n", 
+Usually this is done with an option --informat <fmt>.\n",
 	V->fname, V->linenumber);
 
   if ((sptr = strtok(V->buf+1, "\n\t ")) != NULL)
@@ -858,7 +857,7 @@ Usually this is done with an option --informat <fmt>.\n",
 
 int
 endEMBL(
-  char *s, 
+  char *s,
   int *addend
 ){
   *addend = 0;
@@ -866,7 +865,7 @@ endEMBL(
    * an extended EMBL format that attaches extra data after
    * the sequence -- watch out for that. We use the fact that
    * real EMBL sequence lines begin with five spaces.
-   * 
+   *
    * We can use this as the sole end test because readEMBL() will
    * advance to the next ID line before starting to read again.
    */
@@ -875,7 +874,7 @@ endEMBL(
 }
 
 
-void 
+void
 readEMBL(
   struct ReadSeqVars *V
 ){
@@ -906,7 +905,7 @@ readEMBL(
 	  SetSeqinfoString(V->sqinfo, sptr, SQINFO_DESC);
       }
   } while (! feof(V->f) && strncmp(V->buf,"SQ",2) != 0);
-  
+ 
   readLoop(0, endEMBL, V);
 
   /* Hack for Staden experiment files: convert - to N
@@ -925,14 +924,14 @@ readEMBL(
 				/* load next record's ID line */
   while (!feof(V->f) && strncmp(V->buf, "ID  ", 4) != 0) {
     SeqfileGetLine(V);
-  }    
+  }   
 
 }
 
 
 int
 endZuker(
-  char *s, 
+  char *s,
   int *addend
 ){
   *addend = 0;
@@ -961,7 +960,7 @@ readZuker(
 }
 
 
-void 
+void
 readUWGCG(
   struct ReadSeqVars *V
 ){
@@ -989,9 +988,9 @@ readUWGCG(
 
 int
 ReadSeq(
-  SQFILE *V, 
-  //int format, 
-  char **ret_seq, 
+  SQFILE *V,
+  //int format,
+  char **ret_seq,
   SQINFO *sqinfo
 ){
   int    gotuw;
@@ -1003,7 +1002,7 @@ ReadSeq(
    */
   if (IsAlignmentFormat(V->format))
     {
-      if (V->msa->lastidx >= V->msa->nseq) 
+      if (V->msa->lastidx >= V->msa->nseq)
 	{ /* out of data. try to read another alignment */				
 	  MSAFree(V->msa);
 	  if ((V->msa = MSAFileRead(V->afp)) == NULL)
@@ -1011,7 +1010,7 @@ ReadSeq(
 	  V->msa->lastidx = 0;
 	}
 				/* copy and dealign the appropriate aligned seq */
-      MakeDealignedString(V->msa->aseq[V->msa->lastidx], V->msa->alen, 
+      MakeDealignedString(V->msa->aseq[V->msa->lastidx], V->msa->alen,
 			  V->msa->aseq[V->msa->lastidx], &(V->seq));
       V->seqlen = strlen(V->seq);
 
@@ -1019,24 +1018,24 @@ ReadSeq(
        * Tedious; code that should be cleaned.
        */
       sqinfo->flags = 0;
-      if (V->msa->sqname[V->msa->lastidx] != NULL) 
+      if (V->msa->sqname[V->msa->lastidx] != NULL)
 	SetSeqinfoString(sqinfo, V->msa->sqname[V->msa->lastidx], SQINFO_NAME);
-      if (V->msa->sqacc != NULL && V->msa->sqacc[V->msa->lastidx] != NULL) 
+      if (V->msa->sqacc != NULL && V->msa->sqacc[V->msa->lastidx] != NULL)
 	SetSeqinfoString(sqinfo, V->msa->sqacc[V->msa->lastidx], SQINFO_ACC);
-      if (V->msa->sqdesc != NULL && V->msa->sqdesc[V->msa->lastidx] != NULL) 
+      if (V->msa->sqdesc != NULL && V->msa->sqdesc[V->msa->lastidx] != NULL)
 	SetSeqinfoString(sqinfo, V->msa->sqdesc[V->msa->lastidx], SQINFO_DESC);
       if (V->msa->ss != NULL && V->msa->ss[V->msa->lastidx] != NULL) {
-	MakeDealignedString(V->msa->aseq[V->msa->lastidx], V->msa->alen, 
+	MakeDealignedString(V->msa->aseq[V->msa->lastidx], V->msa->alen,
 			    V->msa->ss[V->msa->lastidx], &(sqinfo->ss));
 	sqinfo->flags |= SQINFO_SS;
       }
       if (V->msa->sa != NULL && V->msa->sa[V->msa->lastidx] != NULL) {
-	MakeDealignedString(V->msa->aseq[V->msa->lastidx], V->msa->alen, 
+	MakeDealignedString(V->msa->aseq[V->msa->lastidx], V->msa->alen,
 			    V->msa->sa[V->msa->lastidx], &(sqinfo->sa));
 	sqinfo->flags |= SQINFO_SA;
       }
       V->msa->lastidx++;
-    } 
+    }
   else {
     if (feof(V->f)) return 0;
 
@@ -1059,7 +1058,7 @@ ReadSeq(
     case SQFILE_EMBL    : readEMBL(V);    break;
     case SQFILE_ZUKER   : readZuker(V);   break;
     case SQFILE_PIR     : readPIR(V);     break;
-    case SQFILE_GCGDATA : readGCGdata(V); break; 
+    case SQFILE_GCGDATA : readGCGdata(V); break;
 	
     case SQFILE_GCG :
       do {			/* skip leading comments on GCG file */
@@ -1081,11 +1080,11 @@ ReadSeq(
 
   /* Cleanup
    */
-  sqinfo->len    = V->seqlen; 
+  sqinfo->len    = V->seqlen;
   sqinfo->flags |= SQINFO_LEN;
   *ret_seq = V->seq;
   if (squid_errno == SQERR_OK) return 1; else return 0;
-}  
+} 
 
 
 int
@@ -1118,7 +1117,7 @@ SeqfileFormat(
 	  if (strncmp(buf, "# STOCKHOLM 1.", 14) == 0)
 	    { fmt = MSAFILE_STOCKHOLM; goto DONE; }
 
-	  if (strncmp(buf, "CLUSTAL", 7) == 0 && 
+	  if (strncmp(buf, "CLUSTAL", 7) == 0 &&
 	      strstr(buf, "multiple sequence alignment") != NULL)
 	    { fmt = MSAFILE_CLUSTAL; goto DONE; }
 
@@ -1132,7 +1131,7 @@ SeqfileFormat(
     char *state;
 	  if ((s1 = strtok_r(s, WHITESPACE, &state)) != NULL &&
 	      (s2 = strtok_r(NULL, WHITESPACE, &state)) != NULL &&
-	      IsInt(s1) && 
+	      IsInt(s1) &&
 	      IsInt(s2))
 	    { free(bufcpy); fmt = MSAFILE_PHYLIP; goto DONE; }
 	  free(bufcpy);
@@ -1158,7 +1157,7 @@ SeqfileFormat(
 	{ fmt = SQFILE_PIR; goto DONE; }
 
 				/* a ha, diagnostic of an (old) MSF file */
-      if ((strstr(buf, "..")    != NULL) && 
+      if ((strstr(buf, "..")    != NULL) &&
 	  (strstr(buf, "MSF:")  != NULL) &&
 	  (strstr(buf, "Check:")!= NULL))
 	{ fmt = MSAFILE_MSF; goto DONE; }
@@ -1184,13 +1183,13 @@ SeqfileFormat(
       /* Disproof 1. Noncomment, nonblank lines in a SELEX file
        * must have at least two space-delimited fields (name/seq)
        */
-      if ((s2 = strtok_r(NULL, WHITESPACE, &state)) == NULL) 
+      if ((s2 = strtok_r(NULL, WHITESPACE, &state)) == NULL)
 	has_junk = true;
 
-      /* Disproof 2. 
+      /* Disproof 2.
        * The sequence field should look like a sequence.
        */
-      if (s2 != NULL && Seqtype(s2) == kOtherSeq) 
+      if (s2 != NULL && Seqtype(s2) == kOtherSeq)
 	has_junk = true;
 
       ndataline++;
@@ -1202,7 +1201,7 @@ SeqfileFormat(
 
   /* If we've made it this far, we've run out of data, but there
    * was at least one line of it; check if we've
-   * disproven SELEX. If not, cross our fingers, pray, and guess SELEX. 
+   * disproven SELEX. If not, cross our fingers, pray, and guess SELEX.
    */
   if (has_junk == true) fmt = SQFILE_UNKNOWN;
   else                  fmt = MSAFILE_SELEX;
@@ -1216,7 +1215,7 @@ SeqfileFormat(
 
 int
 GCGBinaryToSequence(
-  char *seq, 
+  char *seq,
   int len
 ){
   int   bpos;			/* position in binary   */
@@ -1245,7 +1244,7 @@ GCGBinaryToSequence(
 
 int
 GCGchecksum(
-  char *seq, 
+  char *seq,
   int len
 ){
   int chk = 0;			/* calculated checksum  */
@@ -1257,10 +1256,10 @@ GCGchecksum(
   return chk;
 }
 
-                  
+                 
 int
 GCGMultchecksum(
-  char **seqs, 
+  char **seqs,
   int nseq
 ){
   int chk = 0;
@@ -1284,13 +1283,13 @@ Seqtype(
   int  na = 0;			/* count of nucleotides */
   int  aa = 0;			/* count of amino acids */
   int  no = 0;			/* count of others */
-  
+ 
   /* Look at the first 300 non-gap characters
    */
   for (saw = 0; *seq != '\0' && saw < 300; seq++)
     {
       c = toupper(*seq);
-      if (! isgap(c)) 
+      if (! isgap(c))
 	{
 	  if (strchr(protonly, c)) po++;
 	  else if (strchr(primenuc,c)) {
@@ -1316,7 +1315,7 @@ Seqtype(
 
 int
 GuessAlignmentSeqtype(
-  char **aseq, 
+  char **aseq,
   int nseq
 ){
   int idx;
@@ -1343,8 +1342,8 @@ GuessAlignmentSeqtype(
   /* Ambiguous decisions:
    */
   if (namino == 0)    return kRNA; /* it's nucleic acid, but seems mixed RNA/DNA */
-  return kAmino;		   /* some amino acid seen; others probably short seqs, some 
-				      of which may be entirely ACGT (ala,cys,gly,thr). We 
+  return kAmino;		   /* some amino acid seen; others probably short seqs, some
+				      of which may be entirely ACGT (ala,cys,gly,thr). We
 				      could be a little more sophisticated: U would be a giveaway
 				      that we're not in protein seqs */
 }
@@ -1352,15 +1351,15 @@ GuessAlignmentSeqtype(
 
 void
 WriteSimpleFASTA(
-  FILE *fp, 
-  char *seq, 
-  char *name, 
+  FILE *fp,
+  char *seq,
+  char *name,
   char *desc
 ){
   char buf[61];
   int  len;
   int  pos;
-  
+ 
   len = strlen(seq);
   buf[60] = '\0';
   fprintf(fp, ">%s %s\n", name, desc != NULL ? desc : "");
@@ -1374,9 +1373,9 @@ WriteSimpleFASTA(
 
 int
 WriteSeq(
-  FILE *outf, 
-  int outform, 
-  char *seq, 
+  FILE *outf,
+  int outform,
+  char *seq,
   SQINFO *sqinfo
 ){
   int   numline = 0;
@@ -1386,7 +1385,7 @@ WriteSeq(
   char  s[100];			/* buffer for sequence  */
   char  ss[100];		/* buffer for structure */
   int   checksum = 0;
-  int   seqlen;   
+  int   seqlen;  
   int   which_case;    /* 0 = do nothing. 1 = upper case. 2 = lower case */
   int   dostruc;		/* true to print structure lines*/
 
@@ -1394,7 +1393,7 @@ WriteSeq(
   dostruc    = false;		
   seqlen     = (sqinfo->flags & SQINFO_LEN) ? sqinfo->len : strlen(seq);
 
-  if (IsAlignmentFormat(outform)) 
+  if (IsAlignmentFormat(outform))
     Die("Tried to write an aligned format with WriteSeq() -- bad, bad.");
 
 
@@ -1408,13 +1407,13 @@ WriteSeq(
     break;
 
   case SQFILE_GENBANK:
-    fprintf(outf,"LOCUS       %s       %d bp\n", 
+    fprintf(outf,"LOCUS       %s       %d bp\n",
 	    sqinfo->name, seqlen);
-    fprintf(outf,"ACCESSION   %s\n", 
+    fprintf(outf,"ACCESSION   %s\n",
 	    (sqinfo->flags & SQINFO_ACC) ? sqinfo->acc : ".");
-    fprintf(outf,"DEFINITION  %s\n", 
+    fprintf(outf,"DEFINITION  %s\n",
 	    (sqinfo->flags & SQINFO_DESC) ? sqinfo->desc : ".");
-    fprintf(outf,"VERSION     %s\n", 
+    fprintf(outf,"VERSION     %s\n",
 	    (sqinfo->flags & SQINFO_ID) ? sqinfo->id : ".");
     fprintf(outf,"ORIGIN      \n");
     spacer = 11;
@@ -1428,9 +1427,9 @@ WriteSeq(
     break;
 
   case SQFILE_PIR:
-    fprintf(outf, "ENTRY          %s\n", 
+    fprintf(outf, "ENTRY          %s\n",
 	    (sqinfo->flags & SQINFO_ID) ? sqinfo->id : sqinfo->name);
-    fprintf(outf, "TITLE          %s\n", 
+    fprintf(outf, "TITLE          %s\n",
 	    (sqinfo->flags & SQINFO_DESC) ? sqinfo->desc : "-");
     fprintf(outf, "ACCESSION      %s\n",
 	    (sqinfo->flags & SQINFO_ACC) ? sqinfo->acc : "-");
@@ -1471,7 +1470,7 @@ WriteSeq(
 	    (sqinfo->flags & SQINFO_ID) ? sqinfo->id : sqinfo->name);
     fprintf(outf,"AC   %s\n",
 	    (sqinfo->flags & SQINFO_ACC) ? sqinfo->acc : "-");
-    fprintf(outf,"DE   %s\n", 
+    fprintf(outf,"DE   %s\n",
 	    (sqinfo->flags & SQINFO_DESC) ? sqinfo->desc : "-");
     fprintf(outf,"SQ             %d BP\n", seqlen);
     strcpy(endstr, "\n//"); /* 11Oct90: bug fix*/
@@ -1482,10 +1481,10 @@ WriteSeq(
   case SQFILE_GCG:
     fprintf(outf,"%s\n", sqinfo->name);
     if (sqinfo->flags & SQINFO_ACC)
-      fprintf(outf,"ACCESSION   %s\n", sqinfo->acc); 
+      fprintf(outf,"ACCESSION   %s\n", sqinfo->acc);
     if (sqinfo->flags & SQINFO_DESC)
       fprintf(outf,"DEFINITION  %s\n", sqinfo->desc);
-    fprintf(outf,"    %s  Length: %d  (today)  Check: %d  ..\n", 
+    fprintf(outf,"    %s  Length: %d  (today)  Check: %d  ..\n",
 	    sqinfo->name, seqlen, checksum);
     spacer = 11;
     numline = 1;
@@ -1494,7 +1493,7 @@ WriteSeq(
 
   case SQFILE_STRIDER: /* ?? map ?*/
     fprintf(outf,"; ### from DNA Strider ;-)\n");
-    fprintf(outf,"; DNA sequence  %s, %d bases, %d checksum.\n;\n", 
+    fprintf(outf,"; DNA sequence  %s, %d bases, %d checksum.\n;\n",
 	    sqinfo->name, seqlen, checksum);
     strcpy(endstr, "\n//");
     break;
@@ -1506,7 +1505,7 @@ WriteSeq(
     which_case = 1;			/* MFOLD requires upper case. */
     /*FALLTHRU*/
   case SQFILE_IG:
-    fprintf(outf,";%s %s\n", 
+    fprintf(outf,";%s %s\n",
 	    sqinfo->name,
 	    (sqinfo->flags & SQINFO_DESC) ? sqinfo->desc : "");
     fprintf(outf,"%s\n", sqinfo->name);
@@ -1534,7 +1533,7 @@ WriteSeq(
       if (numline) fprintf(outf,"%8d ",ibase);
       for (j=0; j<tab; j++) fputc(' ',outf);
     }
-    if ((spacer != 0) && ((l+1) % spacer == 1)) 
+    if ((spacer != 0) && ((l+1) % spacer == 1))
       { s[l] = ' '; ss[l] = ' '; l++; }
     s[l]  = seq[i];
     ss[l] = (sqinfo->flags & SQINFO_SS) ? sqinfo->ss[i] : '.';
@@ -1561,7 +1560,7 @@ WriteSeq(
     }
   }
   return lines;
-} 
+}
 
 
 int
@@ -1583,7 +1582,7 @@ ReadMultipleRseqs(
   numalloced = 16;
   rseqs  = (char **) MallocOrDie (numalloced * sizeof(char *));
   sqinfo = (SQINFO *) MallocOrDie (numalloced * sizeof(SQINFO));
-  if ((dbfp = SeqfileOpen(seqfile, fformat, NULL)) == NULL) return 0;      
+  if ((dbfp = SeqfileOpen(seqfile, fformat, NULL)) == NULL) return 0;     
 
   while (ReadSeq(dbfp, &rseqs[num], &(sqinfo[num])))
     {
@@ -1614,7 +1613,7 @@ String2SeqfileFormat(
   if (s == NULL) return SQFILE_UNKNOWN;
   s2 = strdup(s);
   s2upper(s2);
-  
+ 
   if      (strcmp(s2, "FASTA")     == 0) code = SQFILE_FASTA;
   else if (strcmp(s2, "GENBANK")   == 0) code = SQFILE_GENBANK;
   else if (strcmp(s2, "EMBL")      == 0) code = SQFILE_EMBL;
@@ -1628,12 +1627,12 @@ String2SeqfileFormat(
   else if (strcmp(s2, "PIR")       == 0) code = SQFILE_PIR;
   else if (strcmp(s2, "SQUID")     == 0) code = SQFILE_SQUID;
   else if (strcmp(s2, "STOCKHOLM") == 0) code = MSAFILE_STOCKHOLM;
-  else if (strcmp(s2, "SELEX")     == 0) code = MSAFILE_SELEX; 
-  else if (strcmp(s2, "MSF")       == 0) code = MSAFILE_MSF; 
-  else if (strcmp(s2, "CLUSTAL")   == 0) code = MSAFILE_CLUSTAL; 
-  else if (strcmp(s2, "A2M")       == 0) code = MSAFILE_A2M; 
-  else if (strcmp(s2, "PHYLIP")    == 0) code = MSAFILE_PHYLIP; 
-  else if (strcmp(s2, "EPS")       == 0) code = MSAFILE_EPS; 
+  else if (strcmp(s2, "SELEX")     == 0) code = MSAFILE_SELEX;
+  else if (strcmp(s2, "MSF")       == 0) code = MSAFILE_MSF;
+  else if (strcmp(s2, "CLUSTAL")   == 0) code = MSAFILE_CLUSTAL;
+  else if (strcmp(s2, "A2M")       == 0) code = MSAFILE_A2M;
+  else if (strcmp(s2, "PHYLIP")    == 0) code = MSAFILE_PHYLIP;
+  else if (strcmp(s2, "EPS")       == 0) code = MSAFILE_EPS;
 
   free(s2);
   return code;
@@ -1648,14 +1647,14 @@ SeqfileFormat2String(
   case SQFILE_UNKNOWN:   return "unknown";
   case SQFILE_FASTA:     return "FASTA";
   case SQFILE_GENBANK:   return "Genbank";
-  case SQFILE_EMBL:      return "EMBL"; 
+  case SQFILE_EMBL:      return "EMBL";
   case SQFILE_GCG:       return "GCG";
   case SQFILE_GCGDATA:   return "GCG data library";
-  case SQFILE_RAW:       return "raw"; 
+  case SQFILE_RAW:       return "raw";
   case SQFILE_IG:        return "Intelligenetics";
   case SQFILE_STRIDER:   return "MacStrider";
   case SQFILE_IDRAW:     return "Idraw Postscript";
-  case SQFILE_ZUKER:     return "Zuker"; 
+  case SQFILE_ZUKER:     return "Zuker";
   case SQFILE_PIR:       return "PIR";
   case SQFILE_SQUID:     return "SQUID";
   case MSAFILE_STOCKHOLM: return "Stockholm";
@@ -1665,7 +1664,7 @@ SeqfileFormat2String(
   case MSAFILE_A2M:       return "a2m";
   case MSAFILE_PHYLIP:    return "Phylip";
   case MSAFILE_EPS:       return "EPS";
-  default:               
+  default:              
     Die("Bad code passed to MSAFormat2String()");
   }
   /*NOTREACHED*/
@@ -1685,21 +1684,21 @@ MSAToSqinfo(
   for (idx = 0; idx < msa->nseq; idx++)
     {
       sqinfo[idx].flags = 0;
-      SetSeqinfoString(&(sqinfo[idx]), 
+      SetSeqinfoString(&(sqinfo[idx]),
 		       msa->sqname[idx],                 SQINFO_NAME);
-      SetSeqinfoString(&(sqinfo[idx]), 
+      SetSeqinfoString(&(sqinfo[idx]),
 		       MSAGetSeqAccession(msa, idx),     SQINFO_ACC);
-      SetSeqinfoString(&(sqinfo[idx]), 
+      SetSeqinfoString(&(sqinfo[idx]),
 		       MSAGetSeqDescription(msa, idx),   SQINFO_DESC);
 
       if (msa->ss != NULL && msa->ss[idx] != NULL) {
-	MakeDealignedString(msa->aseq[idx], msa->alen, 
+	MakeDealignedString(msa->aseq[idx], msa->alen,
 			    msa->ss[idx], &(sqinfo[idx].ss));
 	sqinfo[idx].flags |= SQINFO_SS;
       }
 
       if (msa->sa != NULL && msa->sa[idx] != NULL) {
-	MakeDealignedString(msa->aseq[idx], msa->alen, 
+	MakeDealignedString(msa->aseq[idx], msa->alen,
 			    msa->sa[idx], &(sqinfo[idx].sa));
 	sqinfo[idx].flags |= SQINFO_SA;
       }
@@ -1713,10 +1712,10 @@ MSAToSqinfo(
 
 /* cc -o sqio_test -DA_QUIET_DAY -L. sqio.c -lsquid */
 #ifdef A_QUIET_DAY
-#include "ssi.h"
+#include "ssi.hpp"
 int
 main(
-  int argc, 
+  int argc,
   char **argv
 ){
   FILE *fp;
@@ -1730,18 +1729,18 @@ main(
   if (mode == 1) {
     buf = malloc(sizeof(char) * 256);
     if ((fp = fopen(filename, "r")) == NULL)
-      Die("open of %s failed", filename); 
+      Die("open of %s failed", filename);
     while (fgets(buf, 255, fp) != NULL)
       ;
     fclose(fp);
     free(buf);
   } else if (mode == 2) {
     if ((fp = fopen(filename, "r")) == NULL)
-      Die("open of %s failed", filename); 
-    buf = NULL; 
+      Die("open of %s failed", filename);
+    buf = NULL;
     size_t len = 0;
     while (getline(&buf, &len, fp) != NULL)
-      SSIGetFilePosition(fp, SSI_OFFSET_I32, &off); 
+      SSIGetFilePosition(fp, SSI_OFFSET_I32, &off);
     fclose(fp);
     free(buf);
   } else if (mode == 3) {
@@ -1749,14 +1748,14 @@ main(
     SQINFO  info;
 
     if ((dbfp = SeqfileOpen(filename, SQFILE_FASTA, NULL)) == NULL)
-      Die("open of %s failed", filename); 
-    while (ReadSeq(dbfp, &buf, &info)) { 
-      SSIGetFilePosition(dbfp->f, SSI_OFFSET_I32, &off); 
+      Die("open of %s failed", filename);
+    while (ReadSeq(dbfp, &buf, &info)) {
+      SSIGetFilePosition(dbfp->f, SSI_OFFSET_I32, &off);
       FreeSequence(buf, &info);
     }
     SeqfileClose(dbfp);
   }
-      
+     
 }
 
 #endif

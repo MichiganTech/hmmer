@@ -29,9 +29,6 @@
  *    are removed.
  */
 
-#include "config.h"
-//#include "squidconf.h"
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -40,11 +37,9 @@
 #include <float.h>
 #include <ctype.h>
 
-//#include "squid.h"
-//#include "msa.h"
-#include "structs.h"
-#include "funcs.h"
-#include "vectorops.h"
+#include "structs.hpp"
+#include "vectorops.hpp"
+#include "modelmakers.hpp"
 
 
 
@@ -58,48 +53,15 @@
 #define EXTERNAL_INSERT_N (1<<4)
 #define EXTERNAL_INSERT_C (1<<5)
 
-static void matassign2hmm(MSA *msa, unsigned char **dsq, char *isfrag,
-                          int *matassign, struct plan7_s **ret_hmm,
-                          struct p7trace_s ***ret_tr);
-static void fake_tracebacks(char **aseq, int nseq, int alen, char *isfrag, int *matassign,
-                            struct p7trace_s ***ret_tr);
-static void trace_doctor(struct p7trace_s *tr, int M, int *ret_ndi,
-                         int *ret_nid);
-static void annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa);
-#if 0
-static void print_matassign(int *matassign, int alen);
-#endif
 
-
-
-/* Function: P7Handmodelmaker()
- *
- * Purpose:  Manual model construction:
- *           Construct an HMM from an alignment, where the #=RF line
- *           of a HMMER alignment file is given to indicate
- *           the columns assigned to matches vs. inserts.
- *
- *           NOTE: Handmodelmaker() will slightly revise the alignment
- *           if necessary, if the assignment of columns implies
- *           DI and ID transitions.
- *
- *           Returns both the HMM in counts form (ready for applying
- *           Dirichlet priors as the next step), and fake tracebacks
- *           for each aligned sequence.
- *
- * Args:     msa  - multiple sequence alignment
- *           dsq  - digitized unaligned aseq's
- *           isfrag  - [0..nseq-1] flags for candidate seq frags
- *           ret_hmm - RETURN: counts-form HMM
- *           ret_tr  - RETURN: array of tracebacks for aseq's
- *
- * Return:   (void)
- *           ret_hmm and ret_tr alloc'ed here; FreeTrace(tr[i]), free(tr),
- *           FreeHMM(hmm).
- */
 void
-P7Handmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag,
-                 struct plan7_s **ret_hmm, struct p7trace_s ***ret_tr) {
+P7Handmodelmaker(
+  MSA *msa,
+  unsigned char **dsq,
+  char *isfrag,
+  struct plan7_s **ret_hmm,
+  struct p7trace_s ***ret_tr
+){
   int     *matassign;           /* MAT state assignments if 1; 1..alen */
   // apos                /* counter for aligned columns         */
 
@@ -131,65 +93,15 @@ P7Handmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag,
 }
 
 
-/* Function: P7Fastmodelmaker()
- *
- * Purpose:  Heuristic model construction.
- *
- *           Construct an HMM from an alignment using a heuristic,
- *           based on the fractional occupancy of each columns w/
- *           residues vs gaps. Roughly, any column w/ a fractional
- *           occupancy of $\geq$ <symfrac> is assigned as a MATCH column;
- *           for instance, if thresh = 0.5, columns w/ $\geq$ 50\%
- *           residues are assigned to match... roughly speaking.
- *
- *           "Roughly speaking" because sequences are weighted; we
- *           guard against fragments counting against us by not
- *           counting frags at all unless we have to; and we guard
- *           against highly gappy alignments by reweighting the threshold
- *           according to the most occupied column in the alignment.
- *
- *           The detailed calculation is:
- *
- *           Count the weighted fraction r_i of symbols in column i
- *           (weighted by relative sequence weights): 0<=r_i<=1, with
- *           r_i = 1.0 in fully occupied columns. Only sequences that
- *           are not flagged as candidate fragments are counted toward
- *           the r_i calculation. (If *all* sequences are candidate
- *           fragments, then revert to counting them, rather than
- *           giving up w/ undefined r_i's.)
- *
- *           Determine the fraction of symbols in the most occupied
- *           column: R = max_i r_i. Normally R=1.0, but if we're given
- *           a gappy alignment, R may be less than that.
- *
- *           Then given threshold t:
- *
- *           if r_i >= tR, column is assigned as a MATCH column;
- *           else it's an INSERT column.
- *
- *           NOTE: p7_Fastmodelmaker() will slightly revise the
- *           alignment if the assignment of columns implies
- *           DI and ID transitions.
- *
- *           Returns the HMM in counts form (ready for applying Dirichlet
- *           priors as the next step). Also returns fake traceback
- *           for each training sequence.
- *
- * Args:     msa       - multiple sequence alignment
- *           abc       - symbol alphabet to use
- *           dsq       - digitized unaligned aseq's
- *           isfrag    - [0..nseq-1] T/F flags for candidate seq frags
- *           symfrac   - threshold for residue occupancy
- *           ret_hmm   - RETURN: counts-form HMM
- *           ret_tr    - RETURN: array of tracebacks for aseq's
- *
- * Return:   (void)
- *           ret_hmm and ret_tr alloc'ed here; FreeTrace(tr[i]), free(tr),
- *           FreeHMM(hmm).
- */
 void
-P7Fastmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag, float symfrac,
-                 struct plan7_s **ret_hmm, struct p7trace_s ***ret_tr) {
+P7Fastmodelmaker(
+  MSA *msa,
+  unsigned char **dsq,
+  char *isfrag,
+  float symfrac,
+  struct plan7_s **ret_hmm,
+  struct p7trace_s ***ret_tr
+){
   int     *matassign;           /* MAT state assignments if 1; 1..alen */
   // idx                 /* counter over sequences              */
   // apos                /* counter for aligned columns         */
@@ -252,26 +164,16 @@ P7Fastmodelmaker(MSA *msa, unsigned char **dsq, char *isfrag, float symfrac,
   return;
 }
 
-/* Function: matassign2hmm()
- *
- * Purpose:  Given an assignment of alignment columns to match vs.
- *           insert, finish the final part of the model construction
- *           calculation that is constant between model construction
- *           algorithms.
- *
- * Args:     msa       - multiple sequence alignment
- *           dsq       - digitized unaligned aseq's
- *           matassign - 1..alen bit flags for column assignments
- *           ret_hmm   - RETURN: counts-form HMM
- *           ret_tr    - RETURN: array of tracebacks for aseq's
- *
- * Return:   (void)
- *           ret_hmm and ret_tr alloc'ed here for the calling
- *           modelmaker function.
- */
-static void
-matassign2hmm(MSA *msa, unsigned char **dsq, char *isfrag, int *matassign,
-              struct plan7_s **ret_hmm, struct p7trace_s ***ret_tr) {
+
+void
+matassign2hmm(
+  MSA *msa,
+  unsigned char **dsq,
+  char *isfrag,
+  int *matassign,
+  struct plan7_s **ret_hmm,
+  struct p7trace_s ***ret_tr
+){
   struct plan7_s    *hmm;       /* RETURN: new hmm                     */
   struct p7trace_s **tr;        /* fake tracebacks for each seq        */
   int      M;                   /* length of new model in match states */
@@ -338,29 +240,15 @@ options to hmmbuild.");
 }
 
 
-
-/* Function: fake_tracebacks()
- *
- * Purpose:  From a consensus assignment of columns to MAT/INS, construct fake
- *           tracebacks for each individual sequence.
- *
- * Note:     Fragment tolerant by default. Internal entries are
- *           B->M_x, instead of B->D1->D2->...->M_x; analogously
- *           for internal exits.
- *
- * Args:     aseqs     - alignment [0..nseq-1][0..alen-1]
- *           nseq      - number of seqs in alignment
- *           alen      - length of alignment in columns
- *           isfrag    - T/F flags for candidate fragments
- *           matassign - assignment of column; [1..alen] (off one from aseqs)
- *           ret_tr    - RETURN: array of tracebacks
- *
- * Return:   (void)
- *           ret_tr is alloc'ed here. Caller must free.
- */
-static void
-fake_tracebacks(char **aseq, int nseq, int alen, char *isfrag, int *matassign,
-                struct p7trace_s ***ret_tr) {
+void
+fake_tracebacks(
+  char **aseq,
+  int nseq,
+  int alen,
+  char *isfrag,
+  int *matassign,
+  struct p7trace_s ***ret_tr
+){
   struct p7trace_s **tr;
   int  idx;                     /* counter over sequences          */
   int  apos;                    /* position in alignment columns   */
@@ -481,31 +369,14 @@ fake_tracebacks(char **aseq, int nseq, int alen, char *isfrag, int *matassign,
   return;
 }
 
-/* Function: trace_doctor()
- *
- * Purpose:  Plan 7 disallows D->I and I->D "chatter" transitions.
- *           However, these transitions may be implied by many
- *           alignments for hand- or heuristic- built HMMs.
- *           trace_doctor() collapses I->D or D->I into a
- *           single M position in the trace.
- *           Similarly, B->I and I->E transitions may be implied
- *           by an alignment.
- *
- *           trace_doctor does not examine any scores when it does
- *           this. In ambiguous situations (D->I->D) the symbol
- *           will be pulled arbitrarily to the left, regardless
- *           of whether that's the best column to put it in or not.
- *
- * Args:     tr      - trace to doctor
- *           M       - length of model that traces are for
- *           ret_ndi - number of DI transitions doctored
- *           ret_nid - number of ID transitions doctored
- *
- * Return:   (void)
- *           tr is modified
- */
-static void
-trace_doctor(struct p7trace_s *tr, int mlen, int *ret_ndi, int *ret_nid) {
+
+void
+trace_doctor(
+  struct p7trace_s *tr,
+  int mlen,
+  int *ret_ndi,
+  int *ret_nid
+){
   int opos;      /* position in old trace                 */
   int npos;      /* position in new trace (<= opos)       */
   int ndi, nid;      /* number of DI, ID transitions doctored */
@@ -587,18 +458,12 @@ trace_doctor(struct p7trace_s *tr, int mlen, int *ret_ndi, int *ret_nid) {
 }
 
 
-/* Function: annotate_model()
- *
- * Purpose:  Add rf, cs optional annotation to a new model.
- *
- * Args:     hmm       - new model
- *           matassign - which alignment columns are MAT; [1..alen]
- *           msa       - alignment, including annotation to transfer
- *
- * Return:   (void)
- */
-static void
-annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
+void
+annotate_model(
+  struct plan7_s *hmm,
+  int *matassign,
+  MSA *msa
+){
   // apos      /* position in matassign, 1.alen  */
   size_t k;      /* position in model, 1.M         */
   char *pri;      /* X-PRM, X-PRI, X-PRT annotation */
@@ -689,6 +554,4 @@ annotate_model(struct plan7_s *hmm, int *matassign, MSA *msa) {
         k++;
       }
   }
-
 }
-

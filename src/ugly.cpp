@@ -2,15 +2,15 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 
-#include "squid.h"
-#include "alignio.h"
+#include "squid.hpp"
+#include "alignio.hpp"
 
  char *aminos      = "ABCDEFGHIKLMNPQRSTVWXYZ*";
  char *primenuc    = "ACGTUN";
@@ -22,8 +22,8 @@ char *sqd_parse[10];
 
 int
 Strparse(
-  char *rexp, 
-  char *s, 
+  char *rexp,
+  char *s,
   int ntok
 ){
   sqd_regexp *pat;
@@ -31,27 +31,27 @@ Strparse(
   int         len;
   int         i;
         /* sanity check */
-  if (ntok >= NSUBEXP )  Die("Strparse(): ntok must be <= %d", NSUBEXP-1); 
+  if (ntok >= NSUBEXP )  Die("Strparse(): ntok must be <= %d", NSUBEXP-1);
 
   /* Free previous global substring buffers
    */
   for (i = 0; i <= ntok; i++)
-    if (sqd_parse[i] != NULL) 
-      { 
+    if (sqd_parse[i] != NULL)
+      {
   free(sqd_parse[i]);
   sqd_parse[i] = NULL;
       }
 
-  /* Compile and match the pattern, using our modified 
+  /* Compile and match the pattern, using our modified
    * copy of Henry Spencer's regexp library
    */
-  if ((pat = sqd_regcomp(rexp)) == NULL) 
+  if ((pat = sqd_regcomp(rexp)) == NULL)
     Die("regexp compilation failed.");
   code = sqd_regexec(pat, s);
 
   /* Fill the global substring buffers
    */
-  if (code == 1) 
+  if (code == 1)
     for (i = 0; i <= ntok; i++)
       if (pat->startp[i] != NULL && pat->endp[i] != NULL)
   {
@@ -68,8 +68,8 @@ Strparse(
 
 void *
 sre_malloc(
-  char *file, 
-  int line, 
+  char *file,
+  int line,
   size_t size
 ){
   void *ptr;
@@ -82,9 +82,9 @@ sre_malloc(
 
 void *
 sre_realloc(
-  char *file, 
-  int line, 
-  void *p, 
+  char *file,
+  int line,
+  void *p,
   size_t size
 ){
   void *ptr;
@@ -114,7 +114,7 @@ IsInt(
   if (s == NULL) {squid_errno = SQERR_PARAMETER; return false; }
 
         /* skip whitespace */
-  while (isspace((int) (*s))) s++;      
+  while (isspace((int) (*s))) s++;     
         /* skip leading sign */
   if (*s == '-' || *s == '+') s++;
         /* skip leading conversion signals */
@@ -146,8 +146,8 @@ IsInt(
 
 int
 ParsePAMFile(
-  FILE *fp, 
-  int ***ret_pam, 
+  FILE *fp,
+  int ***ret_pam,
   float *ret_scale
 ){
   int    **pam;
@@ -159,23 +159,23 @@ ParsePAMFile(
   int      row, col;
   float    scale;
   int      gotscale = false;
-  
+ 
   scale = 0.0;    /* just to silence gcc uninit warnings */
   if (fp == NULL) { squid_errno = SQERR_NODATA; return 0; }
-  
+ 
   /* Look at the first non-blank, non-comment line in the file.
    * It gives single-letter codes in the order the PAM matrix
-   * is arrayed in the file. 
+   * is arrayed in the file.
    */
   do {
-    if (fgets(buffer, 512, fp) == NULL) 
+    if (fgets(buffer, 512, fp) == NULL)
       { squid_errno = SQERR_NODATA; return 0; }
 
     /* Get the scale factor from the header.
      * For BLOSUM files, we assume the line looks like:
      *     BLOSUM Clustered Scoring Matrix in 1/2 Bit Units
      * and we assume that the fraction is always 1/x;
-     * 
+     *
      * For PAM files, we assume the line looks like:
      *     PAM 120 substitution matrix, scale = ln(2)/2 = 0.346574
      * and we assume that the number following the final '=' is our scale
@@ -209,7 +209,7 @@ ParsePAMFile(
     idx++;
   } while ((sptr = strtok(NULL, " \t\n")) != NULL);
   nsymbols = idx;
-  
+ 
   /* Allocate a pam matrix. For speed of indexing, we use
    * a 27x27 matrix so we can do lookups using the ASCII codes
    * of amino acid single-letter representations, plus one
@@ -225,7 +225,7 @@ ParsePAMFile(
    */
   for (row = 0; row < nsymbols; row++)
     {
-      if (fgets(buffer, 512, fp) == NULL) 
+      if (fgets(buffer, 512, fp) == NULL)
   { squid_errno = SQERR_NODATA; return 0; }
 
       if ((sptr = strtok(buffer, " \t\n")) == NULL)
@@ -244,7 +244,7 @@ ParsePAMFile(
     sptr = strtok(NULL, " \t\n");
   }
     }
-  
+ 
   /* Return
    */
   if (ret_scale != NULL)

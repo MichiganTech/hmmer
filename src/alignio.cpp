@@ -1,16 +1,14 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* alignio.c
- * SRE, Mon Jul 12 11:57:37 1993
- * RCS $Id: alignio.c,v 1.11 2002/10/09 14:26:09 eddy Exp $
- * 
+ *
  * Input/output of sequence alignments.
  */
 
@@ -20,17 +18,17 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "alignio.h"
-#include "hmmalign.h"
-#include "sqio.h"
-#include "vectorops.h"
+#include "alignio.hpp"
+#include "hmmalign.hpp"
+#include "sqio.hpp"
+#include "vectorops.hpp"
 
 
 void
 AllocAlignment(
-  int nseq, 
-  int alen, 
-  char ***ret_aseq, 
+  int nseq,
+  int alen,
+  char ***ret_aseq,
   AINFO *ainfo
 ){
   char **aseq;
@@ -54,7 +52,7 @@ AllocAlignment(
 
   *ret_aseq = aseq;
 }
- 
+
 
 void
 InitAinfo(
@@ -73,10 +71,10 @@ InitAinfo(
   ainfo->ga1  = ainfo->ga2 = 0.0;
 }
 
-                
+               
 void
 FreeAlignment(
-  char **aseqs, 
+  char **aseqs,
   AINFO *ainfo
 ){
   int i;
@@ -101,8 +99,8 @@ FreeAlignment(
 
 void
 SAMizeAlignment(
-  char **aseq, 
-  int nseq, 
+  char **aseq,
+  int nseq,
   int alen
 ){
   int col;			/* counter for aligned columns */
@@ -133,9 +131,9 @@ SAMizeAlignment(
 
 void
 SAMizeAlignmentByGapFrac(
-  char **aseq, 
-  int nseq, 
-  int alen, 
+  char **aseq,
+  int nseq,
+  int alen,
   float maxgap
 ){
   int apos;			/* counter over columns */
@@ -148,7 +146,7 @@ SAMizeAlignmentByGapFrac(
       ngap = 0;
       for (idx = 0; idx < nseq; idx++)
 	if (isgap(aseq[idx][apos])) ngap++;
-      
+     
 				/* convert to SAM conventions */
       if ((float) ngap / (float) nseq > maxgap)
 	{			/* insert column */
@@ -168,12 +166,12 @@ SAMizeAlignmentByGapFrac(
 
 int
 MakeAlignedString(
-  char *aseq, 
-  int alen, 
-  char *ss, 
+  char *aseq,
+  int alen,
+  char *ss,
   char **ret_s
 ){
-  char *new; 
+  char *new;
   int   apos, rpos;
 
   new = (char *) MallocOrDie ((alen+1) * sizeof(char));
@@ -196,12 +194,12 @@ MakeAlignedString(
 
 int
 MakeDealignedString(
-  char *aseq, 
-  int alen, 
-  char *ss, 
+  char *aseq,
+  int alen,
+  char *ss,
   char **ret_s
 ){
-  char *new; 
+  char *new;
   int   apos, rpos;
 
   new = (char *) MallocOrDie ((alen+1) * sizeof(char));
@@ -223,7 +221,7 @@ int
 DealignedLength(
   char *aseq
 ){
-  int rlen; 
+  int rlen;
   for (rlen = 0; *aseq; aseq++)
     if (! isgap(*aseq)) rlen++;
   return rlen;
@@ -233,17 +231,17 @@ DealignedLength(
 int
 WritePairwiseAlignment(
   FILE *ofp,
-  char *aseq1, 
-  char *name1, 
+  char *aseq1,
+  char *name1,
   int spos1,
-  char *aseq2, 
-  char *name2, 
+  char *aseq2,
+  char *name2,
   int spos2,
-  int **pam, 
+  int **pam,
   int indent
 ){
   char sname1[11];              /* shortened name               */
-  char sname2[11];             
+  char sname2[11];            
   int  still_going;		/* True if writing another block */
   char buf1[61];		/* buffer for writing seq1; CPL+1*/
   char bufmid[61];              /* buffer for writing consensus  */
@@ -262,7 +260,7 @@ WritePairwiseAlignment(
   sname2[10] = '\0';
   strtok(sname2, WHITESPACE);
 
-  s1 = aseq1; 
+  s1 = aseq1;
   s2 = aseq2;
   rpos1 = spos1;
   rpos2 = spos2;
@@ -271,7 +269,7 @@ WritePairwiseAlignment(
   while (still_going)
     {
       still_going = false;
-      
+     
 				/* get next line's worth from both */
       strncpy(buf1, s1, 60); buf1[60] = '\0';
       strncpy(buf2, s2, 60); buf2[60] = '\0';
@@ -307,16 +305,16 @@ WritePairwiseAlignment(
       rawcount1 = 0;
       for (apos = 0; apos < count1; apos++)
 	if (!isgap(buf1[apos])) rawcount1++;
-      
+     
       rawcount2 = 0;
       for (apos = 0; apos < count2; apos++)
 	if (!isgap(buf2[apos])) rawcount2++;
 
-      (void) fprintf(ofp, "%*s%-10.10s %5d %s %5d\n", indent, "", 
+      (void) fprintf(ofp, "%*s%-10.10s %5d %s %5d\n", indent, "",
 		     sname1, rpos1, buf1, rpos1 + rawcount1 -1);
       (void) fprintf(ofp, "%*s                 %s\n", indent, "",
 		     bufmid);
-      (void) fprintf(ofp, "%*s%-10.10s %5d %s %5d\n", indent, "", 
+      (void) fprintf(ofp, "%*s%-10.10s %5d %s %5d\n", indent, "",
 		     sname2, rpos2, buf2, rpos2 + rawcount2 -1);
       (void) fprintf(ofp, "\n");
 
@@ -330,7 +328,7 @@ WritePairwiseAlignment(
 
 int
 MingapAlignment(
-  char **aseqs, 
+  char **aseqs,
   AINFO *ainfo
 ){
   int apos;			/* position in original alignment */
@@ -352,7 +350,7 @@ MingapAlignment(
 	{
 	  for (idx = 0; idx < ainfo->nseq; idx++)
 	    aseqs[idx][mpos] = aseqs[idx][apos];
-	  
+	 
 	  if (ainfo->cs != NULL) ainfo->cs[mpos] = ainfo->cs[apos];
 	  if (ainfo->rf != NULL) ainfo->rf[mpos] = ainfo->rf[apos];
 	}
@@ -370,12 +368,12 @@ MingapAlignment(
 
 int
 RandomAlignment(
-  char **rseqs, 
-  SQINFO *sqinfo, 
-  int nseq, 
-  float pop, 
+  char **rseqs,
+  SQINFO *sqinfo,
+  int nseq,
+  float pop,
   float pex,
-	char ***ret_aseqs, 
+	char ***ret_aseqs,
   AINFO *ainfo
 ){
   char **aseqs;                 /* RETURN: alignment   */
@@ -462,7 +460,7 @@ RandomAlignment(
       aseqs[idx][alen] = '\0';
     }
   ainfo->flags = 0;
-  ainfo->alen  = alen; 
+  ainfo->alen  = alen;
   ainfo->nseq  = nseq;
   ainfo->sqinfo = (SQINFO *) MallocOrDie (sizeof(SQINFO) * nseq);
   for (idx = 0; idx < nseq; idx++)
@@ -478,9 +476,9 @@ RandomAlignment(
 
 void
 AlignmentHomogenousGapsym(
-  char **aseq, 
-  int nseq, 
-  int alen, 
+  char **aseq,
+  int nseq,
+  int alen,
   char gapsym
 ){
   for (int i = 0; i < nseq; i++)

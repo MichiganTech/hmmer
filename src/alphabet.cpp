@@ -12,23 +12,20 @@
  * Configuration of the global symbol alphabet information.
  */
 
-#include "config.h"
-//#include "squidconf.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <pthread.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "squid.h"
-#include "alphabet.h"
+#include "structs.hpp"
+#include "squid.hpp"
+#include "alphabet.hpp"
 
 
 void
 DetermineAlphabet(
-  char **rseqs, 
+  char **rseqs,
   int  nseq
 ){
   int idx;
@@ -169,7 +166,7 @@ SymbolIndex(
 
 unsigned char*
 DigitizeSequence(
-  char *seq, 
+  char *seq,
   int L
 ){
   unsigned char *dsq;
@@ -185,7 +182,7 @@ DigitizeSequence(
 
 char*
 DedigitizeSequence(
-  unsigned char *dsq, 
+  unsigned char *dsq,
   int L
 ){
   char *seq;
@@ -201,7 +198,7 @@ DedigitizeSequence(
 
 void
 DigitizeAlignment(
-  MSA *msa, 
+  MSA *msa,
   unsigned char ***ret_dsqs
 ){
   unsigned char **dsq;
@@ -227,8 +224,8 @@ DigitizeAlignment(
 
 void
 P7CountSymbol(
-  float *counters, 
-  unsigned char symidx, 
+  float *counters,
+  unsigned char symidx,
   float wt
 ){
   if (symidx < Alphabet_size)
@@ -242,7 +239,10 @@ P7CountSymbol(
 
 
 void
-set_degenerate(char iupac, char *syms) {
+set_degenerate(
+  char iupac,
+  char *syms
+){
   DegenCount[strchr(Alphabet,iupac)-Alphabet] = strlen(syms);
   while (*syms) {
     Degenerate[strchr(Alphabet,iupac)-Alphabet]

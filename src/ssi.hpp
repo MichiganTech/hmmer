@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -42,7 +42,7 @@ typedef struct ssioffset_s SSIOFFSET;
 
 /* Structure: SSIFILE
  * xref:      SSI API documentation in ssi-format.tex
- */ 
+ */
 struct ssifile_s {
   FILE        *fp;		/* open SSI index file                 */
   uint32_t   flags;		/* optional behavior flags             */
@@ -58,7 +58,7 @@ struct ssifile_s {
   SSIOFFSET    foffset;		/* disk offset, start of file records  */
   SSIOFFSET    poffset;		/* disk offset, start of pri key recs  */
   SSIOFFSET    soffset;		/* disk offset, start of sec key recs  */
-  
+ 
   char imode;			/* mode for index file offsets, 32 v. 64 bit    */
   char smode;			/* mode for sequence file offsets, 32 v. 64 bit */
 
@@ -82,7 +82,7 @@ typedef struct ssifile_s SSIFILE;
 #define SSI_FAST_SUBSEQ  1<<0	/* can do subseq lookup in this file */
 
 /* Structure: SSIINDEX
- * 
+ *
  * Used when building up an index and writing it to disk
  */
 struct ssipkey_s {		/* Primary key data: */
@@ -96,7 +96,7 @@ struct ssipkey_s {		/* Primary key data: */
 
 struct ssiskey_s {		/* Secondary key data: */
   char        *key;             /* secondary key name  */
-  char        *pkey;            /* primary key name    */ 
+  char        *pkey;            /* primary key name    */
 };
 
 
@@ -112,7 +112,7 @@ struct ssiindex_s {
   uint32_t   *rpl;
   uint32_t    flen;		/* length of longest filename, inc '\0' */
   uint16_t    nfiles;
-  
+ 
   struct ssipkey_s *pkeys;
   uint32_t         plen;	/* length of longest pkey, including '\0' */
   uint32_t         nprimary;
@@ -171,12 +171,12 @@ typedef struct ssiindex_s SSIINDEX;
  */
 int
 SSIOpen(
-  char *filename, 
+  char *filename,
   SSIFILE **ret_sfp
 );
 
 
-/* load_indexfile(): given a SSIFILE structure with an open and positioned 
+/* load_indexfile(): given a SSIFILE structure with an open and positioned
  *    stream (fp) -- but no other data loaded -- read the next SSIFILE
  *    in from disk. We use this routine without its SSIOpen() wrapper
  *    as part of the external mergesort when creating large indices.
@@ -194,9 +194,9 @@ load_indexfile(
  *           is found, {*ret_fh} contains a unique handle on
  *           the file that contains {key} (suitable for an SSIFileInfo()
  *           call, or for comparison to the handle of the last file
- *           that was opened for retrieval), and {offset} is filled 
+ *           that was opened for retrieval), and {offset} is filled
  *           in with the offset in that file.
- *           
+ *          
  * Args:     sfp         - open index file
  *           key         - string to search for
  *           ret_fh      - RETURN: handle on file that key is in
@@ -207,8 +207,8 @@ load_indexfile(
  */
 int
 SSIGetOffsetByName(
-  SSIFILE *sfp, 
-  char *key, 
+  SSIFILE *sfp,
+  char *key,
   int *ret_fh,
   SSIOFFSET *ret_offset
 );
@@ -217,13 +217,13 @@ SSIGetOffsetByName(
 /* Function: SSIGetOffsetByNumber()
  *
  * Purpose:  Looks up primary key #{n} in the open index {sfp}.
- *           {n} ranges from 0..nprimary-1. When key #{n} 
- *           is found, {*ret_fh} contains a unique 
+ *           {n} ranges from 0..nprimary-1. When key #{n}
+ *           is found, {*ret_fh} contains a unique
  *           handle on the file that contains {key} (suitable
- *           for an SSIFileInfo() call, or for comparison to 
+ *           for an SSIFileInfo() call, or for comparison to
  *           the handle of the last file that was opened for retrieval),
  *           and {offset} is filled in with the offset in that file.
- *           
+ *          
  * Args:     sfp        - open index file
  *           n          - primary key number to retrieve.
  *           ret_fh     - RETURN: handle on file that key is in
@@ -234,9 +234,9 @@ SSIGetOffsetByName(
  */
 int
 SSIGetOffsetByNumber(
-  SSIFILE *sfp, 
-  int n, 
-  int *ret_fh, 
+  SSIFILE *sfp,
+  int n,
+  int *ret_fh,
   SSIOFFSET *ret_offset
 );
 
@@ -244,23 +244,23 @@ SSIGetOffsetByNumber(
 /* Function: SSIGetSubseqOffset()
  *
  * Purpose:  Implements SSI_FAST_SUBSEQ.
- * 
+ *
  *           Looks up a primary or secondary {key} in the open
  *           index {sfp}. Asks for the nearest offset to a
  *           subsequence starting at position {requested_start}
- *           in the sequence (numbering the sequence 1..L). 
+ *           in the sequence (numbering the sequence 1..L).
  *           If {key} is found, on return, {ret_fh}
- *           contains a unique handle on the file that contains 
- *           {key} (suitable for an SSIFileInfo() call, or for 
- *           comparison to the handle of the last file that was 
+ *           contains a unique handle on the file that contains
+ *           {key} (suitable for an SSIFileInfo() call, or for
+ *           comparison to the handle of the last file that was
  *           opened for retrieval); {record_offset} contains the
  *           disk offset to the start of the record; {data_offset}
  *           contains the disk offset either exactly at the requested
  *           residue, or at the start of the line containing the
- *           requested residue; {ret_actual_start} contains the 
+ *           requested residue; {ret_actual_start} contains the
  *           coordinate (1..L) of the first valid residue at or
- *           after {data_offset}. {ret_actual_start} is <= 
- *           {requested_start}. 
+ *           after {data_offset}. {ret_actual_start} is <=
+ *           {requested_start}.
  *
  * Args:     sfp             - open index file
  *           key             - primary or secondary key to find
@@ -274,12 +274,12 @@ SSIGetOffsetByNumber(
  */
 int
 SSIGetSubseqOffset(
-  SSIFILE *sfp, 
-  char *key, 
+  SSIFILE *sfp,
+  char *key,
   int requested_start,
-  int *ret_fh, 
+  int *ret_fh,
   SSIOFFSET *record_offset,
-  SSIOFFSET *data_offset, 
+  SSIOFFSET *data_offset,
   int *ret_actual_start
 );
 
@@ -289,11 +289,11 @@ SSIGetSubseqOffset(
  * Purpose:  Uses {offset} to sets the file position for {fp}, usually an
  *           open sequence file, relative to the start of the file.
  *           Hides the details of system-dependent shenanigans necessary for
- *           file positioning in large (>2 GB) files. 
- *           
+ *           file positioning in large (>2 GB) files.
+ *          
  *           Behaves just like fseek(fp, offset, SEEK_SET) for 32 bit
  *           offsets and <2 GB files.
- *           
+ *          
  *           Warning: if all else fails, in desperation, it will try to
  *           use fsetpos(). This requires making assumptions about fpos_t
  *           that may be unwarranted... assumptions that ANSI C prohibits
@@ -302,7 +302,7 @@ SSIGetSubseqOffset(
  *
  * Args:     fp      - file to position.
  *           offset  - SSI offset relative to file start.
- *                 
+ *                
  * Returns:  0 on success, nonzero on error.
  */
 int
@@ -315,10 +315,10 @@ SSISetFilePosition(
  *
  * Purpose:  Given a file number {fh} in an open index file
  *           {sfp}, retrieve file name {ret_filename} and
- *           the file format {ret_format}. 
- *           
+ *           the file format {ret_format}.
+ *          
  *           {ret_filename} is a pointer to a string maintained
- *           internally by {sfp}. It should not be free'd; 
+ *           internally by {sfp}. It should not be free'd;
  *           SSIClose(sfp) takes care of it.
  *
  * Args:     sfp          - open index file
@@ -330,9 +330,9 @@ SSISetFilePosition(
  */
 int
 SSIFileInfo(
-  SSIFILE *sfp, 
-  int fh, 
-  char **ret_filename, 
+  SSIFILE *sfp,
+  int fh,
+  char **ret_filename,
   int *ret_format
 );
 
@@ -351,19 +351,19 @@ SSIClose(
 );
 
 
-/* clear_ssifile(): free the innards of SSIFILE, without 
+/* clear_ssifile(): free the innards of SSIFILE, without
  * destroying the structure or closing the stream.
  */
 void
 clear_ssifile(
   SSIFILE *sfp
 );
-  
+ 
 
 /* Function: SSIRecommendMode()
  *
  * Purpose:  Examines the file and determines whether it should be
- *           indexed with large file support or not; returns 
+ *           indexed with large file support or not; returns
  *           SSI_OFFSET_I32 for most files, SSI_OFFSET_I64 for large
  *           files, or -1 on failure.
  *
@@ -377,11 +377,11 @@ int
 SSIRecommendMode(
   char *file
 );
- 
+
 
 /* Function: SSICreateIndex()
  *
- * Purpose:  Creates and initializes a SSI index structure. 
+ * Purpose:  Creates and initializes a SSI index structure.
  *           Sequence file offset type is specified by {mode}.
  *
  * Args:     mode    - SSI_OFFSET_I32 or SSI_OFFSET_I64, sequence file index mode.
@@ -399,35 +399,35 @@ SSICreateIndex(
 /* Function: SSIGetFilePosition()
  *
  * Purpose:  Fills {ret_offset} with the current disk
- *           offset of {fp}, relative to the start of the file. 
- *           {mode} is set to either SSI_OFFSET_I32 or 
+ *           offset of {fp}, relative to the start of the file.
+ *           {mode} is set to either SSI_OFFSET_I32 or
  *           SSI_OFFSET_I64. If {mode} is _I32 (32 bit), just wraps
  *           a call to ftell(); otherwise deals with system-dependent
  *           details of 64-bit file offsets.
  *
  * Args:     fp         - open stream
  *           mode       - SSI_OFFSET_I32 or SSI_OFFSET_I64
- *           ret_offset - RETURN: file position       
+ *           ret_offset - RETURN: file position      
  *
  * Returns:  0 on success. nonzero on error.
  */
-int 
+int
 SSIGetFilePosition(
-  FILE *fp, 
-  int mode, 
+  FILE *fp,
+  int mode,
   SSIOFFSET *ret_offset
 );
 
 
 /* Function: SSIAddFileToIndex()
  *
- * Purpose:  Adds the sequence file {filename}, which is known to 
+ * Purpose:  Adds the sequence file {filename}, which is known to
  *           be in format {fmt}, to the index {g}. Creates and returns
  *           a unique filehandle {fh} for then associating primary keys
  *           with this file using SSIAddPrimaryKeyToIndex().
  *
  * Args:     g         - active index
- *           filename  - file to add 
+ *           filename  - file to add
  *           fmt       - format code for this file (e.g. SQFILE_FASTA)
  *           ret_fh    - RETURN: unique handle for this file
  *
@@ -435,9 +435,9 @@ SSIGetFilePosition(
  */
 int
 SSIAddFileToIndex(
-  SSIINDEX *g, 
-  char *filename, 
-  int fmt, 
+  SSIINDEX *g,
+  char *filename,
+  int fmt,
   int *ret_fh
 );
 
@@ -448,7 +448,7 @@ SSIAddFileToIndex(
  *           filehandle {fh} in the index {g}, setting
  *           parameters {bpl} and {rpl} to the values given.
  *           {bpl} is the number of bytes per sequence data line.
- *           {rpl} is the number of residues per sequence data line. 
+ *           {rpl} is the number of residues per sequence data line.
  *           Caller must be sure that {bpl} and {rpl} do not change
  *           on any line of any sequence record in the file
  *           (except for the last data line of each record). If
@@ -465,9 +465,9 @@ SSIAddFileToIndex(
  */
 int
 SSISetFileForSubseq(
-  SSIINDEX *g, 
-  int fh, 
-  int bpl, 
+  SSIINDEX *g,
+  int fh,
+  int bpl,
   int rpl
 );
 
@@ -477,27 +477,27 @@ SSISetFileForSubseq(
  * Purpose:  Put primary key {key} in the index {g}, while telling
  *           the index this primary key is in the file associated
  *           with filehandle {fh} (returned by a previous call
- *           to SSIAddFileToIndex()), and its record starts at 
+ *           to SSIAddFileToIndex()), and its record starts at
  *           position {r_off} in the file.
- *           
+ *          
  *           {d_off} and {L} are optional; they may be left unset
  *           by passing NULL and 0, respectively. (If one is
  *           provided, both must be provided.) If they are provided,
  *           {d_off} gives the position of the first line of sequence
  *           data in the record, and {L} gives the length of
- *           the sequence in residues. They are used when 
+ *           the sequence in residues. They are used when
  *           SSI_FAST_SUBSEQ is set for this file. If SSI_FAST_SUBSEQ
  *           is not set for the file, {d_off} and {L} will be
  *           ignored by the index reading API even if they are stored
- *           by the index writing API, so it doesn't hurt for the 
+ *           by the index writing API, so it doesn't hurt for the
  *           indexing program to provide them; typically they
  *           won't know whether it's safe to set SSI_FAST_SUBSEQ
  *           for the whole file until the whole file has been
  *           read and every key has already been added to the index.
- *           
+ *          
  * Args:     g      - active index
  *           key    - primary key to add
- *           fh     - handle on file that this key's in 
+ *           fh     - handle on file that this key's in
  *           r_off  - offset to start of record
  *           d_off  - offset to start of sequence data
  *           L      - length of sequence, or 0
@@ -506,11 +506,11 @@ SSISetFileForSubseq(
  */
 int
 SSIAddPrimaryKeyToIndex(
-  SSIINDEX *g, 
-  char *key, 
+  SSIINDEX *g,
+  char *key,
   int fh,
-  SSIOFFSET *r_off, 
-  SSIOFFSET *d_off, 
+  SSIOFFSET *r_off,
+  SSIOFFSET *d_off,
   int L
 );
 
@@ -521,51 +521,51 @@ SSIAddPrimaryKeyToIndex(
  *           it with primary key {pkey} that was previously
  *           registered by SSIAddPrimaryKeyToIndex().
  *
- * Args:     g    - active index 
- *           key  - secondary key to add             
+ * Args:     g    - active index
+ *           key  - secondary key to add            
  *           pkey - primary key to associate this key with
  *
  * Returns:  0 on success, nonzero on failure.
  */
 int
 SSIAddSecondaryKeyToIndex(
-  SSIINDEX *g, 
-  char *key, 
+  SSIINDEX *g,
+  char *key,
   char *pkey
 );
 
 
 /* Function: SSIWriteIndex()
  *
- * Purpose:  Writes complete index {g} in SSI format to a 
- *           binary file {file}. Does all           
- *           the overhead of sorting the primary and secondary keys, 
+ * Purpose:  Writes complete index {g} in SSI format to a
+ *           binary file {file}. Does all          
+ *           the overhead of sorting the primary and secondary keys,
  *           and maintaining the association of secondary keys
  *           with primary keys during and after the sort.
  *
  * Args:     file  - file to write to
- *           g     - index to sort & write out.      
+ *           g     - index to sort & write out.     
  *
  * Returns:  0 on success, nonzero on error.
  */
 /* needed for qsort() */
-int 
+int
 pkeysort(
-  const void *k1, 
+  const void *k1,
   const void *k2
 );
 
 
-int 
+int
 skeysort(
-  const void *k1, 
+  const void *k1,
   const void *k2
 );
 
 
 int
 SSIWriteIndex(
-  char *file, 
+  char *file,
   SSIINDEX *g
 );
 
@@ -600,63 +600,63 @@ SSIErrorString(
 
 int
 read_i16(
-  FILE *fp, 
+  FILE *fp,
   uint16_t *ret_result);
 
 
 int
 write_i16(
-  FILE *fp, 
+  FILE *fp,
   uint16_t n);
 
 
 int
 read_i32(
-  FILE *fp, 
+  FILE *fp,
   uint32_t *ret_result);
 
 
 int
 write_i32(
-  FILE *fp, 
+  FILE *fp,
   uint32_t n);
 
 
 int
 read_i64(
-  FILE *fp, 
+  FILE *fp,
   uint64_t *ret_result);
 
 
 int
 write_i64(
-  FILE *fp, 
+  FILE *fp,
   uint64_t n);
 
 
-int      
+int     
 read_offset(
-  FILE *fp, 
-  char mode, 
+  FILE *fp,
+  char mode,
   SSIOFFSET *ret_offset);
 
 
 int
 write_offset(
-  FILE *fp, 
+  FILE *fp,
   SSIOFFSET *offset);
- 
+
 
 int
 parse_pkey_info(
-  char *buf, 
-  char mode, 
+  char *buf,
+  char mode,
   struct ssipkey_s *pkey);
 
 
 int
 parse_skey_info(
-  char *buf, 
+  char *buf,
   struct ssiskey_s *skey);
 
 
@@ -675,7 +675,7 @@ parse_skey_info(
  *           maxidx  - # of keys (nprimary or nsecondary)
  *
  * Returns:  0 on success, and leaves file positioned for reading remaining
- *           data for the key. 
+ *           data for the key.
  *           Nonzero on failure:
  *                SSI_ERR_NO_SUCH_KEY  - that key's not in the index
  *                SSI_ERR_MALLOC       - a memory allocation failure
@@ -683,11 +683,11 @@ parse_skey_info(
  */
 int
 binary_search(
-  SSIFILE *sfp, 
-  char *key, 
-  int klen, 
+  SSIFILE *sfp,
+  char *key,
+  int klen,
   SSIOFFSET *base,
-  uint32_t recsize, 
+  uint32_t recsize,
   uint32_t maxidx);
 
 
@@ -703,13 +703,13 @@ binary_search(
  *           len   - size of each record in bytes (e.g. sfp->frecsize)
  *           n     - which record to get (e.g. 0..sfp->nfiles)
  *
- * Returns:  0 on success, non-zero on failure. 
+ * Returns:  0 on success, non-zero on failure.
  */
 int
 indexfile_position(
-  SSIFILE *sfp, 
-  SSIOFFSET *base, 
-  uint32_t len, 
+  SSIFILE *sfp,
+  SSIOFFSET *base,
+  uint32_t len,
   uint32_t n);
 
 
@@ -718,7 +718,7 @@ indexfile_position(
  * Purpose:  Calculates the size of the current index,
  *           in megabytes.
  */
-uint64_t 
+uint64_t
 current_index_size(
   SSIINDEX *g);
 
@@ -729,7 +729,7 @@ current_index_size(
  *           Open file handles for external index files (ptmp, stmp).
  *           Flush current index information to these files.
  *           Free current memory, turn over control to the tmpfiles.
- *           
+ *          
  * Return:   0 on success; non-zero on failure.
  */
 int

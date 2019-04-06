@@ -1,14 +1,14 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* sre_string.c
- * 
+ *
  * my library of extra string functions. Some for portability
  * across UNIXes
  *
@@ -19,11 +19,12 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include "squid.h"
+
+#include "squid.hpp"
 
 
 /* Function: StringChop()
- * 
+ *
  * Purpose:  Chop trailing whitespace off of a string.
  */
 void
@@ -54,22 +55,22 @@ s2upper(
 
 
 /* Function: RandomSequence()
- * 
+ *
  * Purpose:  Generate an iid symbol sequence according
  *           to some alphabet, alphabet_size, probability
  *           distribution, and length. Return the
  *           sequence.
- *           
+ *          
  * Args:     alphabet  - e.g. "ACGT"
  *           p         - probability distribution [0..n-1]
  *           n         - number of symbols in alphabet
- *           len       - length of generated sequence 
- *           
+ *           len       - length of generated sequence
+ *          
  * Return:   ptr to random sequence, or NULL on failure.
  */
 char *
 RandomSequence(
-  char *alphabet, 
-  float *p, 
-  int n, 
+  char *alphabet,
+  float *p,
+  int n,
   int len);

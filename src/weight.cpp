@@ -1,37 +1,35 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* weight.c
- * 
+ *
  * Calculate weights for sequences in an alignment.
- * RCS $Id: weight.c,v 1.9 2002/10/09 14:26:09 eddy Exp $
  */
 
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
 
-#include "squid.h"
-//#include "sre_random.h"
-#include "weight.h"
-#include "cluster.h"
-#include "vectorops.h"
-#include "sre_math.h"
-#include "aligneval.h"
-#include "alignio.h"
+#include "cluster.hpp"
+#include "aligneval.hpp"
+#include "alignio.hpp"
+#include "squid.hpp"
+#include "sre_math.hpp"
+#include "vectorops.hpp"
+#include "weight.hpp"
 
 
 void
 GSCWeights(
-  char **aseq, 
-  int nseq, 
-  //int alen, 
+  char **aseq,
+  int nseq,
+  //int alen,
   float *wgt
 ){
   float **dmx;                 /* distance (difference) matrix */
@@ -39,7 +37,7 @@ GSCWeights(
   float  *lwt, *rwt;           /* weight on left, right of this tree node */
   float  *fwt;                 /* final weight assigned to this node */
   int      i;
-  
+ 
   /* Sanity check first
    */
   if (nseq == 1) { wgt[0] = 1.0; return; }
@@ -50,15 +48,15 @@ GSCWeights(
    */
   MakeDiffMx(aseq, nseq, &dmx);
   if (! Cluster(dmx, nseq, CLUSTER_MIN, &tree))  Die("Cluster() failed");
-  
+ 
   /* Allocations
    */
   lwt = MallocOrDie (sizeof(float) * (2 * nseq - 1));
   rwt = MallocOrDie (sizeof(float) * (2 * nseq - 1));
   fwt = MallocOrDie (sizeof(float) * (2 * nseq - 1));
-  
+ 
   /* lwt and rwt are the total branch weight to the left and
-   * right of a node or sequence. They are 0..2N-2.  0..N-1 are 
+   * right of a node or sequence. They are 0..2N-2.  0..N-1 are
    * the sequences; these have weight 0. N..2N-2 are the actual
    * tree nodes.
    */
@@ -82,12 +80,12 @@ GSCWeights(
 }
 
 
-void 
+void
 upweight(
-  struct phylo_s *tree, 
-  int nseq, 
-  float *lwt, 
-  float *rwt, 
+  struct phylo_s *tree,
+  int nseq,
+  float *lwt,
+  float *rwt,
   int node
 ){
   int ld,rd;
@@ -101,13 +99,13 @@ upweight(
 }
 
 
-void 
+void
 downweight(
-  struct phylo_s *tree, 
-  int nseq, 
-  float *lwt, 
-  float *rwt, 
-  float *fwt, 
+  struct phylo_s *tree,
+  int nseq,
+  float *lwt,
+  float *rwt,
+  float *fwt,
   int node
 ){
   int ld,rd;
@@ -135,9 +133,9 @@ downweight(
 
 void
 VoronoiWeights(
-  char **aseq, 
-  int nseq, 
-  int alen, 
+  char **aseq,
+  int nseq,
+  int alen,
   float *wgt
 ){
   float **dmx;                 /* distance (difference) matrix    */
@@ -154,7 +152,7 @@ VoronoiWeights(
   float   dist;		/* distance between random and real */
   float   challenge, champion; /* for resolving ties              */
   int     itscale;		/* how many iterations per seq     */
-  int     iteration;           
+  int     iteration;          
   int     best;			/* index of nearest real sequence  */
 
   /* Sanity check first
@@ -166,7 +164,7 @@ VoronoiWeights(
   /* Precalculate 1/2 minimum distance to other
    * sequences for each sequence
    */
-  if (! simple_diffmx(aseq, nseq, &dmx)) 
+  if (! simple_diffmx(aseq, nseq, &dmx))
     Die("simple_diffmx() failed");
   halfmin = MallocOrDie (sizeof(float) * nseq);
   for (idx = 0; idx < nseq; idx++)
@@ -194,7 +192,7 @@ VoronoiWeights(
       for (idx = 0; idx < nseq; idx++)
 	if (! isgap(aseq[idx][acol]))
 	  {
-	    if (isupper((int) aseq[idx][acol])) 
+	    if (isupper((int) aseq[idx][acol]))
 	      symidx = aseq[idx][acol] - 'A';
 	    else
 	      symidx = aseq[idx][acol] - 'a';
@@ -205,7 +203,7 @@ VoronoiWeights(
 	  symseen[26] = 1;	/* a gap */
 
       for (nsym[acol] = 0, i = 0; i < 26; i++)
-	if (symseen[i]) 
+	if (symseen[i])
 	  {
 	    psym[acol][nsym[acol]] = 'A'+i;
 	    nsym[acol]++;
@@ -221,14 +219,14 @@ VoronoiWeights(
    * exceptional amino acids in a column can have a
    * significant effect by altering the amount of sampled
    * sequence space; the larger the data set, the worse
-   * this problem becomes. The major problem is that 
+   * this problem becomes. The major problem is that
    * there is no reasonable way to deal with gaps.
    * Gapped sequences simply inhabit a different dimensionality
    * and it's pretty painful to imagine calculating Voronoi
    * volumes when the N in your N-space is varying.
    * Note that all the examples shown by Sibbald and Argos
    * are *ungapped* examples.
-   * 
+   *
    * The best way I've found to circumvent this problem is
    * just not to bound the sampled space; count gaps as
    * symbols and generate completely random sequences.
@@ -240,7 +238,7 @@ VoronoiWeights(
       nsym[acol] = 21;
     }
 #endif
-  
+ 
   /* Sibbald and Argos algorithm:
    *   1) assign all seqs weight 0.
    *   2) generate a "random" sequence
@@ -248,7 +246,7 @@ VoronoiWeights(
    *      (if we get a distance < 1/2 minimum distance
    *       to other real seqs, we can stop)
    *   4) if unique closest sequence, increment its weight 1.
-   *      if multiple closest seq, choose one randomly    
+   *      if multiple closest seq, choose one randomly   
    *   5) repeat 2-4 for lots of iterations
    *   6) normalize all weights to sum to nseq.
    */
@@ -266,16 +264,16 @@ VoronoiWeights(
       for (min = 1.0, idx = 0; idx < nseq; idx++)
 	{
 	  dist = simple_distance(aseq[idx], randseq);
-	  if (dist < halfmin[idx]) 
-	    { 
-	      best = idx; 
-	      break;      
-	    } 
-	  if (dist < min)          
-	    { champion = drand48(); best = idx; min = dist; } 
-	  else if (dist == min)    
-	    { 
-	      challenge = drand48(); 
+	  if (dist < halfmin[idx])
+	    {
+	      best = idx;
+	      break;     
+	    }
+	  if (dist < min)         
+	    { champion = drand48(); best = idx; min = dist; }
+	  else if (dist == min)   
+	    {
+	      challenge = drand48();
 	      if (challenge > champion)
 		{ champion = challenge; best = idx; min = dist; }
 	    }
@@ -295,7 +293,7 @@ VoronoiWeights(
 
 float
 simple_distance(
-  char *s1, 
+  char *s1,
   char *s2
 ){
   int diff  = 0;
@@ -309,7 +307,7 @@ simple_distance(
     }
   return (valid > 0 ? ((float) diff / (float) valid) : 0.0);
 }
-    
+   
 
 int
 simple_diffmx(
@@ -341,13 +339,13 @@ simple_diffmx(
 }
 
 
-             
+            
 void
 BlosumWeights(
-  char **aseqs, 
-  int nseq, 
-  //int alen, 
-  float maxid, 
+  char **aseqs,
+  int nseq,
+  //int alen,
+  float maxid,
   float *wgt
 ){
   int  *c, nc;
@@ -371,9 +369,9 @@ BlosumWeights(
 
 void
 PositionBasedWeights(
-  char **aseq, 
-  int nseq, 
-  int alen, 
+  char **aseq,
+  int nseq,
+  int alen,
   float *wgt
 ){
   int  rescount[26];		/* count of A-Z residues in a column   */
@@ -391,7 +389,7 @@ PositionBasedWeights(
 	  rescount[toupper(aseq[idx][pos]) - 'A'] ++;
 
       nres = 0;
-      for (x = 0; x < 26; x++) 
+      for (x = 0; x < 26; x++)
 	if (rescount[x] > 0) nres++;
 
       for (idx = 0; idx < nseq; idx++)
@@ -409,8 +407,8 @@ PositionBasedWeights(
 
 void
 FilterAlignment(
-  MSA *msa, 
-  float cutoff, 
+  MSA *msa,
+  float cutoff,
   MSA **ret_new
 ){
   int     nnew;			/* number of seqs in new alignment */
@@ -434,12 +432,12 @@ FilterAlignment(
 	{
 	  ident = PairwiseIdentity(msa->aseq[i], msa->aseq[list[j]]);
 	  if (ident > cutoff)
-	    { 
-	      remove = true; 
-	      printf("removing %12s -- fractional identity %.2f to %s\n", 
+	    {
+	      remove = true;
+	      printf("removing %12s -- fractional identity %.2f to %s\n",
 		     msa->sqname[i], ident,
 		     msa->sqname[list[j]]);
-	      break; 
+	      break;
 	    }
 	}
       if (remove == false) {
@@ -457,8 +455,8 @@ FilterAlignment(
 
 void
 SampleAlignment(
-  MSA *msa, 
-  int sample, 
+  MSA *msa,
+  int sample,
   MSA **ret_new
 ){
   int    *list;                 /* array for random selection w/o replace */
@@ -498,11 +496,11 @@ SampleAlignment(
 
 void
 SingleLinkCluster(
-  char **aseq, 
-  int nseq, 
-//  int alen, 
-  float maxid, 
-	int **ret_c, 
+  char **aseq,
+  int nseq,
+//  int alen,
+  float maxid,
+	int **ret_c,
   int *ret_nc
 ){
   int *a, na;                   /* stack of available vertices */

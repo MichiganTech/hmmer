@@ -1,21 +1,21 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
-/* selex.c 
- * 
+/* selex.c
+ *
  * SELEX  obsolete as the preferred HMMER/SQUID format
  * replaced by Stockholm format
  * selex support retained for backwards compatibility
  * kludged to use the MSA interface
- * 
+ *
  * #=SA side chain % surface accessibility annotation supported
- * 
+ *
  * major revision. #= special comments and aliinfo_s optional
  * alignment info support added. Support for #=CS (consensus
  * secondary structure), #=SS (individual secondary structure),
@@ -29,8 +29,8 @@
  * SELEX format is documented in Docs/formats.tex.
  */
 
-#include "selex.h"
-#include "alignio.h"
+#include "alignio.hpp"
+#include "selex.hpp"
 
 
 static char commentsyms[] = "%#";
@@ -73,18 +73,18 @@ ReadSELEX(
    */
   if (feof(afp->f)) return NULL;
   if (afp->do_gzip || afp->do_stdin)
-    Die("Can't read a SELEX format alignment from a pipe, stdin, or gzip'ed file"); 
+    Die("Can't read a SELEX format alignment from a pipe, stdin, or gzip'ed file");
   fp    = afp->f;
   ainfo = &base_ainfo;
 
   /***************************************************
-   * First pass across file. 
+   * First pass across file.
    * Count seqs, get names, determine column info
    * Determine what sorts of info are active in this file.
    ***************************************************/
 
   InitAinfo(ainfo);
-        /* get first line of the block 
+        /* get first line of the block
          * (non-comment, non-blank) */
   do
     {
@@ -97,7 +97,7 @@ ReadSELEX(
     else if (strncmp(buffer, "#=RF",    4) == 0) have_rf = 1;
   }
     }
-  while ((nptr = strtok(bufcpy, WHITESPACE)) == NULL || 
+  while ((nptr = strtok(bufcpy, WHITESPACE)) == NULL ||
    (strchr(commentsyms, *nptr) != NULL));
 
   blocknum   = 0;
@@ -107,11 +107,11 @@ ReadSELEX(
         /* allocate for info about this block. */
       if (blocknum == 0)
   blocks = (struct block_struc *) MallocOrDie (sizeof(struct block_struc));
-      else 
+      else
   blocks = (struct block_struc *) ReallocOrDie (blocks, (blocknum+1) * sizeof(struct block_struc));
       blocks[blocknum].lcol = LINEBUFLEN+1;
       blocks[blocknum].rcol = -1;
-  
+ 
       currnum = 0;
       while (nptr != NULL)  /* becomes NULL when this block ends. */
       {
@@ -120,7 +120,7 @@ ReadSELEX(
     {
       if (currnum == 0)
         ainfo->sqinfo = (SQINFO *) MallocOrDie (sizeof(SQINFO));
-      else 
+      else
         ainfo->sqinfo = (SQINFO *) ReallocOrDie (ainfo->sqinfo, (currnum + 1) * sizeof(SQINFO));
 
       ainfo->sqinfo[currnum].flags = 0;
@@ -138,10 +138,10 @@ ReadSELEX(
     {
         /* is this the furthest left we've
            seen word 2 in this block? */
-      if (sptr - bufcpy < blocks[blocknum].lcol) 
+      if (sptr - bufcpy < blocks[blocknum].lcol)
         blocks[blocknum].lcol = sptr - bufcpy;
         /* look for right side in buffer */
-      for (sptr = buffer + strlen(buffer) - 1;  
+      for (sptr = buffer + strlen(buffer) - 1; 
      strchr(WHITESPACE, *sptr) != NULL;
      sptr --)
         /* do nothing */ ;
@@ -152,7 +152,7 @@ ReadSELEX(
         /* get the next line; blank line means end of block */
   do
     {
-      if (fgets(buffer, LINEBUFLEN, fp) == NULL) 
+      if (fgets(buffer, LINEBUFLEN, fp) == NULL)
         { nptr = NULL; break; }
       strcpy(bufcpy, buffer);
 
@@ -161,7 +161,7 @@ ReadSELEX(
       else if (strncmp(buffer, "#=CS",    4) == 0) have_cs = 1;
       else if (strncmp(buffer, "#=RF",    4) == 0) have_rf = 1;
 
-      if ((nptr = strtok(bufcpy, WHITESPACE)) == NULL) 
+      if ((nptr = strtok(bufcpy, WHITESPACE)) == NULL)
         break;
     } while (strchr(commentsyms, *nptr) != NULL);
       }
@@ -174,18 +174,18 @@ ReadSELEX(
   Die("Parse error in ReadSELEX()");
       blocknum++;
 
-        /* get first line of next block 
+        /* get first line of next block
          * (non-comment, non-blank) */
       do
   {
     if (fgets(buffer, LINEBUFLEN, fp) == NULL) { nptr = NULL; break; }
     strcpy(bufcpy, buffer);
   }
-      while ((nptr = strtok(bufcpy, WHITESPACE)) == NULL || 
+      while ((nptr = strtok(bufcpy, WHITESPACE)) == NULL ||
        (strchr(commentsyms, *nptr) != NULL));
     }
 
-  
+ 
   /***************************************************
    * Get ready for second pass:
    *   figure out the length of the alignment
@@ -203,13 +203,13 @@ ReadSELEX(
    * the way we already used ainfo->sqinfo.
    */
   aseqs     = (char **) MallocOrDie (num * sizeof(char *));
-  if (have_cs) 
+  if (have_cs)
     ainfo->cs = (char *) MallocOrDie ((alen+1) * sizeof(char));
-  if (have_rf) 
+  if (have_rf)
     ainfo->rf = (char *) MallocOrDie ((alen+1) * sizeof(char));
 
-  
-  
+ 
+ 
   for (i = 0; i < num; i++)
     {
       aseqs[i]     = (char *) MallocOrDie ((alen+1) * sizeof(char));
@@ -218,9 +218,9 @@ ReadSELEX(
       if (ainfo->sqinfo[i].flags & SQINFO_SA)
   ainfo->sqinfo[i].sa = (char *) MallocOrDie ((alen+1) * sizeof(char));
     }
-  
+ 
   ainfo->alen = alen;
-  ainfo->nseq = num; 
+  ainfo->nseq = num;
   ainfo->wgt  = (float *) MallocOrDie (sizeof(float) * num);
   for(size_t i = 0; i < num; ++i) ainfo->wgt[i] = 1.0;
 
@@ -254,11 +254,11 @@ ReadSELEX(
   ainfo->desc = strdup(sptr);
       else if (strcmp(nptr, "#=GA") == 0)
   {
-    if ((sptr = strtok(NULL, WHITESPACE)) == NULL) 
+    if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=GA line in ReadSELEX()");
     ainfo->ga1 = atof(sptr);
 
-    if ((sptr = strtok(NULL, WHITESPACE)) == NULL) 
+    if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=GA line in ReadSELEX()");
     ainfo->ga2 = atof(sptr);
 
@@ -266,11 +266,11 @@ ReadSELEX(
   }
       else if (strcmp(nptr, "#=TC") == 0)
   {
-    if ((sptr = strtok(NULL, WHITESPACE)) == NULL) 
+    if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=TC line in ReadSELEX()");
     ainfo->tc1 = atof(sptr);
 
-    if ((sptr = strtok(NULL, WHITESPACE)) == NULL) 
+    if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=TC line in ReadSELEX()");
     ainfo->tc2 = atof(sptr);
 
@@ -278,11 +278,11 @@ ReadSELEX(
   }
       else if (strcmp(nptr, "#=NC") == 0)
   {
-    if ((sptr = strtok(NULL, WHITESPACE)) == NULL) 
+    if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=NC line in ReadSELEX()");
     ainfo->nc1 = atof(sptr);
 
-    if ((sptr = strtok(NULL, WHITESPACE)) == NULL) 
+    if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=NC line in ReadSELEX()");
     ainfo->nc2 = atof(sptr);
 
@@ -299,7 +299,7 @@ ReadSELEX(
     if ((sptr = strtok(NULL, WHITESPACE)) == NULL)
       Die("Parse error in #=SQ line in ReadSELEX()");
     //Removed because IsReal has been removed; replace this file with a proper grammar.
-    //if (!IsReal(sptr)) 
+    //if (!IsReal(sptr))
     //  Die("Parse error in #=SQ line in ReadSELEX(): weight is not a number");
     ainfo->wgt[headnum] = atof(sptr);
 
@@ -321,7 +321,7 @@ ReadSELEX(
     if ((sptr = strtok(NULL, ".:")) == NULL)
       Die("Parse error in #=SQ line in ReadSELEX(): incomplete line");
     SetSeqinfoString(&(ainfo->sqinfo[headnum]), sptr, SQINFO_STOP);
-    
+   
     if ((sptr = strtok(NULL, ":\t ")) == NULL)
       Die("Parse error in #=SQ line in ReadSELEX(): incomplete line");
     SetSeqinfoString(&(ainfo->sqinfo[headnum]), sptr, SQINFO_OLEN);
@@ -329,14 +329,14 @@ ReadSELEX(
         /* rest of line is optional description */
     if ((sptr = strtok(NULL, "\n")) != NULL)
       SetSeqinfoString(&(ainfo->sqinfo[headnum]), sptr, SQINFO_DESC);
-    
+   
     headnum++;
   }
       else if (strcmp(nptr, "#=CS") == 0) break;
       else if (strcmp(nptr, "#=RF") == 0) break;
       else if (strchr(commentsyms, *nptr) == NULL) break; /* non-comment, non-header */
     }
-  
+ 
 
   currlen = 0;
   for (currblock = 0 ; currblock < blocknum; currblock++)
@@ -348,7 +348,7 @@ ReadSELEX(
         /* Consensus structure */
     if (strcmp(nptr, "#=CS") == 0)
       {
-        if (! copy_alignment_line(ainfo->cs, currlen, strlen(nptr)-1, 
+        if (! copy_alignment_line(ainfo->cs, currlen, strlen(nptr)-1,
           buffer, blocks[currblock].lcol, blocks[currblock].rcol, (char) '.'))
     Die("Parse error in #=CS line in ReadSELEX()");
       }
@@ -356,7 +356,7 @@ ReadSELEX(
         /* Reference coordinates */
     else if (strcmp(nptr, "#=RF") == 0)
       {
-        if (! copy_alignment_line(ainfo->rf, currlen, strlen(nptr)-1, 
+        if (! copy_alignment_line(ainfo->rf, currlen, strlen(nptr)-1,
           buffer, blocks[currblock].lcol, blocks[currblock].rcol, (char) '.'))
     Die("Parse error in #=RF line in ReadSELEX()");
       }
@@ -364,7 +364,7 @@ ReadSELEX(
     else if (strcmp(nptr, "#=SS") == 0)
       {
         if (! copy_alignment_line(ainfo->sqinfo[seqidx-1].ss, currlen, strlen(nptr)-1,
-          buffer, blocks[currblock].lcol, 
+          buffer, blocks[currblock].lcol,
           blocks[currblock].rcol, (char) '.'))
     Die("Parse error in #=SS line in ReadSELEX()");
       }
@@ -373,14 +373,14 @@ ReadSELEX(
     else if (strcmp(nptr, "#=SA") == 0)
       {
         if (! copy_alignment_line(ainfo->sqinfo[seqidx-1].sa, currlen, strlen(nptr)-1,
-          buffer, blocks[currblock].lcol, 
+          buffer, blocks[currblock].lcol,
           blocks[currblock].rcol, (char) '.'))
     Die("Parse error in #=SA line in ReadSELEX()");
       }
         /* Aligned sequence; avoid unparsed machine comments */
     else if (strncmp(nptr, "#=", 2) != 0)
       {
-        if (! copy_alignment_line(aseqs[seqidx], currlen, strlen(nptr)-1, 
+        if (! copy_alignment_line(aseqs[seqidx], currlen, strlen(nptr)-1,
           buffer, blocks[currblock].lcol, blocks[currblock].rcol, (char) '.'))
     Die("Parse error in alignment line in ReadSELEX()");
         seqidx++;
@@ -447,7 +447,7 @@ ReadSELEX(
   if (ainfo->cs != NULL) ainfo->cs[alen] = '\0';
   for (seqidx = 0; seqidx < num; seqidx++)
     aseqs[seqidx][alen]            = '\0';
-  
+ 
         /* find raw sequence lengths for sqinfo */
   for (seqidx = 0; seqidx < num; seqidx++)
     {
@@ -463,7 +463,7 @@ ReadSELEX(
    * Garbage collection and return
    ***************************************************/
   free(blocks);
-  if (warn_names) 
+  if (warn_names)
     Warn("sequences may be in different orders in blocks of %s?", afp->fname);
 
   /* Convert back to MSA structure. (Wasteful kludge.)
@@ -477,7 +477,7 @@ ReadSELEX(
 
 void
 WriteSELEX(
-  FILE *fp, 
+  FILE *fp,
   MSA *msa
 ){
   actually_write_selex(fp, msa, 50); /* 50 char per block */
@@ -486,7 +486,7 @@ WriteSELEX(
 
 void
 WriteSELEXOneBlock(
-  FILE *fp, 
+  FILE *fp,
   MSA *msa
 ){
   actually_write_selex(fp, msa, msa->alen); /* one big block */
@@ -496,8 +496,8 @@ WriteSELEXOneBlock(
 
 void
 actually_write_selex(
-  FILE *fp, 
-  MSA *msa, 
+  FILE *fp,
+  MSA *msa,
   int cpl
 ){
   int  i;
@@ -505,7 +505,7 @@ actually_write_selex(
   int  namewidth;
   char *buf;
   int  currpos;
-  
+ 
   buf = malloc(sizeof(char) * (cpl+101)); /* 100 chars allowed for name, etc. */
 
   /* Figure out how much space we need for name + markup
@@ -515,7 +515,7 @@ actually_write_selex(
    */
   namewidth = 0;
   for (i = 0; i < msa->nseq; i++)
-    if ((len = strlen(msa->sqname[i])) > namewidth) 
+    if ((len = strlen(msa->sqname[i])) > namewidth)
       namewidth = len;
   if (namewidth < 6) namewidth = 6; /* minimum space for markup tags */
 
@@ -550,7 +550,7 @@ actually_write_selex(
   /* Per-sequence annotation
    */
   for (i = 0; i < msa->nseq; i++)
-    fprintf(fp, "#=SQ %-*.*s %6.4f %s %s %d..%d::%d %s\n", 
+    fprintf(fp, "#=SQ %-*.*s %6.4f %s %s %d..%d::%d %s\n",
       namewidth, namewidth, msa->sqname[i],
       msa->wgt[i],
       "-",    /* MSA has no ID field */
@@ -578,12 +578,12 @@ actually_write_selex(
       for (i = 0; i < msa->nseq; i++)
   {
     strncpy(buf, msa->aseq[i] + currpos, cpl);
-    buf[cpl] = '\0';        
+    buf[cpl] = '\0';       
     fprintf(fp, "%-*.*s %s\n", namewidth, namewidth, msa->sqname[i], buf);
 
     if (msa->ss != NULL && msa->ss[i] != NULL) {
       strncpy(buf, msa->ss[i] + currpos, cpl);
-      buf[cpl] = '\0';   
+      buf[cpl] = '\0';  
       fprintf(fp, "%-*.*s %s\n", namewidth, namewidth, "#=SS", buf);
     }
     if (msa->sa != NULL && msa->sa[i] != NULL) {
@@ -600,17 +600,17 @@ actually_write_selex(
 
 int
 copy_alignment_line(
-  char *aseq, 
-  int apos, 
-  int name_rcol, 
-  char *buffer, 
-  int lcol, 
-  int rcol, 
+  char *aseq,
+  int apos,
+  int name_rcol,
+  char *buffer,
+  int lcol,
+  int rcol,
   char gapsym
 ){
   char *s1, *s2;
   int   i;
-  
+ 
   s1 = aseq + apos;
   s2 = buffer;      /* be careful that buffer doesn't end before lcol! */
   for (i = 0; i < lcol; i++)
@@ -640,7 +640,7 @@ copy_alignment_line(
   return 1;
 }
 
-  
+ 
 
 int
 DealignAseqs(char **aseqs, int num, char ***ret_rseqs)
@@ -690,7 +690,7 @@ IsSELEXFormat(
     { squid_errno = SQERR_NOFILE; return 0; }
 
   linenum = 0;
-  while (linenum < 500 && 
+  while (linenum < 500 &&
    fgets(buffer, LINEBUFLEN, fp) != NULL)
     {
       linenum++;
@@ -716,7 +716,7 @@ IsSELEXFormat(
         /* a one-word line (name only)
            is possible, though rare */
       if ((sptr = strtok(NULL, "\n")) == NULL) continue;
-      
+     
       if (Seqtype(sptr) == kOtherSeq) {fclose(fp); return 0;}
     }
 

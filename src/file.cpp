@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -12,8 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "squid.h"
-#include "file.h"
+#include "file.hpp"
 
 
 char*
@@ -23,7 +22,7 @@ FileDirname(
   char *dirname;
   char *lastslash;
   int   len;
-  
+ 
   lastslash = strrchr(file, '/');
   len =  (lastslash == NULL) ? 0 : (int) (lastslash - file);
   dirname = (char *) MallocOrDie (sizeof(char) * (len+2));
@@ -34,10 +33,10 @@ FileDirname(
   return dirname;
 }
 
-     
-char* 
+    
+char*
 FileTail(
-  char *file, 
+  char *file,
   bool noextension
 ){
   char *tail;
@@ -60,7 +59,7 @@ FileTail(
 
 char*
 FileSameDirectory(
-  char *file1, 
+  char *file1,
   char *file2
 ){
   char *path;
@@ -73,7 +72,7 @@ FileSameDirectory(
   if (strcmp(file2, tail) != 0) seems_ok = 0; /* ut-oh, file2 *had* a path */
   result = FileConcat(path, tail);
   if (! seems_ok && strcmp(result, file2) != 0) {
-    free(result); result = NULL; 
+    free(result); result = NULL;
   }
   free(path);
   free(tail);
@@ -83,7 +82,7 @@ FileSameDirectory(
 
 char*
 FileConcat(
-  char *dir, 
+  char *dir,
   char *file
 ){
   char *full;
@@ -97,7 +96,7 @@ FileConcat(
 
 char*
 FileAddSuffix(
-  char *filename, 
+  char *filename,
   char *sfx
 ){
   char *new;
@@ -109,8 +108,8 @@ FileAddSuffix(
 
 FILE*
 EnvFileOpen(
-  char *fname, 
-  char *env, 
+  char *fname,
+  char *env,
   char **ret_dir
 ){
   FILE *fp;
@@ -120,12 +119,12 @@ EnvFileOpen(
 
   if (env == NULL) return NULL;
   if ((path = strdup(getenv(env))) == NULL) return NULL;
-  
+ 
   fp = NULL;
   s  = strtok(path, ":");
   while (s != NULL)
     {
-      if (((int) strlen(fname) + (int) strlen(s) + 2) > 1024) 
+      if (((int) strlen(fname) + (int) strlen(s) + 2) > 1024)
 	{ free(path); return NULL; }
       sprintf(full, "%s%c%s", s, '/', fname);
       if ((fp = fopen(full, "r")) != NULL) break;
@@ -136,7 +135,7 @@ EnvFileOpen(
    */
   if (ret_dir != NULL) *ret_dir = strdup(s);
   free(path);
-  
+ 
   return fp;
 }
 

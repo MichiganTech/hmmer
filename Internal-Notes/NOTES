@@ -1,11 +1,11 @@
-HMMER 2.0 beta release notes 
+HMMER 2.0 beta release notes
 
 Overview of executables
 -----------------------
 hmmalign     - align sequences to an HMM to make new multiple alignment
 hmmbuild     - builds an HMM
 hmmcalibrate - determine empirical EVD statistics for an HMM
-hmmconvert   - convert HMMs between formats 
+hmmconvert   - convert HMMs between formats
 hmmemit      - generate sequences from a profile HMM
 hmmpfam      - search one sequence against an HMM database
 hmmsearch    - search one HMM against a sequence database
@@ -25,7 +25,7 @@ Overview of major changes in 2.0 relative to 1.8
 - Built-in support for the PFAM protein family database, including
   names attached to HMMs, and database searches against HMM libraries.
 
-- P-values and E-values are estimated from extreme value distributions 
+- P-values and E-values are estimated from extreme value distributions
   in large database searches, supplementing Bayesian log-odds scores
   and (in principle) increasing sensitivity.
 
@@ -52,7 +52,7 @@ Using HMMs to search sequence databases:
 	     [Sets the EVD statistics in new.hmm. May be slow.]
 	> hmmsearch new.hmm swiss34
 	     [Searches swiss34; substitute your favorite database path here.]
-     
+    
 Building and using Pfam-like HMM databases:
 
 	> cd DEMOS/
@@ -131,7 +131,7 @@ Output comes in several sections:
 
 - complete sequence hits
     The scores and E-values reflect the alignment to the complete sequence.
-    If there is more than one domain in the sequence, the score will 
+    If there is more than one domain in the sequence, the score will
     be the sum of all the domain scores, and the E-value will be better
     than the E-value of any single domain.
 
@@ -142,7 +142,7 @@ Output comes in several sections:
 - domain hits
     For every sequence that was reported in the first hit, /every/
     domain is now reported.
-  
+ 
     Note that because each domain after the first one must score
     >0 bits (else, the best alignment will have just one domain),
     there is effectively a threshold of 0 bits for domains 2..N,
@@ -154,7 +154,7 @@ Output comes in several sections:
     the output for multiple HMM hits comes out like an organized
     feature table.
 
-    Thresholds may be set on the domain output using --domE 
+    Thresholds may be set on the domain output using --domE
     or --domT options, for the domain E value or domain bit
     threshold respectively.
 
@@ -177,7 +177,7 @@ Output comes in several sections:
 
 
 
-    
+   
 
 
 

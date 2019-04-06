@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -9,13 +9,13 @@
 
 /* stockholm.c
  * Reading/writing of Stockholm format multiple sequence alignments.
- * 
+ *
  * example of API:
- * 
+ *
  * MSA     *msa;
  * FILE    *fp;        -- opened for write with fopen()
  * MSAFILE *afp;       -- opened for read with MSAFileOpen()
- *      
+ *     
  * while ((msa = ReadStockholm(afp)) != NULL)
  *   {
  *      WriteStockholm(fp, msa);
@@ -25,11 +25,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "squid.h"
-#include "msa.h"
-#include "stockholm.h"
-
-
+#include "squid.hpp"
+#include "msa.hpp"
+#include "stockholm.hpp"
 
 
 MSA *
@@ -65,12 +63,12 @@ Assuming there isn't some other problem with your file (it is an\n\
 alignment file, right?), please either:\n\
   a) use the Babelfish format autotranslator option (-B, usually);\n\
   b) specify the file's format with the --informat option; or\n\
-  a) reformat the alignment to Stockholm format.\n", 
+  a) reformat the alignment to Stockholm format.\n",
   afp->fname);
 
   /* Read the alignment file one line at a time.
    */
-  while ((s = MSAFileGetLine(afp)) != NULL) 
+  while ((s = MSAFileGetLine(afp)) != NULL)
     {
       while (*s == ' ' || *s == '\t') s++;  /* skip leading whitespace */
 
@@ -80,12 +78,12 @@ alignment file, right?), please either:\n\
   else if (strncmp(s, "#=GC", 4) == 0)   status = parse_gc(msa, s);
   else if (strncmp(s, "#=GR", 4) == 0)   status = parse_gr(msa, s);
   else                                   status = parse_comment(msa, s);
-      } 
+      }
       else if (strncmp(s, "//",   2) == 0)   break;
       else if (*s == '\n')                   continue;
       else                                   status = parse_sequence(msa, s);
 
-      if (status == 0)  
+      if (status == 0) 
   Die("Stockholm format parse error: line %d of file %s while reading alignment %s",
       afp->linenumber, afp->fname, msa->name == NULL? "" : msa->name);
     }
@@ -95,10 +93,10 @@ alignment file, right?), please either:\n\
 
   if (s == NULL && msa->nseq == 0) {
             /* probably just some junk at end of file */
-      MSAFree(msa); 
-      return NULL; 
+      MSAFree(msa);
+      return NULL;
     }
-  
+ 
   MSAVerifyParse(msa);
   return msa;
 }
@@ -107,7 +105,7 @@ alignment file, right?), please either:\n\
 
 void
 WriteStockholm(
-  FILE *fp, 
+  FILE *fp,
   MSA *msa
 ){
   actually_write_stockholm(fp, msa, 50); /* 50 char per block */
@@ -125,8 +123,8 @@ WriteStockholmOneBlock(
 
 void
 actually_write_stockholm(
-  FILE *fp, 
-  MSA *msa, 
+  FILE *fp,
+  MSA *msa,
   int cpl
 ){
   int  i, j;
@@ -137,14 +135,14 @@ actually_write_stockholm(
   char *buf;
   int  currpos;
   char *s, *tok;
-  
+ 
   /* Figure out how much space we need for name + markup
    * to keep the alignment in register. Required by Stockholm
    * spec, even though our Stockholm parser doesn't care (Erik's does).
    */
   namewidth = 0;
   for (i = 0; i < msa->nseq; i++)
-    if ((len = strlen(msa->sqname[i])) > namewidth) 
+    if ((len = strlen(msa->sqname[i])) > namewidth)
       namewidth = len;
 
   /* Figure out how much space we need for markup tags
@@ -161,8 +159,8 @@ actually_write_stockholm(
   if (msa->sa_cons != NULL) { markupwidth = 4; if (typewidth < 7) typewidth = 7; }
   for (i = 0; i < msa->ngc; i++)
     if ((len = strlen(msa->gc_tag[i])) > typewidth) typewidth = len;
-  
-  buf = MallocOrDie(sizeof(char) * (cpl+namewidth+typewidth+markupwidth+61)); 
+ 
+  buf = MallocOrDie(sizeof(char) * (cpl+namewidth+typewidth+markupwidth+61));
 
   /* Magic Stockholm header
    */
@@ -180,7 +178,7 @@ actually_write_stockholm(
   if (msa->acc   != NULL)       fprintf(fp, "#=GF AC    %s\n", msa->acc);
   if (msa->desc  != NULL)       fprintf(fp, "#=GF DE    %s\n", msa->desc);
   if (msa->au    != NULL)       fprintf(fp, "#=GF AU    %s\n", msa->au);
-  
+ 
   /* Thresholds are hacky. Pfam has two. Rfam has one.
    */
   if      (msa->cutoff_is_set[MSA_CUTOFF_GA1] && msa->cutoff_is_set[MSA_CUTOFF_GA2])
@@ -197,35 +195,35 @@ actually_write_stockholm(
     fprintf(fp, "#=GF TC    %.1f\n", msa->cutoff[MSA_CUTOFF_TC1]);
 
   for (i = 0; i < msa->ngf; i++)
-    fprintf(fp, "#=GF %-5s %s\n", msa->gf_tag[i], msa->gf[i]); 
+    fprintf(fp, "#=GF %-5s %s\n", msa->gf_tag[i], msa->gf[i]);
   fprintf(fp, "\n");
 
 
   /* GS section: per-sequence annotation
    */
-  if (msa->flags & MSA_SET_WGT) 
+  if (msa->flags & MSA_SET_WGT)
     {
-      for (i = 0; i < msa->nseq; i++) 
+      for (i = 0; i < msa->nseq; i++)
   fprintf(fp, "#=GS %-*.*s WT    %.2f\n", namewidth, namewidth, msa->sqname[i], msa->wgt[i]);
       fprintf(fp, "\n");
     }
-  if (msa->sqacc != NULL) 
+  if (msa->sqacc != NULL)
     {
-      for (i = 0; i < msa->nseq; i++) 
+      for (i = 0; i < msa->nseq; i++)
   if (msa->sqacc[i] != NULL)
     fprintf(fp, "#=GS %-*.*s AC    %s\n", namewidth, namewidth, msa->sqname[i], msa->sqacc[i]);
       fprintf(fp, "\n");
     }
-  if (msa->sqdesc != NULL) 
+  if (msa->sqdesc != NULL)
     {
-      for (i = 0; i < msa->nseq; i++) 
+      for (i = 0; i < msa->nseq; i++)
   if (msa->sqdesc[i] != NULL)
     fprintf(fp, "#=GS %*.*s DE    %s\n", namewidth, namewidth, msa->sqname[i], msa->sqdesc[i]);
       fprintf(fp, "\n");
     }
   for (i = 0; i < msa->ngs; i++)
     {
-      /* Multiannotated GS tags are possible; for example, 
+      /* Multiannotated GS tags are possible; for example,
        *     #=GS foo DR PDB; 1xxx;
        *     #=GS foo DR PDB; 2yyy;
        * These are stored, for example, as:
@@ -252,13 +250,13 @@ actually_write_stockholm(
       for (i = 0; i < msa->nseq; i++)
   {
     strncpy(buf, msa->aseq[i] + currpos, cpl);
-    buf[cpl] = '\0';        
-    fprintf(fp, "%-*.*s  %s\n", namewidth+typewidth+markupwidth, namewidth+typewidth+markupwidth, 
+    buf[cpl] = '\0';       
+    fprintf(fp, "%-*.*s  %s\n", namewidth+typewidth+markupwidth, namewidth+typewidth+markupwidth,
       msa->sqname[i], buf);
 
     if (msa->ss != NULL && msa->ss[i] != NULL) {
       strncpy(buf, msa->ss[i] + currpos, cpl);
-      buf[cpl] = '\0';   
+      buf[cpl] = '\0';  
       fprintf(fp, "#=GR %-*.*s SS     %s\n", namewidth, namewidth, msa->sqname[i], buf);
     }
     if (msa->sa != NULL && msa->sa[i] != NULL) {
@@ -270,7 +268,7 @@ actually_write_stockholm(
       if (msa->gr[j][i] != NULL) {
         strncpy(buf, msa->gr[j][i] + currpos, cpl);
         buf[cpl] = '\0';
-        fprintf(fp, "#=GR %-*.*s %5s  %s\n", 
+        fprintf(fp, "#=GR %-*.*s %5s  %s\n",
           namewidth, namewidth, msa->sqname[i], msa->gr_tag[j], buf);
       }
   }
@@ -294,7 +292,7 @@ actually_write_stockholm(
       for (j = 0; j < msa->ngc; j++) {
   strncpy(buf, msa->gc[j] + currpos, cpl);
   buf[cpl] = '\0';
-  fprintf(fp, "#=GC %-*.*s %s\n", namewidth+typewidth, namewidth+typewidth, 
+  fprintf(fp, "#=GC %-*.*s %s\n", namewidth+typewidth, namewidth+typewidth,
     msa->gc_tag[j], buf);
       }
     }
@@ -307,7 +305,7 @@ actually_write_stockholm(
 
 int
 parse_gf(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 ){
   char *gf;
@@ -321,15 +319,15 @@ parse_gf(
   if ((text        = strtok(s, "\n"      )) == NULL) return 0;
   while (*text && (*text == ' ' || *text == '\t')) text++;
 
-  if      (strcmp(featurename, "ID") == 0) 
+  if      (strcmp(featurename, "ID") == 0)
     msa->name                 = strdup(text);
-  else if (strcmp(featurename, "AC") == 0) 
+  else if (strcmp(featurename, "AC") == 0)
     msa->acc                  = strdup(text);
-  else if (strcmp(featurename, "DE") == 0) 
+  else if (strcmp(featurename, "DE") == 0)
     msa->desc                 = strdup(text);
-  else if (strcmp(featurename, "AU") == 0) 
+  else if (strcmp(featurename, "AU") == 0)
     msa->au                   = strdup(text);
-  else if (strcmp(featurename, "GA") == 0) 
+  else if (strcmp(featurename, "GA") == 0)
     {       /* Pfam has GA1, GA2. Rfam just has GA1. */
       s = text;
       if ((text = strtok(s, WHITESPACE)) == NULL) return 0;
@@ -340,7 +338,7 @@ parse_gf(
   msa->cutoff_is_set[MSA_CUTOFF_GA2] = true;
       }
     }
-  else if (strcmp(featurename, "NC") == 0) 
+  else if (strcmp(featurename, "NC") == 0)
     {
       s = text;
       if ((text = strtok(s, WHITESPACE)) == NULL) return 0;
@@ -351,7 +349,7 @@ parse_gf(
   msa->cutoff_is_set[MSA_CUTOFF_NC2] = true;
       }
     }
-  else if (strcmp(featurename, "TC") == 0) 
+  else if (strcmp(featurename, "TC") == 0)
     {
       s = text;
       if ((text = strtok(s, WHITESPACE)) == NULL) return 0;
@@ -362,7 +360,7 @@ parse_gf(
   msa->cutoff_is_set[MSA_CUTOFF_TC2] = true;
       }
     }
-  else 
+  else
     MSAAddGF(msa, featurename, text);
 
   return 1;
@@ -372,13 +370,13 @@ parse_gf(
 
 int
 parse_gs(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 ){
   char *gs;
   char *seqname;
   char *featurename;
-  char *text; 
+  char *text;
   int   seqidx;
   char *s;
 
@@ -388,7 +386,7 @@ parse_gs(
   if ((featurename = strtok(s, WHITESPACE)) == NULL) return 0;
   if ((text        = strtok(s, "\n"      )) == NULL) return 0;
   while (*text && (*text == ' ' || *text == '\t')) text++;
-  
+ 
   /* GS usually follows another GS; guess lastidx+1
    */
   seqidx = MSAGetSeqidx(msa, seqname, msa->lastidx+1);
@@ -406,7 +404,7 @@ parse_gs(
   else if (strcmp(featurename, "DE") == 0)
     MSASetSeqDescription(msa, seqidx, text);
 
-  else        
+  else       
     MSAAddGS(msa, featurename, seqidx, text);
 
   return 1;
@@ -414,21 +412,21 @@ parse_gs(
 
 
 
-int 
+int
 parse_gc(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 ){
   char *gc;
   char *featurename;
-  char *text; 
+  char *text;
   char *s;
 
   s = buf;
   if ((gc          = strtok(s, WHITESPACE)) == NULL) return 0;
   if ((featurename = strtok(s, WHITESPACE)) == NULL) return 0;
   if ((text        = strtok(s, WHITESPACE)) == NULL) return 0;
-  
+ 
   if (strcmp(featurename, "SS_cons") == 0)
     strcat(msa->ss_cons, text);
   else if (strcmp(featurename, "SA_cons") == 0)
@@ -446,7 +444,7 @@ parse_gc(
  */
 int
 parse_gr(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 ){
   char *gr;
@@ -467,7 +465,7 @@ parse_gr(
   seqidx = MSAGetSeqidx(msa, seqname, msa->lastidx);
   msa->lastidx = seqidx;
 
-  if (strcmp(featurename, "SS") == 0) 
+  if (strcmp(featurename, "SS") == 0)
     {
       if (msa->ss == NULL)
   {
@@ -487,7 +485,7 @@ parse_gr(
   {
     msa->sa    = MallocOrDie(sizeof(char *) * msa->nseqalloc);
     msa->salen = MallocOrDie(sizeof(int)    * msa->nseqalloc);
-    for (j = 0; j < msa->nseqalloc; j++) 
+    for (j = 0; j < msa->nseqalloc; j++)
       {
         msa->sa[j]    = NULL;
         msa->salen[j] = 0;
@@ -495,7 +493,7 @@ parse_gr(
   }
       msa->salen[seqidx] = strlen(strcat(msa->sa[seqidx], text));
     }
-  else 
+  else
     MSAAppendGR(msa, featurename, seqidx, text);
 
   return 1;
@@ -506,7 +504,7 @@ parse_gr(
  */
 int
 parse_comment(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 ){
   char *s;
@@ -515,7 +513,7 @@ parse_comment(
   s = buf + 1;                     /* skip leading '#' */
   if (*s == '\n') { *s = '\0'; comment = s; }  /* deal with blank comment */
   else if ((comment = strtok(s, "\n")) == NULL) return 0;
-  
+ 
   MSAAddComment(msa, comment);
   return 1;
 }
@@ -523,7 +521,7 @@ parse_comment(
 
 int
 parse_sequence(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 ){
   char *s;
@@ -533,8 +531,8 @@ parse_sequence(
 
   s = buf;
   if ((seqname     = strtok(s, WHITESPACE)) == NULL) return 0;
-  if ((text        = strtok(s, WHITESPACE)) == NULL) return 0; 
-  
+  if ((text        = strtok(s, WHITESPACE)) == NULL) return 0;
+ 
   /* seq usually follows another seq; guess msa->lastidx +1 */
   seqidx = MSAGetSeqidx(msa, seqname, msa->lastidx+1);
   msa->lastidx = seqidx;
@@ -546,17 +544,19 @@ parse_sequence(
 
 #ifdef TESTDRIVE_STOCKHOLM
 /*****************************************************************
- * stockholm.c test driver: 
- * cc -DTESTDRIVE_STOCKHOLM -g -O2 -Wall -o test stockholm.c msa.c sqerror.c file.c hsregex.c -lm 
- * 
+ * stockholm.c test driver:
+ * cc -DTESTDRIVE_STOCKHOLM -g -O2 -Wall -o test stockholm.c msa.c sqerror.c file.c hsregex.c -lm
+ *
  */
 int
-main(int argc, char **argv)
-{
+main(
+  int argc,
+  char **argv
+){
   MSAFILE *afp;
   MSA     *msa;
   char    *file;
-  
+ 
   file = argv[1];
 
   if ((afp = MSAFileOpen(file, MSAFILE_STOCKHOLM, NULL)) == NULL)
@@ -565,9 +565,9 @@ main(int argc, char **argv)
   while ((msa = ReadStockholm(afp)) != NULL)
     {
       WriteStockholm(stdout, msa);
-      MSAFree(msa); 
+      MSAFree(msa);
     }
-  
+ 
   MSAFileClose(afp);
   exit(0);
 }

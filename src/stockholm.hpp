@@ -1,10 +1,10 @@
 #pragma once
 
-#include "msa.h"
+#include "msa.hpp"
 
 typedef struct {
   int   *linetype;    /* e.g. STOCKHOLM_GF_LINE; always valid */
-  int   *featurecode;   /* all markup codes: e.g. STOCKHOLM_GF_ID; 
+  int   *featurecode;   /* all markup codes: e.g. STOCKHOLM_GF_ID;
            nonmarkup: always set to STOCKHOLM_UNPARSED */
   char **featurename;   /* all unparsed markup codes: string, e.g. "ID";
            all other lines: NULL */
@@ -21,7 +21,7 @@ typedef struct {
 } alifile_skeleton;
 
 #define STOCKHOLM_GF_LINE      0
-#define STOCKHOLM_GS_LINE      1 
+#define STOCKHOLM_GS_LINE      1
 #define STOCKHOLM_GC_LINE      2
 #define STOCKHOLM_GR_LINE      3
 #define STOCKHOLM_SEQ_LINE     4
@@ -48,9 +48,6 @@ typedef struct {
 #define SKEL_LUMPSIZE       100    /* allocate for new lines in skel in blocks of this size */
 
 
-
-
-
 MSA *
 ReadStockholm(
   MSAFILE *afp
@@ -60,7 +57,7 @@ ReadStockholm(
 
 void
 WriteStockholm(
-  FILE *fp, 
+  FILE *fp,
   MSA *msa
 );
 
@@ -74,32 +71,30 @@ WriteStockholmOneBlock(
 
 void
 actually_write_stockholm(
-  FILE *fp, 
-  MSA *msa, 
+  FILE *fp,
+  MSA *msa,
   int cpl
 );
 
 
-
 int
 parse_gf(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 );
-
 
 
 int
 parse_gs(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 );
 
 
 
-int 
+int
 parse_gc(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 );
 
@@ -108,7 +103,7 @@ parse_gc(
  */
 int
 parse_gr(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 );
 
@@ -117,13 +112,13 @@ parse_gr(
  */
 int
 parse_comment(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 );
 
 
 int
 parse_sequence(
-  MSA *msa, 
+  MSA *msa,
   char *buf
 );

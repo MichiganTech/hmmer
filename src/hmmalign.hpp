@@ -15,20 +15,19 @@
  * main() for aligning a set of sequences to an HMM.
  */
 
-#include "config.h"    /* compile-time configuration constants */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
-#include "structs.h"    /* data structures, macros, #define's   */
-#include "funcs.h"    /* function declarations                */
-#include "globals.h"    /* alphabet global variables            */
-#include "squid.h"    /* general sequence analysis library    */
-#include "msa.h"    /* squid's multiple alignment i/o       */
-#include "vectorops.h"
-#include "getopt.h"
+#include "config.hpp"
+#include "structs.hpp"    /* data structures, macros, #define's   */
+#include "globals.hpp"    /* alphabet global variables            */
+#include "squid.hpp"    /* general sequence analysis library    */
+#include "msa.hpp"    /* squid's multiple alignment i/o       */
+#include "vectorops.hpp"
+#include "getopt.hpp"
 
 
 
@@ -53,11 +52,11 @@
  */
 void
 include_alignment(
-	char *seqfile, 
-	struct plan7_s *hmm, 
+	char *seqfile,
+	struct plan7_s *hmm,
 	int do_mapped,
-	char ***rsq, 
-	unsigned char ***dsq, 
+	char ***rsq,
+	unsigned char ***dsq,
 	SQINFO **sqinfo,
-	struct p7trace_s ***tr, 
+	struct p7trace_s ***tr,
 	int *nseq);

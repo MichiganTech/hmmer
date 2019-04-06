@@ -1,14 +1,14 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* sre_string.c
- * 
+ *
  * my library of extra string functions. Some for portability
  * across UNIXes
  *
@@ -21,8 +21,8 @@
 #include <stdarg.h>
 #include <ctype.h>
 
-#include "sre_string.h"
-#include "vectorops.h"
+#include "sre_string.hpp"
+#include "vectorops.hpp"
 
 
 void
@@ -64,7 +64,7 @@ Strdelete(
   char *s1,             /* string to delete a char from       */
   int   pos /* position of char to delete 0..n-1  */
 ){		
-  char *s;                      
+  char *s;                     
 
   for (s = s1 + pos; *s; s++)
     *s = *(s + 1);
@@ -93,9 +93,9 @@ s2upper(
 
 char *
 RandomSequence(
-  char *alphabet, 
-  float *p, 
-  int n, 
+  char *alphabet,
+  float *p,
+  int n,
   int len
 ){
   char *s;
@@ -111,7 +111,7 @@ RandomSequence(
 
 #ifdef CUBS_WIN
 /* A timing test for sre_strcat()
- * cc -O2 -g sre_string.c sre_ctype.c sqerror.c sre_math.c hsregex.c -lm 
+ * cc -O2 -g sre_string.c sre_ctype.c sqerror.c sre_math.c hsregex.c -lm
  * 15.200u - 5.360u = 9.84u if sre_strcat() with no length info passed
  * 13.660u - 5.360u = 8.30u if strcat(), with a single malloc().
  * 11.370u - 5.360u = 6.01u if sre_strcat() with length info passed.
@@ -141,12 +141,12 @@ int main(
 	{
 	  buflen = CHOOSE(255) + 1;
 	  s2 = RandomSequence("ACGT", p, 4, buflen);
-      
+     
 	  /* strcat(s1,s2); */
-	  if ((len = sre_strcat(&s1, len, s2, buflen)) < 0) exit(1); 
+	  if ((len = sre_strcat(&s1, len, s2, buflen)) < 0) exit(1);
 	  free(s2);
 	}
-      free(s1); 
+      free(s1);
     }
   exit(0);
 }

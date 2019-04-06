@@ -1,24 +1,20 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
-/* RCS $Id: getopt.c,v 1.7 2001/02/21 21:09:10 eddy Exp $
- */
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "squid.h"
-#include "getopt.h"
+#include "getopt.hpp"
 
 /* Function: Getopt()
- * 
+ *
  * Purpose:  Portable command line option parsing with abbreviated
  *           option switches. Replaces UNIX getopt(). Using UNIX getopt()
  *           hinders portability to non-UNIX platforms, and getopt()
@@ -29,40 +25,40 @@
  *           is emulated, and "--" by itself terminates the options.
  *           Additionally, Getopt() provides extended switches
  *           like "--youroptionhere", and Getopt() type checks
- *           arguments.  
- * 
+ *           arguments. 
+ *
  *           Extended options must start with "--", as in "--option1".
  *           Normal options must start with "-", as in "-o".
  *           Normal options may be concatenated, as in "-a -b" == "-ab".
- *           
+ *          
  *           See bottom of this .c file after #fdef GETOPT_TESTDRIVER
  *           for an example of calling Getopt().
- *           
+ *          
  * Args:     argc  - from main(). number of elems in argv.
  *           argv  - from main(). argv[0] is the name of the command.
  *           opt   - array of opt_s structures, defining option switches
  *           nopts - number of switches in opt
  *           usage - a (possibly long) string to print if usage error.
- *           ret_optind - RETURN: the index in argv[] of the next 
+ *           ret_optind - RETURN: the index in argv[] of the next
  *                        valid command-line token.
- *           ret_optname- RETURN: ptr to the name of option switch 
+ *           ret_optname- RETURN: ptr to the name of option switch
  *                        seen, or NULL if no option was seen.
  *           ret_optarg - RETURN: ptr to the optional argument, if any;
  *                        NULL if option takes no argument.
- *                        
+ *                       
  * Return:   1 if a valid option was parsed.
  *           0 if no option was found, and command-line parsing is complete.
  *           Die()'s here if an error is detected.
  */
 int
 Getopt(
-  int argc, 
-  char **argv, 
-  struct opt_s *opt, 
-  int nopts, 
+  int argc,
+  char **argv,
+  struct opt_s *opt,
+  int nopts,
   char *usage,
-  int *ret_optind, 
-  char **ret_optname, 
+  int *ret_optind,
+  char **ret_optname,
   char **ret_optarg
 ){
   int i;
@@ -76,22 +72,22 @@ Getopt(
    * A '-' by itself is an argument (e.g. "read from stdin")
    * not an option.
    */
-  if (optind >= argc || argv[optind][0] != '-' || strcmp(argv[optind], "-") == 0){ 
-      *ret_optind  = optind; 
-      *ret_optarg  = NULL; 
-      *ret_optname = NULL; 
-      return 0; 
+  if (optind >= argc || argv[optind][0] != '-' || strcmp(argv[optind], "-") == 0){
+      *ret_optind  = optind;
+      *ret_optarg  = NULL;
+      *ret_optname = NULL;
+      return 0;
     }
 
   /* Check to see if we're being told that this is the end
    * of the options with the special "--" flag.
    */
-  if (strcmp(argv[optind], "--") == 0){ 
+  if (strcmp(argv[optind], "--") == 0){
       optind++;
-      *ret_optind  = optind; 
+      *ret_optind  = optind;
       *ret_optname = NULL;
-      *ret_optarg  = NULL; 
-      return 0; 
+      *ret_optarg  = NULL;
+      return 0;
     }
 
   /* We have a real option. Find which one it is.
@@ -111,7 +107,7 @@ Getopt(
     arglen = strlen(argv[optind]);
     nmatch = 0;
     for (i = 0; i < nopts; i++){
-    	if (opt[i].single == false && strncmp(opt[i].name, argv[optind], arglen) == 0){ 
+    	if (opt[i].single == false && strncmp(opt[i].name, argv[optind], arglen) == 0){
   	    nmatch++;
         opti = i;
         if (arglen == strlen(opt[i].name)) break; /* exact match, stop now */
@@ -151,11 +147,11 @@ Getopt(
     if (optptr == NULL){
     	optptr = argv[optind]+1;
     }
-    
+   
     for (opti = -1, i = 0; i < nopts; i++){
       if (opt[i].single == true && *optptr == opt[i].name[1]){
-        opti = i; 
-        break; 
+        opti = i;
+        break;
       }
     }
     if (opti == -1){
@@ -170,7 +166,7 @@ Getopt(
         optind++;
       }else if (optind+1 < argc){ /* unattached argument */
         *ret_optarg = argv[optind+1];
-        optind+=2;	      
+        optind+=2;	     
       }else{
         Die("Option %s requires an argument\n%s", opt[opti].name, usage);
       }
@@ -179,7 +175,7 @@ Getopt(
   	}else{  /* sqdARG_NONE */
   	  *ret_optarg = NULL;
   	  if (*(optptr+1) != '\0'){   /* concatenation */
-  	    optptr++; 
+  	    optptr++;
   	  }else{
         optind++;                /* move to next field */
         optptr = NULL;
@@ -210,12 +206,12 @@ Getopt(
 
 
 
-#ifdef GETOPT_TESTDRIVER 
+#ifdef GETOPT_TESTDRIVER
 
-    
+   
 int
 main(
-  int argc, 
+  int argc,
   char **argv
 ){
   int   optind;

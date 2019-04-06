@@ -13,23 +13,19 @@
  * Search a single sequence against an HMM database.
  */
 
-#include "config.h"    /* compile-time configuration constants */
-//#include "squidconf.h"
-
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include <float.h>
 #include <pthread.h>
 #include <unistd.h>
 
-//#include "squid.h"    /* general sequence analysis library    */
-#include "structs.h"    /* data structures, macros, #define's   */
-#include "funcs.h"    /* function declarations                */
-#include "globals.h"    /* alphabet global variables            */
-#include "getopt.h"
-#include "sqio.h"
+#include "config.hpp"
+#include "getopt.hpp"
+#include "globals.hpp"
+#include "sqio.hpp"
+#include "structs.hpp"
 
 
 static char banner[] = "hmmpfam - search one or more sequences against HMM database";

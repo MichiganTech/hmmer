@@ -12,15 +12,11 @@ cc -O2 -o weetest -I ~/lib/squid.linux -L/nfs/wol2/people/eddy/lib/squid.linux w
 
 /* This test looks at histogram of protein lengths in Swissprot
  */
-#include "config.h"
-//#include "squidconf.h"
 
 #include <stdio.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-//#include "squid.h"
+#include "structs.hpp"
+#include "globals.hpp"
 
 int
 main(int argc, char **argv) {

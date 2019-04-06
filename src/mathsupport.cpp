@@ -18,16 +18,14 @@
  */
 
 
-#include "config.h"
-//#include "squidconf.h"
 
 #include <math.h>
 #include <float.h>
 #include <pthread.h>
 
-#include "squid.h"
-#include "funcs.h"
-#include "structs.h"
+#include "config.hpp"
+#include "squid.hpp"
+#include "structs.hpp"
 
 
 /* Function: Prob2Score()

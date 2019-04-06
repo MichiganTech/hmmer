@@ -1,22 +1,19 @@
 /* viterbi_exercise.c
- * SRE, Mon Mar  9 07:55:47 1998 [St. Louis]
  *
  * Exercise the various Viterbi algorithms, big and small.
  *
- * CVS $Id: viterbi_exercise.c 913 2003-10-04 18:26:49Z eddy $
  */
 
-#include "config.h"
+#include "config.hpp"
 
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
 #include <string.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-//#include "squid.h"
+#include "structs.hpp"
+#include "globals.hpp"
+
 
 static char banner[] = "\
 viterbi_exercise : testing of Plan7 Viterbi code";

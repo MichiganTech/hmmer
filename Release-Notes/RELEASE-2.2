@@ -37,7 +37,7 @@ The following programs were added to the distribution:
 The following features were added:
 
    - hmmsearch and hmmpfam can now use Pfam GA, TC, NC cutoffs,
-     if these have been picked up in the HMM file (by hmmbuild). 
+     if these have been picked up in the HMM file (by hmmbuild).
      See the --cut_ga, --cut_tc, and --cut_nc options.
 
    - "Stockholm format" alignments are supported, and have replaced
@@ -57,7 +57,7 @@ The following features were added:
      format issues). --informat bypasses the autodetector, asserts
      a particular format, and decreases the likelihood that HMMER
      misparses a sequence file.
-     
+    
    - new options:
      hmmpfam --acc reports HMM accession numbers instead of
      HMM names in output files. [Pfam infrastructure]
@@ -84,7 +84,7 @@ The following features were added:
      a single HMM at a time - useful for instance for producing
      "consensus sequences" for every model in Pfam with one
      command.
- 
+
 The following changes may affect HMMER-compatible software:
 
    - The name of the sequence retrieval program "getseq" was
@@ -92,14 +92,14 @@ The following changes may affect HMMER-compatible software:
      clashes with a Genetics Computer Group package program
      of similar functionality.
 
-   - The output format for the headers of hmmsearch and hmmpfam 
+   - The output format for the headers of hmmsearch and hmmpfam
      were changed. The accessions and descriptions of query
-     HMMs or sequences, respectively, are reported on separate 
+     HMMs or sequences, respectively, are reported on separate
      lines. An option ("--compat") is provided for reverting
      to the previous format, if you don't want to rewrite your
      parser(s) right away.
 
-   - hmmpfam now calculates E-values based on the actual 
+   - hmmpfam now calculates E-values based on the actual
      number of HMMs in the database that is searched, unless
      overridden with the -Z option from the command line.
      It used to use Z=59021 semi-arbitrarily to make results
@@ -116,11 +116,11 @@ The following minor bugs were fixed:
      [M. Regelson, Paracel ]
 
    - a potential reentrancy problem with setting the
-     alphabet type in the threads version was 
+     alphabet type in the threads version was
      fixed, but this problem is unlikely to have ever affected
      anyone. [M. Sievers, Paracel].
 
-   - fixed a bug where hmmbuild on Solaris machines would crash 
+   - fixed a bug where hmmbuild on Solaris machines would crash
      when presented with an alignment with an #=ID line.
      Same bug caused a crash when building a model from a single
      sequence FASTA file [A. Bateman, Sanger]
@@ -137,10 +137,10 @@ The following minor bugs were fixed:
    - hmmpfam-pvm and hmmindex had a bad interaction if an HMM file had
      accession numbers as well as names (e.g., Pfam). The phenotype was
      that hmmpfam-pvm would search each model twice: once for its name,
-     and once for its accession. hmmindex now uses a new 
+     and once for its accession. hmmindex now uses a new
      indexing scheme (SSI, replacing GSI). [multiple reports;
      often manifested as a failure of the StL Pfam server to
-     install, because of an hmmindex --one2one option in the Makefile; this was 
+     install, because of an hmmindex --one2one option in the Makefile; this was
      a local hack, never distributed in HMMER].
 
    - a rare floating exception bug in ExtremeValueP() was fixed;
@@ -149,18 +149,18 @@ The following minor bugs were fixed:
      Digital Unix platforms for a *very* tiny set of scores
      for any given mu, lambda.
 
-   - The default null2 score correction was applied in 
+   - The default null2 score correction was applied in
      a way that was justifiable, but differed between per-seq
      and per-domain scores; thus per-domain scores did not
      necessarily add up to per-seq scores. In certain cases
      this produced counterintuitive results. null2 is now
-     applied in a way that is still justifiable, and also 
+     applied in a way that is still justifiable, and also
      consistent; per-domain scores add up to the per-seq score.
      [first reported by David Kerk]
-    
-   - --domE and --domT did not work correctly in hmmpfam, because 
+   
+   - --domE and --domT did not work correctly in hmmpfam, because
      the code assumed that E-values are monotonic with score.
-     In some cases, this could cause HMMER to fail to report some 
+     In some cases, this could cause HMMER to fail to report some
      significant domains. [Christiane VanSchlun, GCG]
 
 The following obscure bugs were fixed (i.e., there were no reports of
@@ -171,15 +171,15 @@ anyone but me detecting these bugs):
 
   - Banner() was printing a line to stdout instead of its
     file handle... but Banner is always called w/ stdout as
-    its filehandle in the current implementation. 
-    [M. Regelson, Paracel] 
+    its filehandle in the current implementation.
+    [M. Regelson, Paracel]
 
   - .gz file reading is only supported on POSIX OS's. A compile
     time define, SRE_STRICT_ANSI, may be defined to allow compiling
     on ANSI compliant but non-POSIX operating systems.
 
   - Several problems with robustness w.r.t. unexpected
-    combinations of command line options were detected by 
+    combinations of command line options were detected by
     GCG quality control testing. [Christiane VanSchlun]
 
 (At least) the following projects remain incomplete:
@@ -189,7 +189,7 @@ anyone but me detecting these bugs):
 
   - CPU times can now be reported for serial, threaded,
     and PVM executions; this is only supported by hmmcalibrate
-    right now. 
+    right now.
 
   - Mixture Dirichlet priors now include some ongoing work
     in collaboration with Michael Asman and Erik Sonnhammer

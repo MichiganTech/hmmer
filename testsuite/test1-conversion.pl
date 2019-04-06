@@ -3,7 +3,7 @@
 # Test hmmconvert.
 #
 # Adapted from Exercises.sh, xref SRE, Fri Oct 23 10:38:44 1998
-# conversion bug detected in 2.1 and fixed in 2.1.1a 
+# conversion bug detected in 2.1 and fixed in 2.1.1a
 #
 # CVS $Id: test1-conversion.pl 877 2003-04-04 00:34:09Z eddy $
 

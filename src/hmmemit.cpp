@@ -13,23 +13,19 @@
  * main() for generating sequences from an HMM
  */
 
-#include "config.h"    /* compile-time configuration constants */
-//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "structs.h"    /* data structures, macros, #define's   */
-#include "funcs.h"    /* function declarations                */
-#include "globals.h"    /* alphabet global variables            */
-//#include "squid.h"    /* general sequence analysis library    */
-//#include "msa.h"    /* squid's multiple sequence i/o        */
-#include "getopt.h"
-#include "sqio.h"
-#include "vectorops.h"
-#include "stockholm.h"
+#include "config.hpp"
+#include "structs.hpp"    /* data structures, macros, #define's   */
+#include "globals.hpp"    /* alphabet global variables            */
+#include "getopt.hpp"
+#include "sqio.hpp"
+#include "vectorops.hpp"
+#include "stockholm.hpp"
 
 
 static char banner[] = "hmmemit - generate sequences from a profile HMM";

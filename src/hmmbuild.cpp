@@ -3,27 +3,22 @@
  * main() for HMM construction from an alignment.
  */
 
-#include "config.h"    /* compile-time configuration constants */
-//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-//#include "squid.h"    /* general sequence analysis library    */
-//#include "msa.h"                /* squid's multiple alignment i/o       */
-
-#include "getopt.h"
-#include "structs.h"    /* data structures, macros, #define's   */
-#include "funcs.h"    /* function declarations                */
-#include "globals.h"    /* alphabet global variables            */
-#include "lsjfuncs.h"    /* Steve Johnson's additions            */
-#include "vectorops.h"
-#include "stockholm.h"
-#include "sqio.h"
-#include "file.h"
-#include "alignio.h"
-#include "weight.h"
+#include "config.hpp"
+#include "getopt.hpp"
+#include "structs.hpp"    /* data structures, macros, #define's   */
+#include "globals.hpp"    /* alphabet global variables            */
+#include "lsjfuncs.hpp"    /* Steve Johnson's additions            */
+#include "vectorops.hpp"
+#include "stockholm.hpp"
+#include "sqio.hpp"
+#include "file.hpp"
+#include "alignio.hpp"
+#include "weight.hpp"
 
 /* ENTROPYLOSS_ defaults:
  * For proteins, hmmbuild's effective sequence number calculation

@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -16,7 +16,7 @@
 
 #include <stdlib.h>
 
-#include "msa.h"       
+#include "msa.hpp"  
 
 /* Function: EPSWriteSmallMSA()
  * Purpose:  Write an alignment in singleblock, Stockholm/SELEX like
@@ -25,11 +25,11 @@
  *           it doesn't think it will fit on a single page.
  *
  * Args:     fp  - open file for writing
- *           msa - alignment to write     
+ *           msa - alignment to write    
  *
  * Returns:  (void)
  */
 void
 EPSWriteSmallMSA(
-  FILE *fp, 
+  FILE *fp,
   MSA *msa);

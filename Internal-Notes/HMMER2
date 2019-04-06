@@ -18,7 +18,7 @@ Version 2 of HMMER includes the following new features:
 - Protein HMMs now incorporate structural information, when available,
   using special mixture Dirichlets conditioned on structural parameters.
 
-- P-values and E-values are estimated from extreme value distributions 
+- P-values and E-values are estimated from extreme value distributions
   in large database searches, supplementing Bayesian log-odds scores
   and (in principle) increasing sensitivity.
 
@@ -36,7 +36,7 @@ Version 2 of HMMER includes the following new features:
 
 - "hmmgenome" searches accurate large-scale genome sequence, doing
   a six-frame frameshift-tolerant, substitution-tolerant on the fly
-  translation, combining three probabilistic models of the protein, 
+  translation, combining three probabilistic models of the protein,
   intron/exon structure, and genetic code/codon bias.
 
 - Important published algorithms (ours, Krogh/Haussler's, whoevers)
@@ -49,6 +49,6 @@ Version 2 of HMMER includes the following new features:
   without byteswapping issues, and compact enough to obviate
   the need for the old binary formats.
 
-- a firm policy of publishing our algorithms in a timely manner 
+- a firm policy of publishing our algorithms in a timely manner
   instead of sitting on them lazily (!)
 

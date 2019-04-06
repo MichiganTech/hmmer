@@ -1,14 +1,14 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
  *****************************************************************/
 
 /* sre_math.c
- * 
+ *
  * Portability for and extensions to C math library.
  * RCS $Id: sre_math.c,v 1.12 2002/10/09 14:26:09 eddy Exp $
  */
@@ -16,32 +16,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "squid.h"
 
-  
-/* Function: Linefit()
- * 
- * Purpose:  Given points x[0..N-1] and y[0..N-1], fit to
- *           a straight line y = a + bx.
- *           a, b, and the linear correlation coefficient r
- *           are filled in for return.
- *           
- * Args:     x     - x values of data
- *           y     - y values of data               
- *           N     - number of data points
- *           ret_a - RETURN: intercept
- *           ret_b - RETURN: slope
- *           ret_r - RETURN: correlation coefficient  
- *           
- * Return:   1 on success, 0 on failure.
- */
-int          
-Linefit(float *x, float *y, int N, float *ret_a, float *ret_b, float *ret_r) 
-{				
+#include "squid.hpp"
+
+ 
+int         
+Linefit(
+  float *x,
+  float *y,
+  int N,
+  float *ret_a,
+  float *ret_b,
+  float *ret_r
+){				
   float xavg, yavg;
   float sxx, syy, sxy;
   int   i;
-  
+ 
   /* Calculate averages, xavg and yavg
    */
   xavg = yavg = 0.0;
@@ -67,27 +58,22 @@ Linefit(float *x, float *y, int N, float *ret_a, float *ret_b, float *ret_r)
 }
 
 
-/* Function: WeightedLinefit()
- * 
- * Purpose:  Given points x[0..N-1] and y[0..N-1] with
- *           variances (measurement errors) var[0..N-1],  
- *           fit to a straight line y = mx + b.
- *           
- * Method:   Algorithm from Numerical Recipes in C, [Press88].
- *           
- * Return:   (void)
- *           ret_m contains slope; ret_b contains intercept 
- */                
 void
-WeightedLinefit(float *x, float *y, float *var, int N, float *ret_m, float *ret_b) 
-{
+WeightedLinefit(
+  float *x,
+  float *y,
+  float *var,
+  int N,
+  float *ret_m,
+  float *ret_b
+){
   int    i;
   double s;
   double sx, sy;
   double sxx, sxy;
   double delta;
   double m, b;
-  
+ 
   s = sx = sy = sxx = sxy = 0.;
   for (i = 0; i < N; i++)
     {
@@ -105,21 +91,12 @@ WeightedLinefit(float *x, float *y, float *var, int N, float *ret_m, float *ret_
   *ret_m = m;
   *ret_b = b;
 }
-  
+ 
 
-/* Function: Gammln()
- *
- * Returns the natural log of the gamma function of x.
- * x is > 0.0.  
- *
- * Adapted from a public domain implementation in the
- * NCBI core math library. Thanks to John Spouge and
- * the NCBI. (According to the NCBI, that's Dr. John
- * "Gammas Galore" Spouge to you, pal.)
- */
 double
-Gammln(double x)
-{
+Gammln(
+  double x
+){
   int i;
   double xx, tx;
   double tmp, value;
@@ -136,12 +113,12 @@ Gammln(double x)
     -2.319827630494973e-04,
     1.251639670050933e-10
   };
-  
+ 
   /* Protect against x=0. We see this in Dirichlet code,
    * for terms alpha = 0. This is a severe hack but it is effective
    * and (we think?) safe. (due to GJM)
-   */ 
-  if (x <= 0.0) return 999999.; 
+   */
+  if (x <= 0.0) return 999999.;
 
   xx       = x - 1.0;
   tx = tmp = xx + 11.0;
@@ -161,52 +138,64 @@ Gammln(double x)
 /* 2D matrix operations
  */
 float **
-FMX2Alloc(int rows, int cols)
-{
+FMX2Alloc(
+  int rows,
+  int cols
+){
   float **mx;
   int     r;
-  
+ 
   mx    = (float **) MallocOrDie(sizeof(float *) * rows);
   mx[0] = (float *)  MallocOrDie(sizeof(float) * rows * cols);
   for (r = 1; r < rows; r++)
     mx[r] = mx[0] + r*cols;
   return mx;
 }
+
+
 void
-FMX2Free(float **mx)
-{
+FMX2Free(
+  float **mx
+){
   free(mx[0]);
   free(mx);
 }
+
+
 double **
-DMX2Alloc(int rows, int cols)
-{
+DMX2Alloc(
+  int rows,
+  int cols
+){
   double **mx;
   int      r;
-  
+ 
   mx    = (double **) MallocOrDie(sizeof(double *) * rows);
   mx[0] = (double *)  MallocOrDie(sizeof(double) * rows * cols);
   for (r = 1; r < rows; r++)
     mx[r] = mx[0] + r*cols;
   return mx;
 }
+
+
 void
-DMX2Free(double **mx)
-{
+DMX2Free(
+  double **mx
+){
   free(mx[0]);
   free(mx);
 }
-/* Function: FMX2Multiply()
- * 
- * Purpose:  Matrix multiplication.
- *           Multiply an m x p matrix A by a p x n matrix B,
- *           giving an m x n matrix C.
- *           Matrix C must be a preallocated matrix of the right
- *           size.
- */
+
+
 void
-FMX2Multiply(float **A, float **B, float **C, int m, int p, int n)
-{
+FMX2Multiply(
+  float **A,
+  float **B,
+  float **C,
+  int m,
+  int p,
+  int n
+){
   int i, j, k;
 
   for (i = 0; i < m; i++)
@@ -219,32 +208,11 @@ FMX2Multiply(float **A, float **B, float **C, int m, int p, int n)
 }
 
 
-/* Function: IncompleteGamma()
- * 
- * Purpose:  Returns 1 - P(a,x) where:
- *           P(a,x) = \frac{1}{\Gamma(a)} \int_{0}^{x} t^{a-1} e^{-t} dt
- *                  = \frac{\gamma(a,x)}{\Gamma(a)}
- *                  = 1 - \frac{\Gamma(a,x)}{\Gamma(a)}
- *                  
- *           Used in a chi-squared test: for a X^2 statistic x
- *           with v degrees of freedom, call:
- *                  p = IncompleteGamma(v/2., x/2.) 
- *           to get the probability p that a chi-squared value
- *           greater than x could be obtained by chance even for
- *           a correct model. (i.e. p should be large, say 
- *           0.95 or more).
- *           
- * Method:   Based on ideas from Numerical Recipes in C, Press et al.,
- *           Cambridge University Press, 1988. 
- *           
- * Args:     a  - for instance, degrees of freedom / 2     [a > 0]
- *           x  - for instance, chi-squared statistic / 2  [x >= 0] 
- *           
- * Return:   1 - P(a,x).
- */          
 double
-IncompleteGamma(double a, double x)
-{
+IncompleteGamma(
+  double a,
+  double x
+){
   int iter;			/* iteration counter */
 
   if (a <= 0.) Die("IncompleteGamma(): a must be > 0");
@@ -254,7 +222,7 @@ IncompleteGamma(double a, double x)
    * calculate 1 - P(a,x) = \frac{\Gamma(a,x)}{\Gamma(a)}:
    *     use a continued fraction development for \Gamma(a,x).
    */
-  if (x > a+1) 
+  if (x > a+1)
     {
       double oldp;		/* previous value of p    */
       double nu0, nu1;		/* numerators for continued fraction calc   */
@@ -284,9 +252,9 @@ IncompleteGamma(double a, double x)
 	  de1 = x * de0 + (double) iter * de1;
 
 				/* rescale */
-	  if (de1 != 0.) 
-	    { 
-	      nu0 /= de1; 
+	  if (de1 != 0.)
+	    {
+	      nu0 /= de1;
 	      de0 /= de1;
 	      nu1 /= de1;
 	      de1 =  1.;
@@ -313,13 +281,13 @@ IncompleteGamma(double a, double x)
        *   = \frac{1}{a} + \frac{x}{a(a+1)} + \frac{x^2}{a(a+1)(a+2)} ...
        * and it's obvious that this should converge nicely for x <= a+1.
        */
-      
+     
       p = val = 1. / a;
       for (iter = 1; iter < 10000; iter++)
 	{
 	  val *= x / (a+(double)iter);
 	  p   += val;
-	  
+	 
 	  if (fabs(val/p) < 1.e-7)
 	    return 1. - p * exp(a * log(x) - x - Gammln(a));
 	}
@@ -328,4 +296,3 @@ IncompleteGamma(double a, double x)
   /*NOTREACHED*/
   return 0.;
 }
-  

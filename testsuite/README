@@ -13,7 +13,7 @@ Once they're compiled, to run the whole test suite, do:
 List of compiled test drivers.
 ---------------------------------------------------------------------
 
-- A test driver runs with no arguments, gives no output, 
+- A test driver runs with no arguments, gives no output,
   and returns EXIT_SUCCESS if the test passes.
 - If the test fails, the test driver calls Die() to print a diagnostic on
   stderr, and exit with EXIT_FAILURE.
@@ -31,13 +31,13 @@ alignalign_test
 	fails.
 	Other files: fn3.seed, fn3.hmm.
 
-evd_test    
+evd_test   
 	Exercises code in histogram.c, especially EVD fitting
 	Default generates 1000 EVD samples; fits EVD; tests that fitted
-        parameters are reasonably close to real ones. 
+        parameters are reasonably close to real ones.
 
-masks_test  
-	Exercises code in masks.c 
+masks_test 
+	Exercises code in masks.c
 	Default runs XNU on a sequence and compares to a known result.
 
 parsingviterbi_test
@@ -56,7 +56,7 @@ trace_test
 	Runs a simple HMM against synthetic sequences designed to
 	exercise all possible arrangements of transitions, and
 	does a TraceVerify() to be sure resulting trace is internally
-	consistent. 
+	consistent.
 
 viterbi_exercise
 	Exercises P7Viterbi and P7SmallViterbi in core_algorithms.c

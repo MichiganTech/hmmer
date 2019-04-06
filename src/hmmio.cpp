@@ -70,8 +70,6 @@
  * V2.0: Plan7. Essentially complete rewrite.
  */
 
-#include "config.h"
-//#include "squidconf.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -81,11 +79,10 @@
 #include <time.h>
 #include <unistd.h> /* to get SEEK_CUR definition on silly Suns */
 
-//#include "squid.h"
-#include "ssi.h"
-#include "structs.h"
-#include "funcs.h"
-#include "getopt.h"
+#include "config.hpp"
+#include "ssi.hpp"
+#include "structs.hpp"
+#include "getopt.hpp"
 
 
 /* Magic numbers identifying binary formats.

@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -16,10 +16,10 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#include "endian.h"
-#include "squid.h"
-#include "ssi.h"
-#include "file.h"
+#include "endian.hpp"
+#include "squid.hpp"
+#include "ssi.hpp"
+#include "file.hpp"
 
 static uint32_t v20magic = 0xf3f3e9b1; /* SSI 1.0: "ssi1" + 0x80808080 */
 static uint32_t v20swap  = 0xb1e9f3f3; /* byteswapped */
@@ -27,7 +27,7 @@ static uint32_t v20swap  = 0xb1e9f3f3; /* byteswapped */
 
 int
 SSIOpen(
-  char *filename, 
+  char *filename,
   SSIFILE **ret_sfp
 ){
   SSIFILE  *sfp = NULL;
@@ -35,7 +35,7 @@ SSIOpen(
   if ((sfp = malloc(sizeof(SSIFILE))) == NULL)   return SSI_ERR_MALLOC;
   if ((sfp->fp = fopen(filename, "rb")) == NULL) {
     free(sfp);
-    return SSI_ERR_NOFILE;    
+    return SSI_ERR_NOFILE;   
   }
   status = load_indexfile(sfp);
   *ret_sfp = sfp;
@@ -58,10 +58,10 @@ load_indexfile(
   sfp->fileflags  = NULL;
   sfp->bpl        = NULL;
   sfp->rpl        = NULL;
-  sfp->nfiles     = 0;          
+  sfp->nfiles     = 0;         
   if (! read_i32(sfp->fp, &magic))               {status = SSI_ERR_BADMAGIC;  goto FAILURE; }
   if (magic != v20magic && magic != v20swap)     {status = SSI_ERR_BADMAGIC;  goto FAILURE; }
-  if (! read_i32(sfp->fp, &(sfp->flags))) goto FAILURE; 
+  if (! read_i32(sfp->fp, &(sfp->flags))) goto FAILURE;
 
 
   sfp->imode = (sfp->flags & SSI_USE64_INDEX) ? SSI_OFFSET_I64 : SSI_OFFSET_I32;
@@ -76,7 +76,7 @@ load_indexfile(
   if (! read_i32(sfp->fp, &(sfp->frecsize)))   goto FAILURE;
   if (! read_i32(sfp->fp, &(sfp->precsize)))   goto FAILURE;
   if (! read_i32(sfp->fp, &(sfp->srecsize)))   goto FAILURE;
-  
+ 
   if (! read_offset(sfp->fp, sfp->imode, &(sfp->foffset))) goto FAILURE;
   if (! read_offset(sfp->fp, sfp->imode, &(sfp->poffset))) goto FAILURE;
   if (! read_offset(sfp->fp, sfp->imode, &(sfp->soffset))) goto FAILURE;
@@ -89,18 +89,18 @@ load_indexfile(
    */
   if (sfp->nfiles == 0)                                                   goto FAILURE;
   if ((sfp->filename=malloc(sizeof(char *)    *sfp->nfiles)) == NULL)   {status = SSI_ERR_MALLOC; goto FAILURE; }
-  for (i = 0; i < sfp->nfiles; i++) sfp->filename[i] = NULL; 
+  for (i = 0; i < sfp->nfiles; i++) sfp->filename[i] = NULL;
   if ((sfp->fileformat=malloc(sizeof(uint32_t)*sfp->nfiles)) == NULL) {status = SSI_ERR_MALLOC; goto FAILURE; }
   if ((sfp->fileflags =malloc(sizeof(uint32_t)*sfp->nfiles)) == NULL) {status = SSI_ERR_MALLOC; goto FAILURE; }
   if ((sfp->bpl     =malloc(sizeof(uint32_t)*sfp->nfiles)) == NULL)   {status = SSI_ERR_MALLOC; goto FAILURE; }
   if ((sfp->rpl     =malloc(sizeof(uint32_t)*sfp->nfiles)) == NULL)   {status = SSI_ERR_MALLOC; goto FAILURE; }
 
-  for (i = 0; i < sfp->nfiles; i++) 
+  for (i = 0; i < sfp->nfiles; i++)
     {
-      /* We have to explicitly position, because header and file 
-       * records may expand in the future; frecsize and foffset 
-       * give us forwards compatibility. 
-       */ 
+      /* We have to explicitly position, because header and file
+       * records may expand in the future; frecsize and foffset
+       * give us forwards compatibility.
+       */
       if (indexfile_position(sfp, &(sfp->foffset), sfp->frecsize, i) !=0)  goto FAILURE;
       if ((sfp->filename[i] =malloc(sizeof(char)*sfp->flen)) == NULL)        {status = SSI_ERR_MALLOC; goto FAILURE; }
       if (fread(sfp->filename[i],sizeof(char),sfp->flen, sfp->fp)!=sfp->flen) goto FAILURE;
@@ -109,7 +109,7 @@ load_indexfile(
       if (! read_i32(sfp->fp, &(sfp->bpl[i])))                                    goto FAILURE;
       if (! read_i32(sfp->fp, &(sfp->rpl[i])))                                    goto FAILURE;
     }
-  
+ 
   /* Success. Return 0.
    */
   return 0;			
@@ -124,8 +124,8 @@ load_indexfile(
 
 int
 SSIGetOffsetByName(
-  SSIFILE *sfp, 
-  char *key, 
+  SSIFILE *sfp,
+  char *key,
   int *ret_fh,
   SSIOFFSET *ret_offset
 ){
@@ -167,22 +167,22 @@ SSIGetOffsetByName(
 
 int
 SSIGetOffsetByNumber(
-  SSIFILE *sfp, 
-  int n, 
-  int *ret_fh, 
+  SSIFILE *sfp,
+  int n,
+  int *ret_fh,
   SSIOFFSET *ret_offset
 ){
   uint16_t fnum;
   char      *pkey;
 
   if (n >= sfp->nprimary) return SSI_ERR_NO_SUCH_KEY;
-  if (indexfile_position(sfp, &(sfp->poffset), sfp->precsize, n) != 0) 
+  if (indexfile_position(sfp, &(sfp->poffset), sfp->precsize, n) != 0)
     return SSI_ERR_SEEK_FAILED;
 
   if ((pkey = malloc(sizeof(char) * sfp->plen)) == NULL) return SSI_ERR_MALLOC;
   if (fread(pkey, sizeof(char), sfp->plen, sfp->fp) != sfp->plen) return SSI_ERR_NODATA;
   if (! read_i16(sfp->fp, &fnum))                      return SSI_ERR_NODATA;
-  if (! read_offset(sfp->fp, sfp->smode, ret_offset))  return SSI_ERR_NODATA;  
+  if (! read_offset(sfp->fp, sfp->smode, ret_offset))  return SSI_ERR_NODATA; 
   *ret_fh = fnum;
   free(pkey);
   return 0;
@@ -191,18 +191,18 @@ SSIGetOffsetByNumber(
 
 int
 SSIGetSubseqOffset(
-  SSIFILE *sfp, 
-  char *key, 
+  SSIFILE *sfp,
+  char *key,
   int requested_start,
-  int *ret_fh, 
+  int *ret_fh,
   SSIOFFSET *record_offset,
-  SSIOFFSET *data_offset, 
+  SSIOFFSET *data_offset,
   int *ret_actual_start
 ){
   int        status;
   uint32_t len;
   int        r, b, i, l;	/* tmp variables for "clarity", to match docs */
-  
+ 
   /* Look up the key. Rely on the fact that SSIGetOffsetByName()
    * leaves the index file positioned at the rest of the data for this key.
    */
@@ -228,7 +228,7 @@ SSIGetSubseqOffset(
   l = (i-1)/r;		    /* data line # (0..) that the residue is on */
   if (r == 0 || b == 0) return SSI_ERR_NO_SUBSEQS;
   if (i < 0 || i > len) return SSI_ERR_RANGE;
-  
+ 
   /* When b = r+1, there's nothing but sequence on each data line (and the \0),
    * and we can find each residue precisely.
    */
@@ -239,9 +239,9 @@ SSIGetSubseqOffset(
     } else if (sfp->smode == SSI_OFFSET_I64) {
       data_offset->mode    = SSI_OFFSET_I64;
       data_offset->off.i64 = data_offset->off.i64 + l*b + (i-1)%r;
-    } 
+    }
     *ret_actual_start = requested_start;
-  } else { 
+  } else {
     /* else, there's other stuff on seq lines, so the best
      * we can do easily is to position at start of relevant line.
      */
@@ -251,7 +251,7 @@ SSIGetSubseqOffset(
     } else if (sfp->smode == SSI_OFFSET_I64) {
       data_offset->mode    = SSI_OFFSET_I64;
       data_offset->off.i64 = data_offset->off.i64 + l*b;
-    } 
+    }
     /* yes, the eq below is = 1 + (i-1)/r*r but it's not = i. that's an integer /. */
     *ret_actual_start = 1 + l*r;
   }
@@ -261,7 +261,7 @@ SSIGetSubseqOffset(
 
 int
 SSISetFilePosition(
-  FILE *fp, 
+  FILE *fp,
   SSIOFFSET *offset
 ){
   if (offset->mode == SSI_OFFSET_I32) {
@@ -284,9 +284,9 @@ SSISetFilePosition(
 
 int
 SSIFileInfo(
-  SSIFILE *sfp, 
-  int fh, 
-  char **ret_filename, 
+  SSIFILE *sfp,
+  int fh,
+  char **ret_filename,
   int *ret_format
 ){
   if (fh < 0 || fh >= sfp->nfiles) return SSI_ERR_BADARG;
@@ -305,7 +305,7 @@ SSIClose(
     if (sfp->fp       != NULL) fclose(sfp->fp);
     free(sfp);
   }
-}  
+} 
 
 
 void
@@ -315,7 +315,7 @@ clear_ssifile(
   int i;
 
   if (sfp->filename != NULL) {
-    for (i = 0; i < sfp->nfiles; i++) 
+    for (i = 0; i < sfp->nfiles; i++)
       if (sfp->filename[i] != NULL) free(sfp->filename[i]);
     free(sfp->filename);
   }
@@ -324,7 +324,7 @@ clear_ssifile(
   if (sfp->bpl          != NULL) free(sfp->bpl);
   if (sfp->rpl          != NULL) free(sfp->rpl);
 }
-  
+ 
 
 int
 SSIRecommendMode(
@@ -336,7 +336,7 @@ SSIRecommendMode(
     if (s1.st_size <= 2146483647L) return SSI_OFFSET_I32;
     else                           return SSI_OFFSET_I64;
   }
-#else 
+#else
   struct stat s2;
   if (stat(file, &s2) == 0) {
     if (s2.st_size <= 2146483647L) return SSI_OFFSET_I32;
@@ -345,7 +345,7 @@ SSIRecommendMode(
 #endif
   return -1;
 }
- 
+
 
 SSIINDEX*
 SSICreateIndex(
@@ -361,7 +361,7 @@ SSICreateIndex(
   g->max_ram  = SSI_MAXRAM;
 
 #ifndef HAS_64BIT_FILE_OFFSETS
-  if (mode == SSI_OFFSET_I64) 
+  if (mode == SSI_OFFSET_I64)
     Die("\
 Can't create a 64-bit SSI index on this system, sorry;\n\
 I don't have 64-bit file offset functions available.\n");
@@ -379,7 +379,7 @@ I don't have 64-bit file offset functions available.\n");
   g->nprimary      = 0;
   g->ptmpfile      = "tmp.ssi.1"; /* hardcoded, for now. */
   g->ptmp          = NULL;
-  
+ 
   g->skeys         = NULL;
   g->slen          = 0;
   g->nsecondary    = 0;
@@ -390,10 +390,10 @@ I don't have 64-bit file offset functions available.\n");
    * we'll try to free anything non-NULL if a malloc fails.
    */
   if ((g->filenames = malloc(sizeof(char *)     * SSI_FILE_BLOCK)) == NULL) goto FAILURE;
-  if ((g->fileformat= malloc(sizeof(uint32_t) * SSI_FILE_BLOCK)) == NULL) goto FAILURE; 
-  if ((g->bpl       = malloc(sizeof(uint32_t) * SSI_FILE_BLOCK)) == NULL) goto FAILURE; 
-  if ((g->rpl       = malloc(sizeof(uint32_t) * SSI_FILE_BLOCK)) == NULL) goto FAILURE; 
-  
+  if ((g->fileformat= malloc(sizeof(uint32_t) * SSI_FILE_BLOCK)) == NULL) goto FAILURE;
+  if ((g->bpl       = malloc(sizeof(uint32_t) * SSI_FILE_BLOCK)) == NULL) goto FAILURE;
+  if ((g->rpl       = malloc(sizeof(uint32_t) * SSI_FILE_BLOCK)) == NULL) goto FAILURE;
+ 
   if ((g->pkeys = malloc(sizeof(struct ssipkey_s)* SSI_KEY_BLOCK))== NULL)  goto FAILURE;
   if ((g->skeys = malloc(sizeof(struct ssipkey_s)* SSI_KEY_BLOCK))== NULL)  goto FAILURE;
 
@@ -405,13 +405,13 @@ I don't have 64-bit file offset functions available.\n");
 }
 
 
-int 
+int
 SSIGetFilePosition(
-  FILE *fp, 
-  int mode, 
+  FILE *fp,
+  int mode,
   SSIOFFSET *ret_offset
 ){
-  if (mode == SSI_OFFSET_I32) 
+  if (mode == SSI_OFFSET_I32)
     {
       ret_offset->mode    = SSI_OFFSET_I32;
       ret_offset->off.i32 = ftell(fp);
@@ -438,13 +438,13 @@ SSIGetFilePosition(
 
 int
 SSIAddFileToIndex(
-  SSIINDEX *g, 
-  char *filename, 
-  int fmt, 
+  SSIINDEX *g,
+  char *filename,
+  int fmt,
   int *ret_fh
 ){
   int n;
-  
+ 
   if (g->nfiles >= SSI_MAXFILES) return SSI_ERR_TOOMANY_FILES;
 
   n = strlen(filename);
@@ -473,9 +473,9 @@ SSIAddFileToIndex(
 
 int
 SSISetFileForSubseq(
-  SSIINDEX *g, 
-  int fh, 
-  int bpl, 
+  SSIINDEX *g,
+  int fh,
+  int bpl,
   int rpl
 ){
   if (fh < 0 || fh >= g->nfiles) return SSI_ERR_BADARG;
@@ -488,15 +488,15 @@ SSISetFileForSubseq(
 
 int
 SSIAddPrimaryKeyToIndex(
-  SSIINDEX *g, 
-  char *key, 
+  SSIINDEX *g,
+  char *key,
   int fh,
-  SSIOFFSET *r_off, 
-  SSIOFFSET *d_off, 
+  SSIOFFSET *r_off,
+  SSIOFFSET *d_off,
   int L
 ){
   int n;			/* a string length */
-  
+ 
   if (fh >= SSI_MAXFILES)         return SSI_ERR_TOOMANY_FILES;
   if (g->nprimary >= SSI_MAXKEYS) return SSI_ERR_TOOMANY_KEYS;
   if (L > 0 && d_off == NULL) abort(); /* need both. */
@@ -504,7 +504,7 @@ SSIAddPrimaryKeyToIndex(
   /* Before adding the key: check how big our index is.
    * If it's getting too large, switch to external mode.
    */
-  if (!g->external && current_index_size(g) >= g->max_ram) 
+  if (!g->external && current_index_size(g) >= g->max_ram)
     if (activate_external_sort(g) != 0)  return SSI_ERR_NOFILE;
 
   /* Update maximum pkey length, if needed.
@@ -516,14 +516,14 @@ SSIAddPrimaryKeyToIndex(
    */
   if (g->external) {
     if (g->smode == SSI_OFFSET_I32) {
-      fprintf(g->ptmp, "%s\t%d\t%lu\t%lu\t%lu\n", 
-	      key, fh, (unsigned long) r_off->off.i32, 
+      fprintf(g->ptmp, "%s\t%d\t%lu\t%lu\t%lu\n",
+	      key, fh, (unsigned long) r_off->off.i32,
 	      (unsigned long) (d_off == NULL? 0 : d_off->off.i32),
 	      (unsigned long) L);
     } else {
-      fprintf(g->ptmp, "%s\t%d\t%lu\t%lu\t%lu\n", 
-	      key, fh, r_off->off.i64, 
-	      d_off == NULL? 0 : d_off->off.i64, 
+      fprintf(g->ptmp, "%s\t%d\t%lu\t%lu\t%lu\n",
+	      key, fh, r_off->off.i64,
+	      d_off == NULL? 0 : d_off->off.i64,
 	      (unsigned long) L);
     }
     g->nprimary++;
@@ -540,7 +540,7 @@ SSIAddPrimaryKeyToIndex(
     g->pkeys[g->nprimary].len   = L;
   } else {
 	/* yeah, this looks stupid, but look: we have to give a valid
-           looking, non-NULL d_off of some sort, or writes will fail. 
+           looking, non-NULL d_off of some sort, or writes will fail.
            It's going to be unused anyway. */
     g->pkeys[g->nprimary].d_off = *r_off;
     g->pkeys[g->nprimary].len   = 0;
@@ -557,18 +557,18 @@ SSIAddPrimaryKeyToIndex(
 
 int
 SSIAddSecondaryKeyToIndex(
-  SSIINDEX *g, 
-  char *key, 
+  SSIINDEX *g,
+  char *key,
   char *pkey
 ){
   int n;			/* a string length */
-  
+ 
   if (g->nsecondary >= SSI_MAXKEYS) return SSI_ERR_TOOMANY_KEYS;
 
   /* Before adding the key: check how big our index is.
    * If it's getting too large, switch to external mode.
    */
-  if (!g->external && current_index_size(g) >= g->max_ram) 
+  if (!g->external && current_index_size(g) >= g->max_ram)
     if (activate_external_sort(g) != 0)  return SSI_ERR_NOFILE;
 
   /* Update maximum secondary key length, if necessary.
@@ -598,9 +598,9 @@ SSIAddSecondaryKeyToIndex(
 }
 
 
-int 
+int
 pkeysort(
-  const void *k1, 
+  const void *k1,
   const void *k2
 ){
   struct ssipkey_s *key1;
@@ -611,9 +611,9 @@ pkeysort(
 }
 
 
-int 
+int
 skeysort(
-  const void *k1, 
+  const void *k1,
   const void *k2
 ){
   struct ssiskey_s *key1;
@@ -626,7 +626,7 @@ skeysort(
 
 int
 SSIWriteIndex(
-  char *file, 
+  char *file,
   SSIINDEX *g
 ){
   FILE      *fp;
@@ -656,7 +656,7 @@ I don't have 64-bit file offset functions available.\n");
 #endif
   }
 
-  /* Magic-looking numbers come from adding up sizes 
+  /* Magic-looking numbers come from adding up sizes
    * of things in bytes
    */
   frecsize = 16 + g->flen;
@@ -667,18 +667,18 @@ I don't have 64-bit file offset functions available.\n");
   if (g->smode == SSI_OFFSET_I64) header_flags |= SSI_USE64;
   if (g->imode == SSI_OFFSET_I64) header_flags |= SSI_USE64_INDEX;
 
-  /* Magic-looking numbers again come from adding up sizes 
+  /* Magic-looking numbers again come from adding up sizes
    * of things in bytes
    */
   foffset = (header_flags & SSI_USE64_INDEX) ? 66 : 54;
   poffset = foffset + frecsize*g->nfiles;
   soffset = poffset + precsize*g->nprimary;
-  
+ 
   /* Sort the keys
    * If external mode, make system calls to UNIX/POSIX "sort" in place, then
    * open new sorted files for reading thru ptmp and stmp handles.
    * If internal mode, call qsort.
-   * 
+   *
    * Note that you'd better force a POSIX locale for the sort; else,
    * some silly distro (e.g. Mandrake Linux >=8.1) may have specified
    * LC_COLLATE=en_US, and this'll give a sort "bug" in which it doesn't
@@ -699,8 +699,8 @@ I don't have 64-bit file offset functions available.\n");
     if ((status = system(cmd)) != 0) return SSI_ERR_EXTERNAL_SORT;
     if ((g->stmp = fopen(g->stmpfile, "r")) == NULL) return SSI_ERR_EXTERNAL_SORT;
   } else {
-    qsort((void *) g->pkeys, g->nprimary,   sizeof(struct ssipkey_s), pkeysort); 
-    qsort((void *) g->skeys, g->nsecondary, sizeof(struct ssiskey_s), skeysort); 
+    qsort((void *) g->pkeys, g->nprimary,   sizeof(struct ssipkey_s), pkeysort);
+    qsort((void *) g->skeys, g->nsecondary, sizeof(struct ssiskey_s), skeysort);
   }
 
   /* Write the header
@@ -733,7 +733,7 @@ I don't have 64-bit file offset functions available.\n");
     {
       file_flags = 0;
       if (g->bpl[i] > 0 && g->rpl[i] > 0) file_flags |= SSI_FAST_SUBSEQ;
-      
+     
       strcpy(s, g->filenames[i]);
       if (fwrite(s, sizeof(char), g->flen, fp) != g->flen) return SSI_ERR_FWRITE;
       if (! write_i32(fp, g->fileformat[i]))               return SSI_ERR_FWRITE;
@@ -750,7 +750,7 @@ I don't have 64-bit file offset functions available.\n");
     char *buf    = NULL;
     size_t buflen = 0;
     struct ssipkey_s pkey;
-    for (i = 0; i < g->nprimary; i++) 
+    for (i = 0; i < g->nprimary; i++)
       {
 	if (getline(&buf, &buflen, g->ptmp) == NULL)       return SSI_ERR_NODATA;
 	if (parse_pkey_info(buf, g->smode, &pkey) != 0)      return SSI_ERR_BADFORMAT;
@@ -801,7 +801,7 @@ I don't have 64-bit file offset functions available.\n");
 	  strcpy(s,  g->skeys[i].pkey);
 	  if (fwrite(s2, sizeof(char), g->slen, fp) != g->slen) return SSI_ERR_FWRITE;
 	  if (fwrite(s,  sizeof(char), g->plen, fp) != g->plen) return SSI_ERR_FWRITE;
-	} 
+	}
     }
     free(s2);
   }
@@ -817,17 +817,17 @@ SSIFreeIndex(
   SSIINDEX *g
 ){
   int i;
-  if (g != NULL) 
+  if (g != NULL)
     {
       if (g->external == false) {
 	for (i = 0; i < g->nprimary;   i++) free(g->pkeys[i].key);
 	for (i = 0; i < g->nsecondary; i++) free(g->skeys[i].key);
 	for (i = 0; i < g->nsecondary; i++) free(g->skeys[i].pkey);
 	if (g->pkeys       != NULL)         free(g->pkeys);       	
-	if (g->skeys       != NULL)         free(g->skeys);       
+	if (g->skeys       != NULL)         free(g->skeys);      
       } else {
 	if (g->ptmp        != NULL)         fclose(g->ptmp);
-	if (g->stmp        != NULL)         fclose(g->stmp);       
+	if (g->stmp        != NULL)         fclose(g->stmp);      
 #if DEBUGLEVEL == 0
 	remove(g->ptmpfile);
 	remove(g->stmpfile);
@@ -836,8 +836,8 @@ SSIFreeIndex(
       for (i = 0; i < g->nfiles;     i++) free(g->filenames[i]);
       if (g->filenames   != NULL)         free(g->filenames);
       if (g->fileformat  != NULL)         free(g->fileformat);
-      if (g->bpl         != NULL)         free(g->bpl);       
-      if (g->rpl         != NULL)         free(g->rpl);       
+      if (g->bpl         != NULL)         free(g->bpl);      
+      if (g->rpl         != NULL)         free(g->rpl);      
       free(g);
     }
 }
@@ -848,12 +848,12 @@ SSIErrorString(
   int n
 ){
   switch (n) {
-  case SSI_ERR_OK:            return "ok (no error)"; 
+  case SSI_ERR_OK:            return "ok (no error)";
   case SSI_ERR_NODATA:        return "no data, fread() failed";
   case SSI_ERR_NO_SUCH_KEY:   return "no such key";
   case SSI_ERR_MALLOC:        return "out of memory, malloc() failed";
   case SSI_ERR_NOFILE:        return "file not found, fopen() failed";
-  case SSI_ERR_BADMAGIC:      return "not a SSI file? (bad magic)"; 
+  case SSI_ERR_BADMAGIC:      return "not a SSI file? (bad magic)";
   case SSI_ERR_BADFORMAT:     return "corrupt format? unexpected data";
   case SSI_ERR_NO64BIT:       return "no large file support for this system";
   case SSI_ERR_SEEK_FAILED:   return "failed to reposition on disk";
@@ -873,7 +873,7 @@ SSIErrorString(
 
 int
 read_i16(
-  FILE *fp, 
+  FILE *fp,
   uint16_t *ret_result
 ){
   uint16_t result;
@@ -885,7 +885,7 @@ read_i16(
 
 int
 write_i16(
-  FILE *fp, 
+  FILE *fp,
   uint16_t n
 ){
   n = htons(n);
@@ -896,7 +896,7 @@ write_i16(
 
 int
 read_i32(
-  FILE *fp, 
+  FILE *fp,
   uint32_t *ret_result
 ){
   uint32_t result;
@@ -908,7 +908,7 @@ read_i32(
 
 int
 write_i32(
-  FILE *fp, 
+  FILE *fp,
   uint32_t n
 ){
   n = htonl(n);
@@ -919,7 +919,7 @@ write_i32(
 
 int
 read_i64(
-  FILE *fp, 
+  FILE *fp,
   uint64_t *ret_result
 ){
   uint64_t result;
@@ -931,7 +931,7 @@ read_i64(
 
 int
 write_i64(
-  FILE *fp, 
+  FILE *fp,
   uint64_t n
 ){
   n = htole64(n);
@@ -942,8 +942,8 @@ write_i64(
 
 int			
 read_offset(
-  FILE *fp, 
-  char mode, 
+  FILE *fp,
+  char mode,
   SSIOFFSET *ret_offset
 ){
   if (mode == SSI_OFFSET_I32) {
@@ -960,7 +960,7 @@ read_offset(
 
 int
 write_offset(
-  FILE *fp, 
+  FILE *fp,
   SSIOFFSET *offset
 ){
   if      (offset->mode == SSI_OFFSET_I32) return write_i32(fp, offset->off.i32);
@@ -973,30 +973,30 @@ write_offset(
 
 int
 parse_pkey_info(
-  char *buf, 
-  char mode, 
+  char *buf,
+  char mode,
   struct ssipkey_s *pkey
 ){
   char *s, *tok;
-  
+ 
   s = buf;
-  if ((tok = strtok(s, "\t\n")) == NULL) return SSI_ERR_BADFORMAT;  
+  if ((tok = strtok(s, "\t\n")) == NULL) return SSI_ERR_BADFORMAT; 
   pkey->key  = tok;
-  if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT;  
+  if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT; 
   pkey->fnum = (uint16_t) atoi(tok);
 
   if (mode == SSI_OFFSET_I32) {
-    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT;  
+    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT; 
     pkey->r_off.mode = mode;
     pkey->r_off.off.i32  = (uint32_t) strtoul(tok, NULL, 10);
-    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT;  
+    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT; 
     pkey->d_off.mode = mode;
     pkey->d_off.off.i32  = (uint32_t) strtoul(tok, NULL, 10);
   }else {
-    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT;  
+    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT; 
     pkey->r_off.mode = mode;
     pkey->r_off.off.i64  = (uint64_t) strtoull(tok, NULL, 10);
-    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT;  
+    if ((tok = strtok(NULL, "\t\n")) == NULL) return SSI_ERR_BADFORMAT; 
     pkey->d_off.mode = mode;
     pkey->d_off.off.i64  = (uint64_t) strtoull(tok, NULL, 10);
   }
@@ -1009,11 +1009,11 @@ parse_pkey_info(
 
 int
 parse_skey_info(
-  char *buf, 
+  char *buf,
   struct ssiskey_s *skey
 ){
   char *s, *tok;
-  
+ 
   s = buf;
   if ((tok = strtok(s, "\t\n")) == NULL) return SSI_ERR_BADFORMAT;
   skey->key = tok;
@@ -1025,18 +1025,18 @@ parse_skey_info(
 
 int
 binary_search(
-  SSIFILE *sfp, 
-  char *key, 
-  int klen, 
+  SSIFILE *sfp,
+  char *key,
+  int klen,
   SSIOFFSET *base,
-  uint32_t recsize, 
+  uint32_t recsize,
   uint32_t maxidx
 ){
   char        *name;
   uint32_t   left, right, mid;
   int          cmp;
   int          status;
-  
+ 
   if (maxidx == 0) return SSI_ERR_NO_SUCH_KEY; /* special case: empty index */
   if ((name = malloc (sizeof(char)*klen)) == NULL) return SSI_ERR_MALLOC;
   left  = 0;
@@ -1046,7 +1046,7 @@ binary_search(
 				   we limit unsigned vars to signed ranges. */
     if ((status = indexfile_position(sfp, base, recsize, mid)) != 0)
       { free(name); return status; }
-    if (fread(name, sizeof(char), klen, sfp->fp) != klen) 
+    if (fread(name, sizeof(char), klen, sfp->fp) != klen)
       { free(name); return SSI_ERR_NODATA; }
     cmp = strcmp(name, key);
     if      (cmp == 0) break;	          /* found it!              */
@@ -1065,9 +1065,9 @@ binary_search(
 
 int
 indexfile_position(
-  SSIFILE *sfp, 
-  SSIOFFSET *base, 
-  uint32_t len, 
+  SSIFILE *sfp,
+  SSIOFFSET *base,
+  uint32_t len,
   uint32_t n
 ){
   SSIOFFSET pos;
@@ -1085,14 +1085,14 @@ indexfile_position(
 }
 
 
-uint64_t 
+uint64_t
 current_index_size(
   SSIINDEX *g
 ){
   uint64_t frecsize, precsize, srecsize;
   uint64_t total;
 
-  /* Magic-looking numbers come from adding up sizes 
+  /* Magic-looking numbers come from adding up sizes
    * of things in bytes
    */
   frecsize = 16 + g->flen;
@@ -1114,7 +1114,7 @@ activate_external_sort(
   int i;
 				/* it's a bit late to be checking this, but... */
   if (g->external)             return 0; /* we already are external, fool */
-  if (FileExists(g->ptmpfile)) return 1;	 
+  if (FileExists(g->ptmpfile)) return 1;	
   if (FileExists(g->stmpfile)) return 1;
   if ((g->ptmp = fopen(g->ptmpfile, "w")) == NULL) return 1;
   if ((g->stmp = fopen(g->stmpfile, "w")) == NULL) return 1;
@@ -1124,29 +1124,29 @@ activate_external_sort(
   //SQD_DPRINTF1(("Switching to external sort - flushing ssiindex to disk...\n"));
   for (i = 0; i < g->nprimary; i++) {
     if (g->smode == SSI_OFFSET_I32) {
-      fprintf(g->ptmp, "%s\t%u\t%lu\t%lu\t%lu\n", 
+      fprintf(g->ptmp, "%s\t%u\t%lu\t%lu\t%lu\n",
 	      g->pkeys[i].key, g->pkeys[i].fnum,
-	      (unsigned long) g->pkeys[i].r_off.off.i32, 
-	      (unsigned long) g->pkeys[i].d_off.off.i32, 
+	      (unsigned long) g->pkeys[i].r_off.off.i32,
+	      (unsigned long) g->pkeys[i].d_off.off.i32,
 	      (unsigned long) g->pkeys[i].len);
     } else {
-      fprintf(g->ptmp, "%s\t%u\t%llu\t%llu\t%lu\n", 
+      fprintf(g->ptmp, "%s\t%u\t%llu\t%llu\t%lu\n",
 	      g->pkeys[i].key, g->pkeys[i].fnum,
-	      (unsigned long long) g->pkeys[i].r_off.off.i64, 
-	      (unsigned long long) g->pkeys[i].d_off.off.i64, 
+	      (unsigned long long) g->pkeys[i].r_off.off.i64,
+	      (unsigned long long) g->pkeys[i].d_off.off.i64,
 	      (unsigned long) g->pkeys[i].len);
     }
   }
   for (i = 0; i < g->nsecondary; i++)
     fprintf(g->stmp, "%s\t%s\n", g->skeys[i].key, g->skeys[i].pkey);
-  
+ 
   /* Free the memory now that we've flushed our lists to disk
    */
   for (i = 0; i < g->nprimary;   i++) free(g->pkeys[i].key);
   for (i = 0; i < g->nsecondary; i++) free(g->skeys[i].key);
   for (i = 0; i < g->nsecondary; i++) free(g->skeys[i].pkey);
   if (g->pkeys       != NULL)         free(g->pkeys);       	
-  if (g->skeys       != NULL)         free(g->skeys);       
+  if (g->skeys       != NULL)         free(g->skeys);      
   g->pkeys = NULL;
   g->skeys = NULL;
 
@@ -1171,9 +1171,9 @@ SSIForceExternalSort(SSIINDEX *g)
 /*****************************************************************
  * Test driving mode
  *****************************************************************/
-#ifdef MUGGINS_LETS_ME_SLEEP 
-/* Minimally: 
-   cc -g -Wall -o shiva -DDEBUGLEVEL=1 -DMUGGINS_LETS_ME_SLEEP ssi.c sqerror.c sre_string.c types.c sre_ctype.c sre_math.c file.c -lm 
+#ifdef MUGGINS_LETS_ME_SLEEP
+/* Minimally:
+   cc -g -Wall -o shiva -DDEBUGLEVEL=1 -DMUGGINS_LETS_ME_SLEEP ssi.c sqerror.c sre_string.c types.c sre_ctype.c sre_math.c file.c -lm
 */
 
 int
@@ -1187,14 +1187,14 @@ main(int argc, char **argv)
   int       i;
   int       fh;			/* a file handle */
   int       status;		/* return status from a SSI call */
-  
+ 
   mode = SSI_OFFSET_I32;
   if ((ssi = SSICreateIndex(mode)) == NULL)
     Die("Failed to allocate SSI index");
 
   /* Generate two FASTA files, tmp.0 and tmp.1, and index them.
    */
-  if ((ofp = fopen("tmp.0", "w")) == NULL) 
+  if ((ofp = fopen("tmp.0", "w")) == NULL)
     Die("failed to open tmp.0");
   if ((status = SSIAddFileToIndex(ssi, "tmp.0", SQFILE_FASTA, &fh)) != 0)
     Die("SSIAddFileToIndex() failed: %s", SSIErrorString(status));
@@ -1203,9 +1203,9 @@ main(int argc, char **argv)
       Die("SSIGetFilePosition() failed: %s", SSIErrorString(status));
     sprintf(name, "seq%d", i);
     sprintf(accession, "ac%d", i);
-    fprintf(ofp, ">%s [%s] Description? we don't need no steenking description.\n", 
+    fprintf(ofp, ">%s [%s] Description? we don't need no steenking description.\n",
 	    name, accession);
-    if ((status = SSIGetFilePosition(ofp, mode, &d_off)) != 0) 
+    if ((status = SSIGetFilePosition(ofp, mode, &d_off)) != 0)
       Die("SSIGetFilePosition() failed: %s", SSIErrorString(status));
     fprintf(ofp, "AAAAAAAAAA\n");
     fprintf(ofp, "CCCCCCCCCC\n");
@@ -1219,8 +1219,8 @@ main(int argc, char **argv)
   }
   SSISetFileForSubseq(ssi, fh, 11, 10);
   fclose(ofp);
-  
-  if ((ofp = fopen("tmp.1", "w")) == NULL) 
+ 
+  if ((ofp = fopen("tmp.1", "w")) == NULL)
     Die("failed to open tmp.1");
   if ((status = SSIAddFileToIndex(ssi, "tmp.1", SQFILE_FASTA, &fh)) != 0)
     Die("SSIAddFileToIndex() failed: %s", SSIErrorString(status));
@@ -1229,7 +1229,7 @@ main(int argc, char **argv)
       Die("SSIGetFilePosition() failed: %s", SSIErrorString(status));
     sprintf(name, "seq%d", i);
     sprintf(accession, "ac%d", i);
-    fprintf(ofp, ">%s [%s] i/o, i/o, it's off to disk we go.\n", 
+    fprintf(ofp, ">%s [%s] i/o, i/o, it's off to disk we go.\n",
 	    name, accession);
     if ((status = SSIGetFilePosition(ofp, mode, &d_off)) != 0)
       Die("SSIGetFilePosition() failed: %s", SSIErrorString(status));
@@ -1245,10 +1245,10 @@ main(int argc, char **argv)
   }
   SSISetFileForSubseq(ssi, fh, 14, 10);
   fclose(ofp);
-  
+ 
   /* Write the index to tmp.ssi
-   */  
-  if ((status = SSIWriteIndex("tmp.ssi", ssi)) != 0) 
+   */ 
+  if ((status = SSIWriteIndex("tmp.ssi", ssi)) != 0)
     Die("SSIWriteIndex() failed: %s", SSIErrorString(status));
   SSIFreeIndex(ssi);
 

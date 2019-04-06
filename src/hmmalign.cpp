@@ -13,10 +13,10 @@
  * main() for aligning a set of sequences to an HMM.
  */
 
-#include "hmmalign.h"    /* compile-time configuration constants */
-#include "selex.h"
-#include "alignio.h"
-#include "sqio.h"
+#include "hmmalign.hpp"    /* compile-time configuration constants */
+#include "selex.hpp"
+#include "alignio.hpp"
+#include "sqio.hpp"
 
 
 char banner[] = "hmmalign - align sequences to an HMM profile";
@@ -267,13 +267,13 @@ main(int argc, char **argv) {
  */
 void
 include_alignment(
-  char *seqfile, 
-  struct plan7_s *hmm, 
+  char *seqfile,
+  struct plan7_s *hmm,
   int do_mapped,
-  char ***rsq, 
-  unsigned char ***dsq, 
+  char ***rsq,
+  unsigned char ***dsq,
   SQINFO **sqinfo,
-  struct p7trace_s ***tr, 
+  struct p7trace_s ***tr,
   int *nseq
 ){
   int format;      /* format of alignment file */

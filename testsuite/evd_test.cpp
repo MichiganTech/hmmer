@@ -1,25 +1,21 @@
 /* evd_test.c
- * SRE, Wed Nov 12 11:17:27 1997 [St. Louis]
  *
  * Test driver for EVD distribution support in histogram.c
  * Generates random EVD samples; fits them; checks fitted mu, lambda
  * against parametric mu, lambda. If they differ badly, calls Die().
  * If OK, returns EXIT_SUCCESS.
  *
- * CVS $Id: evd_test.c 878 2003-04-14 16:00:17Z eddy $
  */
 
-#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
 
+#include "config.h"
 #include "structs.h"
-#include "funcs.h"
 #include "globals.h"
-//#include "squid.h"
 
 static char banner[] = "\
 evd_test : testing of EVD code in histogram.c";

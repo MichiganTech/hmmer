@@ -1,8 +1,8 @@
 #! /usr/local/bin/perl
 
-# Any program that reads multiple HMMs should refuse to 
+# Any program that reads multiple HMMs should refuse to
 # deal with "mixed" databases of DNA and protein HMMs,
-# because behavior will be undefined. 
+# because behavior will be undefined.
 #
 # First detected as an hmmconvert problem (by GCG's Christiane
 # VanSchlun), and it's easiest to test there too. The other

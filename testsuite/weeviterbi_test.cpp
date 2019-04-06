@@ -1,22 +1,19 @@
 /* weeviterbi_test.c
- * Wed Mar  4 17:30:39 1998
  *
  * Test driver for Myers/Miller/Hirschberg linear memory Viterbi tracebacks.
  *
- * CVS $Id: weeviterbi_test.c 913 2003-10-04 18:26:49Z eddy $
  */
 
-#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-//#include "squid.h"
+#include "config.hpp"
+#include "structs.hpp"
+#include "globals.hpp"
+
 
 static char banner[] = "\
 weeviterbi_test : testing of Plan7 Myers/Miller/Hirschberg Viterbi traceback code";

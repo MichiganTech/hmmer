@@ -13,30 +13,23 @@
  * Support for Plan 7 traceback data structure, p7trace_s.
  */
 
-#include "config.h"
-//#include "squidconf.h"
-
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "alignio.h"
-#include "structs.h"
-#include "funcs.h"
+#include "alignio.hpp"
+#include "structs.hpp"
 
-#include "vectorops.h"
+#include "vectorops.hpp"
 
 #define ALILENGTH   50    /* length of displayed alignment lines        */
 
 
-static void rightjustify(char *s, int n);
-
-/* Function: P7AllocTrace(), P7ReallocTrace(), P7FreeTrace()
- *
- * Purpose:  allocation and freeing of traceback structures
- */
 void
-P7AllocTrace(int tlen, struct p7trace_s **ret_tr) {
+P7AllocTrace(
+  int tlen,
+  struct p7trace_s **ret_tr
+){
   struct p7trace_s *tr;
 
   tr =            MallocOrDie (sizeof(struct p7trace_s));
@@ -45,14 +38,23 @@ P7AllocTrace(int tlen, struct p7trace_s **ret_tr) {
   tr->pos       = MallocOrDie (sizeof(int)  * tlen);
   *ret_tr = tr;
 }
+
+
 void
-P7ReallocTrace(struct p7trace_s *tr, int tlen) {
+P7ReallocTrace(
+  struct p7trace_s *tr,
+  int tlen
+){
   tr->statetype = ReallocOrDie (tr->statetype, tlen * sizeof(char));
   tr->nodeidx   = ReallocOrDie (tr->nodeidx,   tlen * sizeof(int));
   tr->pos       = ReallocOrDie (tr->pos,       tlen * sizeof(int));
 }
+
+
 void
-P7FreeTrace(struct p7trace_s *tr) {
+P7FreeTrace(
+  struct p7trace_s *tr
+){
   if (tr == NULL) return;
   free(tr->pos);
   free(tr->nodeidx);
@@ -60,48 +62,28 @@ P7FreeTrace(struct p7trace_s *tr) {
   free(tr);
 }
 
-/* Function: TraceSet()
- * Date:     SRE, Sun Mar  8 12:39:00 1998 [St. Louis]
- *
- * Purpose:  Convenience function; set values at position tpos
- *           in a trace.
- *
- *
- * Args:     tr   - trace object to write to
- *           tpos - ptr to position in trace to set
- *           type - statetype e.g. STS, etc.
- *           idx  - nodeidx 1..M or 0
- *           pos  - seq position 1..L or 0
- *
- * Returns:  void
- */
+
 void
-TraceSet(struct p7trace_s *tr, int tpos, char type, int idx, int pos) {
+TraceSet(
+  struct p7trace_s *tr,
+  int tpos,
+  char type,
+  int idx,
+  int pos
+){
   tr->statetype[tpos] = type;
   tr->nodeidx[tpos]   = idx;
   tr->pos[tpos]       = pos;
 }
 
 
-/* Function: MergeTraceArrays()
- * Date:     SRE, Sun Jul  5 15:09:10 1998 [St. Louis]
- *
- * Purpose:  Combine two arrays of traces into a single array.
- *           Used in hmmalign to merge traces from a fixed alignment
- *           with traces from individual unaligned seqs.
- *
- *           t1 traces always precede t2 traces in the resulting array.
- *
- * Args:     t1 - first set of traces
- *           n1 - number of traces in t1
- *           t2 - second set of traces
- *           n2 - number of traces in t2
- *
- * Returns:  pointer to new array of traces.
- *           Both t1 and t2 are free'd here! Do not reuse.
- */
 struct p7trace_s **
-MergeTraceArrays(struct p7trace_s **t1, int n1, struct p7trace_s **t2, int n2) {
+MergeTraceArrays(
+  struct p7trace_s **t1,
+  int n1,
+  struct p7trace_s **t2,
+  int n2
+){
   struct p7trace_s **tr;
   int i;      /* index in traces */
 
@@ -114,28 +96,10 @@ MergeTraceArrays(struct p7trace_s **t1, int n1, struct p7trace_s **t2, int n2) {
 }
 
 
-
-/* Function: P7ReverseTrace()
- * Date:     SRE, Mon Aug 25 12:57:29 1997; Denver CO.
- *
- * Purpose:  Reverse the arrays in a traceback structure.
- *           Tracebacks from Forward() and Viterbi() are
- *           collected backwards, and call this function
- *           when they're done.
- *
- *           It's possible to reverse the arrays in place
- *           more efficiently; but the realloc/copy strategy
- *           has the advantage of reallocating the trace
- *           into the right size of memory. (Tracebacks
- *           overallocate.)
- *
- * Args:     tr - the traceback to reverse. tr->tlen must be set.
- *
- * Return:   (void)
- *           tr is modified.
- */
 void
-P7ReverseTrace(struct p7trace_s *tr) {
+P7ReverseTrace(
+  struct p7trace_s *tr
+){
   char  *statetype;
   int   *nodeidx;
   int   *pos;
@@ -166,21 +130,13 @@ P7ReverseTrace(struct p7trace_s *tr) {
 }
 
 
-
-/* Function: P7TraceCount()
- *
- * Purpose:  Count a traceback into a count-based HMM structure.
- *           (Usually as part of a model parameter re-estimation.)
- *
- * Args:     hmm   - counts-based HMM
- *           dsq   - digitized sequence that traceback aligns to the HMM (1..L)
- *           wt    - weight on the sequence
- *           tr    - alignment of seq to HMM
- *
- * Return:   (void)
- */
 void
-P7TraceCount(struct plan7_s *hmm, unsigned char *dsq, float wt, struct p7trace_s *tr) {
+P7TraceCount(
+  struct plan7_s *hmm,
+  unsigned char *dsq,
+  float wt,
+  struct p7trace_s *tr
+){
   int tpos;                     /* position in tr */
 
   for (tpos = 0; tpos < tr->tlen; tpos++) {
@@ -330,18 +286,12 @@ P7TraceCount(struct plan7_s *hmm, unsigned char *dsq, float wt, struct p7trace_s
 }
 
 
-/* Function: P7TraceScore()
- *
- * Purpose:  Score a traceback and return the score in scaled bits.
- *
- * Args:     hmm   - HMM with valid log odds scores.
- *           dsq   - digitized sequence that traceback aligns to the HMM (1..L)
- *           tr    - alignment of seq to HMM
- *
- * Return:   (void)
- */
 float
-P7TraceScore(struct plan7_s *hmm, unsigned char *dsq, struct p7trace_s *tr) {
+P7TraceScore(
+  struct plan7_s *hmm,
+  unsigned char *dsq,
+  struct p7trace_s *tr
+){
   int score;      /* total score as a scaled integer */
   int tpos;                     /* position in tr */
 
@@ -369,44 +319,16 @@ P7TraceScore(struct plan7_s *hmm, unsigned char *dsq, struct p7trace_s *tr) {
 }
 
 
-
-/* Function: P7Traces2Alignment()
- *
- * Purpose:  Convert an array of traceback structures for a set
- *           of sequences into a new multiple alignment.
- *
- *           Insertions are put into lower case and
- *           are not aligned; instead, Nterm is right-justified,
- *           Cterm is left-justified, and internal insertions
- *           are split in half and the halves are justified in
- *           each direction (the objective being to increase
- *           the chances of getting insertions aligned well enough
- *           for them to become a match). SAM gap char conventions
- *           are used: - in match columns, . in insert columns
- *
- * NOTE:     Does not recognize J state.
- *
- *           Can handle traces with D->I and I->D transitions;
- *           though these are disallowed by Plan7, they might be
- *           generated by aligning an alignment to a model, in
- *           the ImposeMasterTrace() step. Thus, --withali might
- *           generate alignments that are inconsistent with Plan7,
- *           that would have to be trace_doctor()'ed.
- *           xref STL6/p.117.
- *
- * Args:     dsq        - digitized unaligned sequences
- *           sqinfo     - array of info about the sequences
- *           wgt        - weights on seqs
- *           nseq       - number of sequences
- *           mlen       - length of model (number of match states)
- *           tr         - array of tracebacks
- *           matchonly  - true if we don't print insert-generated symbols at all
- * Return:   MSA structure; NULL on failure.
- *           Caller responsible for freeing msa with MSAFree(msa);
- */
 MSA *
-P7Traces2Alignment(unsigned char **dsq, SQINFO *sqinfo, float *wgt, int nseq, int mlen,
-                   struct p7trace_s **tr, int matchonly) {
+P7Traces2Alignment(
+  unsigned char **dsq,
+  SQINFO *sqinfo,
+  float *wgt,
+  int nseq,
+  int mlen,
+  struct p7trace_s **tr,
+  int matchonly
+){
   MSA   *msa;                   /* RETURN: new alignment */
   int    idx;                   /* counter for sequences */
   int    alen;                  /* width of alignment */
@@ -600,15 +522,15 @@ P7Traces2Alignment(unsigned char **dsq, SQINFO *sqinfo, float *wgt, int nseq, in
   return msa;
 }
 
-/* Function: TransitionScoreLookup()
- *
- * Purpose:  Convenience function used in PrintTrace() and TraceScore();
- *           given state types and node indices for a transition,
- *           return the integer score for that transition.
- */
+
 int
-TransitionScoreLookup(struct plan7_s *hmm, char st1, int k1,
-                      char st2, int k2) {
+TransitionScoreLookup(
+  struct plan7_s *hmm,
+  char st1,
+  int k1,
+  char st2,
+  int k2
+){
   switch (st1) {
   case STS:
     return 0;  /* S never pays */
@@ -708,25 +630,13 @@ TransitionScoreLookup(struct plan7_s *hmm, char st1, int k1,
 }
 
 
-/* Function: CreateFancyAli()
- * Date:     SRE, Mon Oct 27 06:49:44 1997 [Sanger Centre UK]
- *
- * Purpose:  Output of an HMM/sequence alignment, using a
- *           traceback structure. Deliberately similar to
- *           the output of BLAST, to make it easier for
- *           people to adapt their Perl parsers (or what have
- *           you) from BLAST to HMMER.
- *
- * Args:     tr  - traceback structure that gives the alignment
- *           hmm - the model
- *           dsq - the sequence (digitized form)
- *           name- name of the sequence
- *
- * Return:   allocated, filled fancy alignment structure.
- */
 struct fancyali_s *
-CreateFancyAli(struct p7trace_s *tr, struct plan7_s *hmm,
-               unsigned char *dsq, char *name) {
+CreateFancyAli(
+  struct p7trace_s *tr,
+  struct plan7_s *hmm,
+  unsigned char *dsq,
+  char *name
+){
   struct fancyali_s *ali;       /* alignment to create                */
   int   tpos;      /* position in trace and alignment    */
   int   bestsym;    /* index of best symbol at this pos   */
@@ -849,20 +759,11 @@ CreateFancyAli(struct p7trace_s *tr, struct plan7_s *hmm,
 }
 
 
-/* Function: PrintFancyAli()
- * Date:     SRE, Mon Oct 27 06:56:42 1997 [Sanger Centre UK]
- *
- * Purpose:  Print an HMM/sequence alignment from a fancyali_s
- *           structure. Line length controlled by ALILENGTH in
- *           config.h (set to 50).
- *
- * Args:     fp  - where to print it (stdout or open FILE)
- *           ali - alignment to print
- *
- * Return:   (void)
- */
 void
-PrintFancyAli(FILE *fp, struct fancyali_s *ali) {
+PrintFancyAli(
+  FILE *fp,
+  struct fancyali_s *ali
+){
   char  buffer[ALILENGTH+1];  /* output line buffer                 */
   int   endi;
   int   pos;
@@ -909,24 +810,12 @@ PrintFancyAli(FILE *fp, struct fancyali_s *ali) {
 }
 
 
-
-/* Function: TraceDecompose()
- * Date:     Sat Aug 30 11:18:40 1997 (Denver CO)
- *
- * Purpose:  Decompose a long multi-hit trace into zero or more
- *           traces without N,C,J transitions: for consistent
- *           scoring and statistical evaluation of single domain
- *           hits.
- *
- * Args:     otr    - original trace structure
- *           ret_tr - RETURN: array of simpler traces
- *           ret_ntr- RETURN: number of traces.
- *
- * Return:   (void)
- *           ret_tr alloc'ed here; free individuals with FreeTrace().
- */
 void
-TraceDecompose(struct p7trace_s *otr, struct p7trace_s ***ret_tr, int *ret_ntr) {
+TraceDecompose(
+  struct p7trace_s *otr,
+  struct p7trace_s ***ret_tr,
+  int *ret_ntr
+){
   struct p7trace_s **tr;        /* array of new traces          */
   int ntr;      /* number of traces             */
   int i,j;      /* position counters in traces  */
@@ -986,18 +875,10 @@ TraceDecompose(struct p7trace_s *otr, struct p7trace_s ***ret_tr, int *ret_ntr) 
 }
 
 
-/* Function: TraceDomainNumber()
- *
- * Purpose:  Count how many times we traverse the
- *           model in a single Plan7 trace -- equivalent
- *           to counting the number of domains.
- *
- *           (A weakness is that we might discard some of
- *           those domains because they have low scores
- *           below E or T threshold.)
- */
 int
-TraceDomainNumber(struct p7trace_s *tr) {
+TraceDomainNumber(
+  struct p7trace_s *tr
+){
   int i;
   int ndom = 0;
 
@@ -1007,24 +888,14 @@ TraceDomainNumber(struct p7trace_s *tr) {
 }
 
 
-/* Function: TraceSimpleBounds()
- *
- * Purpose:  For a trace that contains only a single
- *           traverse of the model (i.e. something that's
- *           come from TraceDecompose(), or a global
- *           alignment), determine the bounds of
- *           the match on both the sequence [1..L] and the
- *           model [1..M].
- *
- * Args:     tr   - trace to look at
- *           i1   - RETURN: start point in sequence [1..L]
- *           i2   - RETURN: end point in sequence [1..L]
- *           k1   - RETURN: start point in model [1..M]
- *           k2   - RETURN: end point in model [1..M]
- */
 void
-TraceSimpleBounds(struct p7trace_s *tr, int *ret_i1, int *ret_i2,
-                  int *ret_k1,  int *ret_k2) {
+TraceSimpleBounds(
+  struct p7trace_s *tr,
+  int *ret_i1,
+  int *ret_i2,
+  int *ret_k1, 
+  int *ret_k2
+){
   int i1, i2, k1, k2, tpos;
 
   i1 = k1 = i2 = k2 = -1;
@@ -1060,27 +931,12 @@ TraceSimpleBounds(struct p7trace_s *tr, int *ret_i1, int *ret_i2,
 }
 
 
-/* Function: MasterTraceFromMap()
- * Date:     SRE, Tue Jul  7 18:51:11 1998 [St. Louis]
- *
- * Purpose:  Convert an alignment map (e.g. hmm->map) to
- *           a master trace. Used for mapping an alignment
- *           onto an HMM. Generally precedes a call to
- *           ImposeMasterTrace(). Compare P7ViterbiAlignAlignment(),
- *           which aligns an alignment to the model using a
- *           Viterbi algorithm to get a master trace.
- *           MasterTraceFromMap() only works if the alignment
- *           is exactly the one used to train the model.
- *
- * Args:     map  - the map (usually hmm->map is passed) 1..M
- *           M    - length of map (model; usually hmm->M passed)
- *           alen - length of alignment that map refers to
- *
- * Returns:  ptr to master trace
- *           Caller must free: P7FreeTrace().
- */
-struct p7trace_s *
-MasterTraceFromMap(int *map, int M, int alen) {
+struct p7trace_s*
+MasterTraceFromMap(
+  int *map,
+  int M,
+  int alen
+){
   struct p7trace_s *tr;         /* RETURN: master trace */
   int tpos;      /* position in trace */
   int apos;      /* position in alignment, 1..alen */
@@ -1145,33 +1001,13 @@ MasterTraceFromMap(int *map, int M, int alen) {
 }
 
 
-
-/* Function: ImposeMasterTrace()
- * Date:     SRE, Sun Jul  5 14:27:16 1998 [St. Louis]
- *
- * Purpose:  Goes with P7ViterbiAlignAlignment(), which gives us
- *           a "master trace" for a whole alignment. Now, given
- *           the alignment and the master trace, construct individual
- *           tracebacks for each sequence. Later we'll hand these
- *           (and presumably other traces) to P7Traces2Alignment().
- *
- *           It is possible to generate individual traces that
- *           are not consistent with Plan7 (e.g. D->I and I->D
- *           transitions may be present). P7Traces2Alignment()
- *           can handle such traces; other functions may not.
- *           See modelmaker.c:trace_doctor() if this is a problem.
- *
- *           Akin to modelmaker.c:fake_tracebacks().
- *
- * Args:     aseq  - aligned seqs
- *           nseq  - number of aligned seqs
- *           mtr   - master traceback
- *           ret_tr- RETURN: array of individual tracebacks, one for each aseq
- *
- * Returns:  (void)
- */
 void
-ImposeMasterTrace(char **aseq, int nseq, struct p7trace_s *mtr, struct p7trace_s ***ret_tr) {
+ImposeMasterTrace(
+  char **aseq,
+  int nseq,
+  struct p7trace_s *mtr,
+  struct p7trace_s ***ret_tr
+){
   struct p7trace_s **tr;
   int  idx;      /* counter over sequences */
   int  mpos;      /* position in master trace        */
@@ -1237,16 +1073,11 @@ ImposeMasterTrace(char **aseq, int nseq, struct p7trace_s *mtr, struct p7trace_s
 }
 
 
-/* Function: rightjustify()
- *
- * Purpose:  Given a gap-containing string of length n,
- *           pull all the non-gap characters as far as
- *           possible to the right, leaving gaps on the
- *           left side. Used to rearrange the positions
- *           of insertions in HMMER alignments.
- */
-static void
-rightjustify(char *s, int n) {
+void
+rightjustify(
+  char *s,
+  int n
+){
   int npos;
   int opos;
 

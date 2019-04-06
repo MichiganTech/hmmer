@@ -55,7 +55,7 @@ problems you see.
      that uses <accession>.<version> style accession numbers. The --av
      option tells hmmindex to index both the full accession name
      (that is, <accession>.<version>) and the base accession name
-     (that is, <accession>) as retrieval keys. This lets you 
+     (that is, <accession>) as retrieval keys. This lets you
      use hmmfetch to retrieve models by their base Pfam accession, even
      when you don't know the latest version number. (Requested
      by Ewan Birney, Dec 2006.)
@@ -63,7 +63,7 @@ problems you see.
 -:-  A new implementation of the Altivec optimized code for PowerPC
      chips is included from Erik Lindahl [Stanford]. (It is activated
      by ./configure --enable-altivec, when you install on a Mac or IBM
-     PowerPC platform.) This version is about twice as fast as the 
+     PowerPC platform.) This version is about twice as fast as the
      previous version.
 
 
@@ -80,7 +80,7 @@ for MPI, OpenMP, and vector Crays; a BLAST-like accelerated algorithm
 from Elon Portugaly and Steve Johnson (HMMERHEAD); and an iterative
 search version (JACKHMMER) from Steve Johnson. I hate to delay the
 release of all these great features, but currently my plan is to
-release them all with 3.0 in one big bang. 
+release them all with 3.0 in one big bang.
 
 However, now that we have an interim 2.4 release branch where this
 stuff can go while 3.0 develops, waiting is not the only option. Feel

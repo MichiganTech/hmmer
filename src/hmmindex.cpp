@@ -13,20 +13,17 @@
  * Create an SSI index file for an HMM database.
  */
 
-#include "config.h"
-//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-//#include "squid.h"
-#include "ssi.h"
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-#include "getopt.h"
-#include "file.h"
+#include "config.hpp"
+#include "ssi.hpp"
+#include "structs.hpp"
+#include "globals.hpp"
+#include "getopt.hpp"
+#include "file.hpp"
 
 
 static char banner[] = "hmmindex -- create SSI index for an HMM database";

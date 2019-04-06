@@ -17,11 +17,11 @@ time, though I expect some to be found.  However, there is still
 missing functionality, including:
 
 	- Only protein models have been tested. DNA models are untested,
-          and there is reason to believe that the new E-value statistics 
+          and there is reason to believe that the new E-value statistics
           will be wrong for DNA models.
 	- no training/multiple alignment program [hmmtrain]
 	- other missing utility programs [hmmconfig, hmminfo, hmmview]
-	- no way to align predetermined alignments to a model 
+	- no way to align predetermined alignments to a model
 	    [a feature requested by both TIGR and the Pfam Consortium]
 	- no built-in cross compatibility with SAM and PFSCAN
 	- alignment algorithms are in an unoptimized "research" form;

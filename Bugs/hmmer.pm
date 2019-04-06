@@ -4,7 +4,7 @@
 # Perl routines for parsing HMMER output
 #
 # SRE, Wed Oct 28 11:27:17 1998
-# CVS $Id$ 
+# CVS $Id$
 
 package hmmer;
 
@@ -80,7 +80,7 @@ sub ParseHMMER {
     @lines = split(/^/, $output);
     $ndom=0;
     $ntarget=0;
-    foreach $line (@lines) 
+    foreach $line (@lines)
     {
 	if ($line =~ /^Query:\s+(\S+)\s+(.+)$/)        {$query = $1; $querydesc = $2;}
 	if ($line =~ /^Scores for/)                    {$indom = 0;  $inseq = 1;}

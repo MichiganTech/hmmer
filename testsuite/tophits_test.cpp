@@ -6,16 +6,14 @@
  *    -v   Verbose; print stuff.
  */
 
-#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-#include "structs.h"
-#include "funcs.h"
-#include "globals.h"
-//#include "squid.h"
+#include "config.hpp"
+#include "structs.hpp"
+#include "globals.hpp"
 
 static char banner[] = "\
 tophits_test : internal verification of tophits.c";

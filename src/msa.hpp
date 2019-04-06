@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -10,22 +10,20 @@
 #pragma once
 
 /* msa.h
- * SRE, Mon May 17 10:24:30 1999
- * 
- * Header file for SQUID's multiple sequence alignment 
+ *
+ * Header file for SQUID's multiple sequence alignment
  * manipulation code.
- * 
- * RCS $Id: msa.h,v 1.12 2002/10/12 04:40:35 eddy Exp $
+ *
  */
 
 #include <stdbool.h>
 #include <stdio.h>		/* FILE support */
-#include "ssi.h"		/* sequence file index support */
-//#include "squid.h"		/* need SQINFO */
+
+#include "ssi.hpp"		/* sequence file index support */
 
 
 /* gki.h
- * 
+ *
  * Declarations of structures, functions for generic key index
  * module: emulation of Perl hashes. See gki.c.
  */
@@ -40,12 +38,12 @@ struct gki_elem {
 };
 
 /* gki:
- *    a dynamically resized hash structure; 
+ *    a dynamically resized hash structure;
  *    contains a hash table and associated data
  */
 typedef struct {
   struct gki_elem **table;
-  
+ 
   int primelevel;
   int nhash;
   int nkeys;
@@ -54,26 +52,26 @@ typedef struct {
 GKI*
 GKIInit();
 
-void 
+void
 GKIFree(
   GKI *hash);
 
-size_t  
+size_t 
 GKIHashValue(
-  GKI *hash, 
+  GKI *hash,
   char *key);
 
-size_t  
+size_t 
 GKIStoreKey(
-  GKI *hash, 
+  GKI *hash,
   char *key);
 
-size_t  
+size_t 
 GKIKeyIndex(
-  GKI *hash, 
+  GKI *hash,
   char *key);
 
-void 
+void
 GKIStatus(
   GKI *hash);
 
@@ -86,17 +84,17 @@ GKIStatus(
  * compatibility.
  ****************************************************/
 /* Structure: aliinfo_s
- * 
+ *
  * Purpose:   Optional information returned from an alignment file.
- * 
+ *
  *            flags: always used. Flags for which info is valid/alloced.
- *       
+ *      
  *            alen: mandatory. Alignments are always flushed right
  *                  with gaps so that all aseqs are the same length, alen.
  *                  Available for all alignment formats.
  *
- *            nseq: mandatory. Aligned seqs are indexed 0..nseq-1. 
- *                  
+ *            nseq: mandatory. Aligned seqs are indexed 0..nseq-1.
+ *                 
  *            wgt:  0..nseq-1 vector of sequence weights. Mandatory.
  *                  If not explicitly set, weights are initialized to 1.0.
  *
@@ -104,16 +102,16 @@ GKIStatus(
  *                  secondary structure codes for consensus structure; "<>^+"
  *                  for RNA, "EHL." for protein. May be NULL if unavailable
  *                  from seqfile. Only available for SELEX format files.
- *                  
+ *                 
  *            rf:   0..alen-1, just like the alignment. rf is an arbitrary string
  *                  of characters, used for annotating columns. Blanks are
  *                  interpreted as non-canonical columns and anything else is
  *                  considered canonical. Only available from SELEX files.
- *                  
- *            sqinfo: mandatory. Array of 0..nseq-1 
+ *                 
+ *            sqinfo: mandatory. Array of 0..nseq-1
  *                  per-sequence information structures, carrying
  *                  name, id, accession, coords.
- *                  
+ *                 
  */
 struct aliinfo_s {		
   int               flags;      /* flags for what info is valid             */
@@ -139,9 +137,9 @@ typedef struct aliinfo_s AINFO;
 #define AINFO_GA      (1 << 2)
 
 /*****************************************************************
- * MSA  
+ * MSA 
  * SRE, Sun Jun 27 15:03:35 1999 [TW 723 over Greenland]
- * 
+ *
  * Defines the new data structure and API for multiple
  * sequence alignment i/o.
  *****************************************************************/
@@ -159,7 +157,7 @@ typedef struct aliinfo_s AINFO;
 
 /* Structure: MSA
  * SRE, Tue May 18 11:33:08 1999
- * 
+ *
  * Our object for a multiple sequence alignment.
  */
 typedef struct msa_struct {
@@ -191,7 +189,7 @@ typedef struct msa_struct {
 
   /* Optional information that we don't understand.
    * That is, we know what type of information it is, but it's
-   * either (interpreted as) free-text comment, or it's Stockholm 
+   * either (interpreted as) free-text comment, or it's Stockholm
    * markup with unfamiliar tags.
    */
   char  **comment;              /* free text comments, or NULL      */
@@ -207,7 +205,7 @@ typedef struct msa_struct {
   char ***gs;                   /* [0..ngs-1][0..nseq-1][free text] markup */
   GKI    *gs_idx;               /* hash of #=GS tag types                  */
   size_t     ngs;                  /* number of #=GS tag types                */
-  
+ 
   char  **gc_tag;               /* markup tags for unparsed #=GC lines  */
   char  **gc;                   /* [0..ngc-1][0..alen-1] markup         */
   GKI    *gc_idx;               /* hash of #=GC tag types               */
@@ -230,10 +228,10 @@ typedef struct msa_struct {
 } MSA;
 #define MSA_SET_WGT     (1 << 0)  /* track whether wgts were set, or left at default 1.0 */
 
-                                     
+                                    
 /* Structure: MSAFILE
  * SRE, Tue May 18 11:36:54 1999
- * 
+ *
  * Defines an alignment file that's open for reading.
  */
 typedef struct msafile_struct {
@@ -255,7 +253,7 @@ typedef struct msafile_struct {
 /* Alignment file formats.
  * Must coexist with sqio.c/squid.h unaligned file format codes.
  * Rules:
- *     - 0 is an unknown/unassigned format 
+ *     - 0 is an unknown/unassigned format
  *     - <100 reserved for unaligned formats
  *     - >100 reserved for aligned formats
  */
@@ -277,8 +275,8 @@ typedef struct msafile_struct {
 
 MSAFILE*
 MSAFileOpen(
-  char *filename, 
-  int format, 
+  char *filename,
+  int format,
   char *env);
 
 
@@ -299,8 +297,8 @@ MSAFree(
 
 void
 MSAFileWrite(
-  MSA *msa, 
-  int outfmt, 
+  MSA *msa,
+  int outfmt,
   int do_oneline);
 
 
@@ -312,13 +310,13 @@ MSAFileRewind(
 
 int
 MSAFilePositionByKey(
-  MSAFILE *afp, 
+  MSAFILE *afp,
   char *key);
 
 
 int
 MSAFilePositionByIndex(
-  MSAFILE *afp, 
+  MSAFILE *afp,
   int idx);
 
 
@@ -330,11 +328,11 @@ MSAFileFormat(
 
 MSA*
 MSAAlloc(
-  int nseq, 
+  int nseq,
   int alen);
 
 
-void  
+void 
 MSAExpand(
   MSA *msa);
 
@@ -344,81 +342,81 @@ MSAFileGetLine(
   MSAFILE *afp);
 
 
-void  
+void 
 MSASetSeqAccession(
-  MSA *msa, 
-  int seqidx, 
+  MSA *msa,
+  int seqidx,
   char *acc);
 
 
-void  
+void 
 MSASetSeqDescription(
-  MSA *msa, 
-  int seqidx, 
+  MSA *msa,
+  int seqidx,
   char *desc);
 
 
-void  
+void 
 MSAAddComment(
-  MSA *msa, 
+  MSA *msa,
   char *s);
 
 
-void  
+void 
 MSAAddGF(
-  MSA *msa, 
-  char *tag, 
+  MSA *msa,
+  char *tag,
   char *value);
 
 
-void  
+void 
 MSAAddGS(
-  MSA *msa, 
-  char *tag, 
-  int seqidx, 
+  MSA *msa,
+  char *tag,
+  int seqidx,
   char *value);
 
 
-void  
+void 
 MSAAppendGC(
-  MSA *msa, 
-  char *tag, 
+  MSA *msa,
+  char *tag,
   char *value);
 
 
 char*
 MSAGetGC(
-  MSA *msa, 
+  MSA *msa,
   char *tag);
 
 
-void  
+void 
 MSAAppendGR(
-  MSA *msa, 
-  char *tag, 
-  int seqidx, 
+  MSA *msa,
+  char *tag,
+  int seqidx,
   char *value);
 
 
-void  
+void 
 MSAVerifyParse(
   MSA *msa);
 
 
 int
 MSAGetSeqidx(
-  MSA *msa, 
-  char *name, 
+  MSA *msa,
+  char *name,
   int guess);
 
 
 MSA*
 MSAFromAINFO(
-  char **aseq, 
-  AINFO *ainfo);   
+  char **aseq,
+  AINFO *ainfo);  
 
 
-void  
+void 
 MSAMingap(
   MSA *msa);
 
@@ -428,45 +426,45 @@ MSANogap(
   MSA *msa);
 
 
-void  
+void 
 MSAShorterAlignment(
-  MSA *msa, 
+  MSA *msa,
   int *useme);
 
 
-void  
+void 
 MSASmallerAlignment(
-  MSA *msa, 
-  int *useme, 
+  MSA *msa,
+  int *useme,
   MSA **ret_new);
 
 
 
 char*
 MSAGetSeqAccession(
-  MSA *msa, 
+  MSA *msa,
   int idx);
 
 
 char*
 MSAGetSeqDescription(
-  MSA *msa, 
+  MSA *msa,
   int idx);
 
 
 char*
 MSAGetSeqSS(
-  MSA *msa, 
+  MSA *msa,
   int idx);
 
 
 char*
 MSAGetSeqSA(
-  MSA *msa, 
+  MSA *msa,
   int idx);
 
 
-float 
+float
 MSAAverageSequenceLength(
   MSA *msa);
 

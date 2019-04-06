@@ -9,12 +9,10 @@
  ************************************************************/
 
 /* histogram.c
- * SRE, Sat Jan 20 16:16:17 1996
  *
  * Accumulation, printing, and fitting of score histograms
  * from database searches.
  *
- * CVS $Id: histogram.c 1740 2006-12-05 14:21:36Z eddys $
  ************************************************************
  * Basic API:
  *
@@ -29,7 +27,6 @@
  * FreeHistogram(h);
  */
 
-#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -37,10 +34,10 @@
 #include <float.h>
 #include <math.h>
 
-#include "squid.h"
-#include "structs.h"
-#include "funcs.h"
-#include "sre_math.h"
+#include "config.hpp"
+#include "squid.hpp"
+#include "structs.hpp"
+#include "sre_math.hpp"
 
 
 /* Function: AllocHistogram()
@@ -995,7 +992,7 @@ EVDMaxLikelyFit(float *x, int *c, int n, float *ret_mu, float *ret_lambda) {
    */
   if (i == 100) {
     float left, right, mid;
-    
+   
     /* First we need to bracket the root */
     lambda = right = left = 0.2;
     Lawless416(x, c, n, lambda, &fx, &dfx);

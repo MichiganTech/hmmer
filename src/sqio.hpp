@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -19,30 +19,24 @@
  * email: gilbertd@bio.indiana.edu
  * Thanks Don!
  *
- * SRE: Modifications as noted. Fri Jul  3 09:44:54 1992
- *      Packaged for squid, Thu Oct  1 10:07:11 1992
- *      ANSI conversion in full swing, Mon Jul 12 12:22:21 1993
- *
- * CVS $Id: sqio.c,v 1.29 2002/08/26 23:10:52 eddy Exp $
- * 
  *****************************************************************
  * Basic API for single sequence reading:
- * 
+ *
  * SQFILE *sqfp;
  * char   *seqfile;
  * int     format;        - see squid.h for formats; example: SQFILE_FASTA
  * char   *seq;
  * SQINFO  sqinfo;
- * 
+ *
  * if ((sqfp = SeqfileOpen(seqfile, format, "BLASTDB")) == NULL)
  *   Die("Failed to open sequence database file %s\n%s\n", seqfile, usage);
  * while (ReadSeq(sqfp, sqfp->format, &seq, &sqinfo)) {
  *   do_stuff;
  *   FreeSequence(seq, &sqinfo);
  * }
- * SeqfileClose(sqfp);  
- * 
- *****************************************************************  
+ * SeqfileClose(sqfp); 
+ *
+ ***************************************************************** 
  */
 
 #pragma once
@@ -54,73 +48,73 @@
 
 #include <unistd.h>	
 
-#include "squid.h"
-#include "msa.h"
-#include "ssi.h"
+#include "squid.hpp"
+#include "msa.hpp"
+#include "ssi.hpp"
 
 
-void 
+void
 SeqfileGetLine(
   SQFILE *V);
 
 
 SQFILE*
 seqfile_open(
-  char *filename, 
-  int format, 
-  char *env, 
+  char *filename,
+  int format,
+  char *env,
   int ssimode);
 
 
 /* Function: SeqfileOpen()
- * 
+ *
  * Purpose : Open a sequence database file and prepare for reading
  *           sequentially.
- *           
+ *          
  * Args:     filename - name of file to open
  *           format   - format of file
- *           env      - environment variable for path (e.g. BLASTDB)   
+ *           env      - environment variable for path (e.g. BLASTDB)  
  *           ssimode  - -1, SSI_OFFSET_I32, or SSI_OFFSET_I64
  *
  *           Returns opened SQFILE ptr, or NULL on failure.
  */
 SQFILE *
 SeqfileOpen(
-  char *filename, 
-  int format, 
+  char *filename,
+  int format,
   char *env);
 
 
 SQFILE *
 SeqfileOpenForIndexing(
-  char *filename, 
-  int format, 
-  char *env, 
+  char *filename,
+  int format,
+  char *env,
   int ssimode);
 
 
 SQFILE *
 seqfile_open(
-  char *filename, 
-  int format, 
-  char *env, 
+  char *filename,
+  int format,
+  char *env,
   int ssimode);
 
 /* Function: SeqfilePosition()
- * 
+ *
  * Purpose:  Move to a particular offset in a seqfile.
  *           Will not work on alignment files.
  */
 void
 SeqfilePosition(
-  SQFILE *sqfp, 
+  SQFILE *sqfp,
   SSIOFFSET *offset);
 
 
 /* Function: SeqfileRewind()
- * 
+ *
  * Purpose:  Set a sequence file back to the first sequence.
- * 
+ *
  *           Won't work on alignment files. Although it would
  *           seem that it could (just set msa->lastidx back to 0),
  *           that'll fail on "multiple multiple" alignment file formats
@@ -137,8 +131,8 @@ SeqfileRewind(
  *           but before closing it, retrieve overall bytes-per-line and
  *           residues-per-line info. If non-zero, these mean that
  *           the file contains homogeneous sequence line lengths (except
- *           the last line in each record).  
- *           
+ *           the last line in each record). 
+ *          
  *           If either of bpl or rpl is determined to be inhomogeneous,
  *           both are returned as 0.
  *
@@ -150,8 +144,8 @@ SeqfileRewind(
  */
 void
 SeqfileLineParameters(
-  SQFILE *V, 
-  int *ret_bpl, 
+  SQFILE *V,
+  int *ret_bpl,
   int *ret_rpl);
 
 
@@ -170,32 +164,32 @@ SeqfileClose(
  *
  * Returns:  void
  */
-void 
+void
 SeqfileGetLine(
   SQFILE *V);
 
 
 void
 FreeSequence(
-  char *seq, 
+  char *seq,
   SQINFO *sqinfo);
 
 
 int
 SetSeqinfoString(
-  SQINFO *sqinfo, 
-  char *sptr, 
+  SQINFO *sqinfo,
+  char *sptr,
   int flag);
 
 
 void
 SeqinfoCopy(
-  SQINFO *sq1, 
+  SQINFO *sq1,
   SQINFO *sq2);
 
 
 /* Function: ToDNA()
- * 
+ *
  * Purpose:  Convert a sequence to DNA.
  *           U --> T
  */
@@ -205,7 +199,7 @@ ToDNA(
 
 
 /* Function: ToRNA()
- * 
+ *
  * Purpose:  Convert a sequence to RNA.
  *           T --> U
  */
@@ -215,11 +209,11 @@ ToRNA(
 
 
 /* Function: ToIUPAC()
- * 
+ *
  * Purpose:  Convert X's, o's, other junk in a nucleic acid sequence to N's,
  *           to comply with IUPAC code. If is_aseq is TRUE, will allow gap
  *           characters though, so we can call ToIUPAC() on aligned seqs.
- *      
+ *     
  *           NUCLEOTIDES is defined in squid.h as:
  *               "ACGTUNRYMKSWHBVDacgtunrymkswhbvd"
  *           gap chars allowed by isgap() are defined in squid.h as:
@@ -227,16 +221,16 @@ ToRNA(
  *
  *           WU-BLAST's pressdb will
  *           choke on X's, for instance, necessitating conversion
- *           of certain genome centers' data. 
+ *           of certain genome centers' data.
  */
 void
 ToIUPAC(
-  char *seq, 
+  char *seq,
   int is_aseq);
 
 
 /* Function: addseq()
- * 
+ *
  * Purpose:  Add a line of sequence to the growing string in V.
  *
  *           In the seven supported unaligned formats, all sequence
@@ -245,22 +239,22 @@ ToIUPAC(
  *           that must be filtered out. Thus an (!isdigit && !isspace)
  *           test on each character before we accept it.
  */
-void 
+void
 addseq(
-  char *s, 
+  char *s,
   struct ReadSeqVars *V);
 
 
-void 
+void
 readLoop(
-  int addfirst, 
-  int (*endTest)(char *,int *), 
+  int addfirst,
+  int (*endTest)(char *,int *),
   struct ReadSeqVars *V);
 
 
 int
 endPIR(
-  char *s, 
+  char *s,
   int  *addend);
 
 
@@ -269,42 +263,42 @@ readPIR(
   struct ReadSeqVars *V);
 
 
-int 
+int
 endIG(
-  char *s, 
+  char *s,
   int  *addend);
 
 
-void 
+void
 readIG(
   struct ReadSeqVars *V);
 
 
-int 
+int
 endStrider(
-  char *s, 
+  char *s,
   int *addend);
 
 
-void 
+void
 readStrider(
   struct ReadSeqVars *V);
 
 
-int 
+int
 endGB(
-  char *s, 
+  char *s,
   int *addend);
 
 
-void 
+void
 readGenBank(
   struct ReadSeqVars *V);
 
 
 int
 endGCGdata(
-  char *s, 
+  char *s,
   int *addend);
 
 
@@ -315,29 +309,29 @@ readGCGdata(
 
 int
 endPearson(
-  char *s, 
+  char *s,
   int *addend);
 
 
-void 
+void
 readPearson(
   struct ReadSeqVars *V);
 
 
 int
 endEMBL(
-  char *s, 
+  char *s,
   int *addend);
 
 
-void 
+void
 readEMBL(
   struct ReadSeqVars *V);
 
 
 int
 endZuker(
-  char *s, 
+  char *s,
   int *addend);
 
 
@@ -346,41 +340,41 @@ readZuker(
   struct ReadSeqVars *V);
 
 
-void 
+void
 readUWGCG(
   struct ReadSeqVars *V);
 
-    
+   
 /* Function: ReadSeq()
- * 
+ *
  * Purpose:  Read next sequence from an open database file.
  *           Return the sequence and associated info.
- *           
- * Args:     fp      - open sequence database file pointer          
+ *          
+ * Args:     fp      - open sequence database file pointer         
  *           format  - format of the file (previously determined
  *                      by call to SeqfileFormat()).
- *                      Currently unused, since we carry it in V. 
+ *                      Currently unused, since we carry it in V.
  *           ret_seq - RETURN: sequence
- *           sqinfo  - RETURN: filled in w/ other information  
- *                     
- * Limitations: uses squid_errno, so it's not threadsafe.                    
- *           
+ *           sqinfo  - RETURN: filled in w/ other information 
+ *                    
+ * Limitations: uses squid_errno, so it's not threadsafe.                   
+ *          
  * Return:   1 on success, 0 on failure.
  *           ret_seq and some field of sqinfo are allocated here,
  *           The preferred call mechanism to properly free the memory is:
- *           
+ *          
  *           SQINFO sqinfo;
  *           char  *seq;
- *           
+ *          
  *           ReadSeq(fp, format, &seq, &sqinfo);
  *           ... do something...
  *           FreeSequence(seq, &sqinfo);
  */
 int
 ReadSeq(
-  SQFILE *V, 
-  //int format, 
-  char **ret_seq, 
+  SQFILE *V,
+  //int format,
+  char **ret_seq,
   SQINFO *sqinfo);
 
 
@@ -389,7 +383,7 @@ ReadSeq(
  * Purpose:  Determine format of an open file.
  *           Returns format code.
  *           Rewinds the file.
- *           
+ *          
  *           Autodetects the following unaligned formats:
  *              SQFILE_FASTA
  *              SQFILE_GENBANK
@@ -408,26 +402,26 @@ ReadSeq(
  *           MSAFileFormat() does the opposite.
  *
  * Args:     sfp -  open SQFILE
- *           
+ *          
  * Return:   format code, or SQFILE_UNKNOWN if unrecognized
- */          
+ */         
 int
 SeqfileFormat(
   FILE *fp);
 
 
 /* Function: GCGBinaryToSequence()
- * 
+ *
  * Purpose:  Convert a GCG 2BIT binary string to DNA sequence.
  *           0 = C  1 = T  2 = A  3 = G
  *           4 nts/byte
- *           
+ *          
  * Args:     seq  - binary sequence. Converted in place to DNA.
  *           len  - length of DNA. binary is (len+3)/4 bytes
  */
 int
 GCGBinaryToSequence(
-  char *seq, 
+  char *seq,
   int len);
 
 
@@ -440,41 +434,41 @@ GCGBinaryToSequence(
  * Args:     seq -  sequence to calculate checksum for.
  *                  may contain gap symbols.
  *           len -  length of sequence (usually known,
- *                  so save a strlen() call)       
+ *                  so save a strlen() call)      
  *
  * Returns:  GCG checksum.
  */
 int
 GCGchecksum(
-  char *seq, 
+  char *seq,
   int len);
 
 
 /* Function: GCGMultchecksum()
- * 
+ *
  * Purpose:  GCG checksum for a multiple alignment: sum of
  *           individual sequence checksums (including their
  *           gap characters) modulo 10000.
  *
  *           Implemented using spec provided by Steve Smith of
  *           Genetics Computer Group.
- *           
+ *          
  * Args:     seqs - sequences to be checksummed; aligned or not
  *           nseq - number of sequences
- *           
+ *          
  * Return:   the checksum, a number between 0 and 9999
- */                      
+ */                     
 int
 GCGMultchecksum(
-  char **seqs, 
+  char **seqs,
   int nseq);
 
 
 /* Function: Seqtype()
- * 
+ *
  * Purpose:  Returns a (very good) guess about type of sequence:
  *           kDNA, kRNA, kAmino, or kOtherSeq.
- *           
+ *          
  *           Modified from, and replaces, Gilbert getseqtype().
  */
 int
@@ -484,7 +478,7 @@ Seqtype(
 
 /* Function: GuessAlignmentSeqtype()
  *
- * Purpose:  Try to guess whether an alignment is protein 
+ * Purpose:  Try to guess whether an alignment is protein
  *           or nucleic acid; return a code for the
  *           type (kRNA, kDNA, or kAmino).
  *
@@ -497,7 +491,7 @@ Seqtype(
  */
 int
 GuessAlignmentSeqtype(
-  char **aseq, 
+  char **aseq,
   int nseq);
 
 
@@ -515,34 +509,34 @@ GuessAlignmentSeqtype(
  */
 void
 WriteSimpleFASTA(
-  FILE *fp, 
-  char *seq, 
-  char *name, 
+  FILE *fp,
+  char *seq,
+  char *name,
   char *desc);
 
 
 int
 WriteSeq(
-  FILE *outf, 
-  int outform, 
-  char *seq, 
+  FILE *outf,
+  int outform,
+  char *seq,
   SQINFO *sqinfo);
 
 
 /* Function: ReadMultipleRseqs()
- * 
+ *
  * Purpose:  Open a data file and
  *           parse it into an array of rseqs (raw, unaligned
  *           sequences).
- * 
+ *
  *           Caller is responsible for free'ing memory allocated
  *           to ret_rseqs, ret_weights, and ret_names.
- *           
+ *          
  *           Weights are currently only supported for MSF format.
  *           Sequences read from all other formats will be assigned
  *           weights of 1.0. If the caller isn't interested in
  *           weights, it passes NULL as ret_weights.
- * 
+ *
  * Returns 1 on success. Returns 0 on failure and sets
  * squid_errno to indicate the cause.
  */
@@ -572,7 +566,7 @@ SeqfileFormat2String(
  * Purpose:  Take an MSA and generate a SQINFO array suitable
  *           for use in annotating the unaligned sequences.
  *           Return the array.
- *           
+ *          
  *           Permanent temporary code. sqinfo was poorly designed.
  *           it must eventually be replaced, but the odds
  *           of this happening soon are nil, so I have to deal.
@@ -580,7 +574,7 @@ SeqfileFormat2String(
  * Args:     msa   - the alignment
  *
  * Returns:  ptr to allocated sqinfo array.
- *           Freeing is ghastly: free in each individual sqinfo[i] 
+ *           Freeing is ghastly: free in each individual sqinfo[i]
  *           with FreeSequence(NULL, &(sqinfo[i])), then
  *           free(sqinfo).
  */

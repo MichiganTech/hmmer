@@ -1,7 +1,7 @@
 /*****************************************************************
  * SQUID - a library of functions for biological sequence analysis
  * Copyright (C) 1992-2002 Washington University School of Medicine
- * 
+ *
  *     This source code is freely distributed under the terms of the
  *     GNU General Public License. See the files COPYRIGHT and LICENSE
  *     for details.
@@ -10,15 +10,16 @@
 /* clustal.c
  * Import/export of ClustalV/W multiple sequence alignment
  * formatted files. Derivative of msf.c; MSF is a pretty
- * generic interleaved format.   
+ * generic interleaved format.  
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "squid.h"
-#include "msa.h"
+
+#include "squid.hpp"
+#include "msa.hpp"
 
 
 
@@ -47,12 +48,12 @@ ReadClustal(
 
   msa = MSAAlloc(10, 0);
 
-  /* Now we're in the sequence section. 
+  /* Now we're in the sequence section.
    * As discussed above, if we haven't seen a sequence name, then we
    * don't include the sequence in the alignment.
    * Watch out for conservation markup lines that contain *.: chars
    */
-  while ((s = MSAFileGetLine(afp)) != NULL) 
+  while ((s = MSAFileGetLine(afp)) != NULL)
     {
       if ((name = strtok(s, WHITESPACE))  == NULL) continue;
       if ((seq  = strtok(NULL, WHITESPACE)) == NULL) continue;
@@ -65,13 +66,13 @@ ReadClustal(
       if (s2 != NULL)
   Die("Parse failed at line %d, file %s: possibly using spaces as gaps",
       afp->linenumber, afp->fname);
-  
+ 
       /* It's not blank, and it's not a coord line: must be sequence
        */
       sqidx = MSAGetSeqidx(msa, name, msa->lastidx+1);
       msa->lastidx = sqidx;
       msa->aseq[sqidx] = realloc(msa->aseq[sqidx], strlen(msa->aseq[sqidx]) + strlen(seq) + 1);
-      msa->sqlen[sqidx] = strlen(strcat(msa->aseq[sqidx], seq)); 
+      msa->sqlen[sqidx] = strlen(strcat(msa->aseq[sqidx], seq));
     }
 
   MSAVerifyParse(msa);    /* verifies, and also sets alen and wgt. */
@@ -82,7 +83,7 @@ ReadClustal(
 
 void
 WriteClustal(
-  FILE *fp, 
+  FILE *fp,
   MSA *msa
 ){
   int    idx;     /* counter for sequences         */
@@ -95,10 +96,10 @@ WriteClustal(
         /* calculate max namelen used */
   namelen = 0;
   for (idx = 0; idx < msa->nseq; idx++)
-    if ((len = strlen(msa->sqname[idx])) > namelen) 
+    if ((len = strlen(msa->sqname[idx])) > namelen)
       namelen = len;
 
-  fprintf(fp, "CLUSTAL W(1.5) multiple sequence alignment\n"); 
+  fprintf(fp, "CLUSTAL W(1.5) multiple sequence alignment\n");
 
   /*****************************************************
    * Write the sequences
@@ -122,17 +123,19 @@ WriteClustal(
 
 #ifdef TESTDRIVE_CLUSTAL
 /*****************************************************************
- * msf.c test driver: 
+ * msf.c test driver:
  * cc -DTESTDRIVE_CLUSTAL -g -O2 -Wall -o test clustal.c msa.c gki.c sqerror.c sre_string.c file.c hsregex.c sre_math.c sre_ctype.c -lm
- * 
+ *
  */
 int
-main(int argc, char **argv)
-{
+main(
+  int argc,
+  char **argv
+){
   MSAFILE *afp;
   MSA     *msa;
   char    *file;
-  
+ 
   file = argv[1];
 
   if ((afp = MSAFileOpen(file, MSAFILE_CLUSTAL, NULL)) == NULL)
@@ -141,9 +144,9 @@ main(int argc, char **argv)
   while ((msa = ReadClustal(afp)) != NULL)
     {
       WriteClustal(stdout, msa);
-      MSAFree(msa); 
+      MSAFree(msa);
     }
-  
+ 
   MSAFileClose(afp);
   exit(0);
 }

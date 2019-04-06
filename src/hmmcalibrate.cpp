@@ -14,8 +14,6 @@
  * set histogram fitting parameters.
  */
 
-#include "config.h"    /* compile-time configuration constants */
-//#include "squidconf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,15 +26,15 @@
 #include <pthread.h>
 #include <unistd.h>
 
-//#include "squid.h"    /* general sequence analysis library    */
-#include "stopwatch.h"    /* process timings                      */
-#include "structs.h"    /* data structures, macros, #define's   */
-#include "funcs.h"    /* function declarations                */
-#include "globals.h"    /* alphabet global variables            */
-#include "getopt.h"
-#include "file.h"
-#include "sre_random.h"
-#include "sre_string.h"
+
+#include "config.hpp"    /* compile-time configuration constants */
+#include "stopwatch.hpp"    /* process timings                      */
+#include "structs.hpp"    /* data structures, macros, #define's   */
+#include "globals.hpp"    /* alphabet global variables            */
+#include "getopt.hpp"
+#include "file.hpp"
+#include "sre_random.hpp"
+#include "sre_string.hpp"
 
 
 static char banner[] = "hmmcalibrate -- calibrate HMM search statistics";
@@ -391,13 +389,13 @@ main(int argc, char **argv) {
  */
 void
 main_loop_serial(
-  struct plan7_s *hmm, 
-  //int seed, 
+  struct plan7_s *hmm,
+  //int seed,
   int nsample,
-  float lenmean, 
-  float lensd, 
+  float lenmean,
+  float lensd,
   int fixedlen,
-  struct histogram_s **ret_hist, 
+  struct histogram_s **ret_hist,
   float *ret_max
 ){
   struct histogram_s *hist;

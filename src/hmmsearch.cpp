@@ -13,23 +13,22 @@
  * Search a sequence database with a profile HMM.
  */
 
-#include "config.h"    /* compile-time configuration constants */
 //#include "squidconf.h"
 
+#include <float.h>
+#include <limits.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-#include <float.h>
-#include <pthread.h>
 #include <unistd.h>
 
-//#include "squid.h"    /* general sequence analysis library    */
-#include "structs.h"    /* data structures, macros, #define's   */
-#include "funcs.h"    /* function declarations                */
-#include "globals.h"    /* alphabet global variables            */
-#include "getopt.h"
-#include "sqio.h"
+#include "config.hpp"
+#include "funcs.hpp"
+#include "getopt.hpp"
+#include "globals.hpp"
+#include "sqio.hpp"
+#include "structs.hpp"
 
 
 static char banner[] = "hmmsearch - search a sequence database with a profile HMM";

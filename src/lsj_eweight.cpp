@@ -16,33 +16,20 @@
  * null distribution.
  */
 
-#include "config.h"
-//#include "squidconf.h"
-
 #include <stdio.h>
 #include <string.h>
 
-#include "structs.h"
-#include "funcs.h"
-//#include "squid.h"
-#include "vectorops.h"
-#include "lsjfuncs.h"
+#include "vectorops.hpp"
+#include "lsj_eweight.hpp"
 
-/* Function: Eweight() LSJ 2/6/04
- *
- * Purpose:  Main entropy-based weighting function.
- *
- * Args:
- *           **mat       - Current model match state counts.
- *           **pri       - Model priors.
- *       numb_seqs       - Number of sequences in alignment.
- *       targetent       - Target mean match state entropy.
- *
- * Return: eff_no        - New effective sequence number.
- */
+
 float
-Eweight(struct plan7_s *hmm,  struct p7prior_s *pri, float numb_seqs,
-        float targetent) {
+Eweight(
+  struct plan7_s *hmm, 
+  struct p7prior_s *pri,
+  float numb_seqs,
+  float targetent
+){
   int i;
   int j;
   float eff_no;                  /* New effective sequence number */
